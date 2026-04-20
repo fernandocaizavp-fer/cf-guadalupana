@@ -1,0 +1,113 @@
+.spacer { flex: 1 1 auto; }
+
+.lugar-fecha {
+  width: 320px;
+  margin-top: 18px;
+
+  ::ng-deep .mdc-notched-outline__leading,
+  ::ng-deep .mdc-notched-outline__notch,
+  ::ng-deep .mdc-notched-outline__trailing {
+    border-color: rgba(255,255,255,0.4) !important;
+  }
+
+  ::ng-deep .mat-mdc-input-element,
+  ::ng-deep .mat-mdc-floating-label {
+    color: white !important;
+  }
+}
+
+.content {
+  padding: 24px 32px;
+  background: #f0f2f8;
+  min-height: calc(100vh - 64px);
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  margin-top: 80px;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  .hint {
+    font-size: 13px;
+    color: #999;
+  }
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.notas-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1200px;
+
+  th {
+    background: #1a2a5e;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 10px 6px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  td {
+    border: 1px solid #eee;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  tr:nth-child(even) td {
+    background: #f8f9fc;
+  }
+
+  tr:hover td {
+    background: #fff3e0;
+  }
+}
+
+.th-num { width: 40px; }
+.th-nombre { width: 220px; text-align: left !important; padding-left: 12px !important; }
+.th-materia { width: 70px; writing-mode: vertical-rl; transform: rotate(180deg); height: 120px; }
+.th-promedio { width: 80px; background: #c8a84b !important; color: #1a2a5e !important; }
+
+.td-num { width: 40px; color: #666; font-weight: 600; }
+.td-nombre { text-align: left; padding: 8px 12px; font-weight: 500; color: #1a2a5e; }
+.td-nota { padding: 4px; }
+.td-promedio {
+  font-weight: 700;
+  color: #1a2a5e;
+  background: #fff8e1 !important;
+}
+
+.nota-input {
+  width: 52px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px;
+  text-align: center;
+  font-size: 13px;
+  outline: none;
+  background: transparent;
+
+  &:focus {
+    border-color: #1a2a5e;
+    background: white;
+  }
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    opacity: 0;
+  }
+}

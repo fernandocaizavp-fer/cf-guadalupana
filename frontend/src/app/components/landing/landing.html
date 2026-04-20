@@ -1,0 +1,169 @@
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <img src="logo.jpg" alt="Logo" class="nav-logo">
+    <div class="nav-text">
+      <span class="nav-title">CFA Guadalupana</span>
+      <span class="nav-sub">Centro de Formación Artesanal</span>
+    </div>
+  </div>
+  <button class="btn-login" (click)="irALogin()">
+    <mat-icon>login</mat-icon> Iniciar Sesión
+  </button>
+</nav>
+
+<!-- HERO SLIDER -->
+<section class="hero">
+  @for (slide of slides; track $index) {
+    <div class="slide" [class.active]="currentSlide === $index" [style.backgroundImage]="'url(' + slide.img + ')'">
+      <div class="slide-overlay">
+        <div class="slide-content">
+          <h1>{{ slide.title }}</h1>
+          <p>{{ slide.subtitle }}</p>
+          <button class="btn-hero" (click)="irALogin()">Conoce más →</button>
+        </div>
+      </div>
+    </div>
+  }
+  <div class="slide-dots">
+    @for (slide of slides; track $index) {
+      <span class="dot" [class.active]="currentSlide === $index" (click)="goToSlide($index)"></span>
+    }
+  </div>
+</section>
+
+<!-- SOBRE NOSOTROS -->
+<section class="about">
+  <div class="about-grid">
+    <div class="about-text">
+      <span class="section-tag">Sobre Nosotros</span>
+      <h2>Una institución nacida para transformar vidas</h2>
+      <p>El <strong>Centro de Formación Artesanal Particular Guadalupana</strong> nació en 2017 como una idea visionaria, impulsada por la convicción de que la educación técnica puede ser una herramienta poderosa para transformar vidas y fortalecer la economía local.</p>
+      <p>Autorizado el <strong>07 de Diciembre de 2022</strong> mediante Resolución Interinstitucional N.- JNDA-MDT-2022-135 por el Ministerio de Trabajo y la Junta Nacional de Defensa del Artesano, el CFA Guadalupana se ha consolidado como un referente de formación artesanal en la región.</p>
+      <div class="about-stats">
+        <div class="stat">
+          <span class="stat-number">2017</span>
+          <span class="stat-label">Año de fundación</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">3</span>
+          <span class="stat-label">Especialidades</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Compromiso</span>
+        </div>
+      </div>
+    </div>
+    <div class="about-img">
+      <img src="graduados.jpg" alt="Graduados CFA">
+      <div class="about-badge">
+        <mat-icon>verified</mat-icon>
+        <span>Avalado por la JNDA</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ESPECIALIDADES -->
+<section class="especialidades">
+  <div class="section-header">
+    <span class="section-tag light">Lo que ofrecemos</span>
+    <h2>Nuestras Especialidades</h2>
+    <p>Formación técnica de calidad con titulación oficial</p>
+  </div>
+  <div class="esp-grid">
+    @for (esp of especialidades; track esp.nombre) {
+      <div class="esp-card">
+        <div class="esp-icon">
+          <mat-icon>{{ esp.icon }}</mat-icon>
+        </div>
+        <h3>{{ esp.nombre }}</h3>
+        <p>{{ esp.desc }}</p>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- POR QUÉ ELEGIRNOS -->
+<section class="why">
+  <div class="why-grid">
+    <div class="why-img">
+      <img src="graduados2.jpg" alt="Estudiantes">
+    </div>
+    <div class="why-text">
+      <span class="section-tag">¿Por qué elegirnos?</span>
+      <h2>Formación con propósito y excelencia</h2>
+      <div class="why-items">
+        <div class="why-item">
+          <div class="why-icon gold"><mat-icon>school</mat-icon></div>
+          <div>
+            <h4>Titulación oficial</h4>
+            <p>Avalada por la Junta Nacional de Defensa del Artesano.</p>
+          </div>
+        </div>
+        <div class="why-item">
+          <div class="why-icon blue"><mat-icon>people</mat-icon></div>
+          <div>
+            <h4>Docentes especializados</h4>
+            <p>Personal capacitado con experiencia en cada especialidad.</p>
+          </div>
+        </div>
+        <div class="why-item">
+          <div class="why-icon teal"><mat-icon>emoji_events</mat-icon></div>
+          <div>
+            <h4>Formación integral</h4>
+            <p>Ética profesional, técnica y espíritu emprendedor.</p>
+          </div>
+        </div>
+        <div class="why-item">
+          <div class="why-icon navy"><mat-icon>location_on</mat-icon></div>
+          <div>
+            <h4>Ubicación estratégica</h4>
+            <p>Alfredo Pareja y Agustín Cueva, sector ECU 911, Riobamba.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="contact">
+  <div class="section-header">
+    <span class="section-tag light">Contáctanos</span>
+    <h2>Estamos aquí para ayudarte</h2>
+    <p>Visítanos o escríbenos, con gusto te orientamos</p>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-card">
+      <mat-icon>location_on</mat-icon>
+      <h4>Dirección</h4>
+      <p>Alfredo Pareja y Agustín Cueva<br>Sector ECU 911, Riobamba, Ecuador</p>
+    </div>
+    <div class="contact-card">
+      <mat-icon>phone</mat-icon>
+      <h4>Teléfono</h4>
+      <p>096 149 3337</p>
+    </div>
+    <div class="contact-card">
+      <mat-icon>email</mat-icon>
+      <h4>Correo</h4>
+      <p>guadalupanacfa&#64;gmail.com</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-brand">
+      <img src="logo.jpg" alt="Logo" class="footer-logo">
+      <div>
+        <p class="footer-title">CFA Guadalupana</p>
+        <p class="footer-sub">Centro de Formación Artesanal Particular</p>
+      </div>
+    </div>
+    <p class="footer-copy">© 2026 Centro de Formación Artesanal Guadalupana. Todos los derechos reservados.</p>
+  </div>
+</footer>

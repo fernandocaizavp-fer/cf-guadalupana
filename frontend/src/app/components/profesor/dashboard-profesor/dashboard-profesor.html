@@ -1,0 +1,58 @@
+<mat-toolbar style="background: linear-gradient(135deg, #1a2a5e, #0d1a3e); color: white;">
+  <img src="logo.jpg" alt="Logo" style="height: 40px; margin-right: 12px;">
+  <span>Portal Docente</span>
+  <span class="spacer"></span>
+  <span style="color: #c8a84b; margin-right: 12px; font-size: 14px;">
+    <mat-icon style="vertical-align: middle; font-size: 18px;">account_circle</mat-icon>
+    {{ usuario?.nombre }} {{ usuario?.apellido }}
+  </span>
+  <button mat-icon-button style="color: white;" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="content">
+  <div class="header">
+    <h1>Mis Cursos Asignados</h1>
+    <p>Selecciona un curso para ingresar calificaciones</p>
+  </div>
+
+  @if (loading) {
+    <div class="center"><mat-spinner></mat-spinner></div>
+  }
+
+  @if (!loading && cursosAgrupados.length === 0) {
+    <div class="center">
+      <mat-icon class="empty-icon">assignment</mat-icon>
+      <p>No tienes materias asignadas aún</p>
+      <small>Contacta al administrador para que te asigne materias</small>
+    </div>
+  }
+
+  @if (!loading && cursosAgrupados.length > 0) {
+    <div class="cursos-list">
+      @for (curso of cursosAgrupados; track curso.id) {
+        <div class="curso-card">
+          <div class="curso-header" (click)="irANotas(curso.id)">
+            <div class="curso-icon">
+              <mat-icon>school</mat-icon>
+            </div>
+            <div class="curso-info">
+              <h3>{{ curso.ramaArtesanal }}</h3>
+              <span class="periodo">{{ curso.anioFormativo }}</span>
+            </div>
+            <mat-icon class="arrow">chevron_right</mat-icon>
+          </div>
+          <div class="materias-list">
+            @for (materia of curso.materias; track materia.id) {
+              <div class="materia-item">
+                <mat-icon>menu_book</mat-icon>
+                <span>{{ materia.nombre }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

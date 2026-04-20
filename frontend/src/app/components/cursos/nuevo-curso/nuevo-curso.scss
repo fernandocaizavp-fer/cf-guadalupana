@@ -1,0 +1,31 @@
+.content {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 600px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+mat-card-actions {
+  padding: 16px;
+  display: flex;
+  gap: 10px;
+}

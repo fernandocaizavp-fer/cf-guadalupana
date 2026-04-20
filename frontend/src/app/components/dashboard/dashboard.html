@@ -1,0 +1,103 @@
+<mat-toolbar class="navbar">
+  <img src="logo.jpg" alt="Logo" class="nav-logo">
+  <span class="nav-title">Centro de Formación Artesanal Guadalupana</span>
+  <span class="spacer"></span>
+  <span class="nav-user"><mat-icon>account_circle</mat-icon> {{ usuario?.nombre }}</span>
+  <button mat-icon-button (click)="logout()" title="Cerrar sesión">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Panel de Administración</h1>
+    <p>Bienvenido de vuelta, <strong>{{ usuario?.nombre }}</strong>. ¿Qué deseas gestionar hoy?</p>
+  </div>
+
+  <div class="section-label">GESTIÓN ACADÉMICA</div>
+  <div class="cards-grid">
+
+    <div class="menu-card active-card" (click)="irACursos()">
+      <div class="card-icon-wrap">
+        <mat-icon>school</mat-icon>
+      </div>
+      <div class="card-info">
+        <h3>Cursos</h3>
+        <p>Crear y gestionar cursos por período</p>
+      </div>
+      <span class="card-status active">● Activo</span>
+    </div>
+
+    <div class="menu-card active-card" (click)="irANuevaMatricula()">
+      <div class="card-icon-wrap">
+        <mat-icon>person_add</mat-icon>
+      </div>
+      <div class="card-info">
+        <h3>Nueva Matrícula</h3>
+        <p>Registrar un nuevo estudiante</p>
+      </div>
+      <span class="card-status active">● Activo</span>
+    </div>
+
+    <div class="menu-card disabled-card">
+      <div class="card-icon-wrap disabled">
+        <mat-icon>grade</mat-icon>
+      </div>
+      <div class="card-info">
+        <h3>Notas</h3>
+        <p>Gestionar calificaciones por materia</p>
+      </div>
+      <span class="card-status soon">● Próximamente</span>
+    </div>
+
+    <div class="menu-card disabled-card">
+      <div class="card-icon-wrap disabled">
+        <mat-icon>description</mat-icon>
+      </div>
+      <div class="card-info">
+        <h3>Documentos</h3>
+        <p>Generar matrículas y certificados</p>
+      </div>
+      <span class="card-status soon">● Próximamente</span>
+    </div>
+
+  </div>
+
+  <div class="section-label" style="margin-top: 36px;">ADMINISTRACIÓN</div>
+  <div class="cards-grid">
+
+    <div class="menu-card active-card" (click)="irADocentes()">
+      <div class="card-icon-wrap">
+        <mat-icon>badge</mat-icon>
+      </div>
+      <div class="card-info">
+        <h3>Docentes</h3>
+        <p>Gestionar y asignar docentes</p>
+      </div>
+      <span class="card-status active">● Activo</span>
+    </div>
+
+    <div class="menu-card disabled-card">
+      <div class="card-icon-wrap disabled">
+        <mat-icon>bar_chart</mat-icon>
+      </div>
+      <div class="card-info">
+        <h3>Reportes</h3>
+        <p>Estadísticas y reportes del centro</p>
+      </div>
+      <span class="card-status soon">● Próximamente</span>
+    </div>
+
+    <div class="menu-card disabled-card">
+      <div class="card-icon-wrap disabled">
+        <mat-icon>settings</mat-icon>
+      </div>
+      <div class="card-info">
+        <h3>Configuración</h3>
+        <p>Ajustes generales del sistema</p>
+      </div>
+      <span class="card-status soon">● Próximamente</span>
+    </div>
+
+  </div>
+</div>

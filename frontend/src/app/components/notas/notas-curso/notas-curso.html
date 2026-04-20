@@ -1,0 +1,64 @@
+<mat-toolbar color="primary" style="background: linear-gradient(135deg, #1a2a5e, #0d1a3e) !important;">
+  <button mat-icon-button (click)="volver()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Notas — {{ curso?.ramaArtesanal }} {{ curso?.anioFormativo }}</span>
+  <span class="spacer"></span>
+  <mat-form-field appearance="outline" class="lugar-fecha">
+    <mat-label>Lugar y Fecha</mat-label>
+    <input matInput [(ngModel)]="lugarFecha" placeholder="Ej: Riobamba, 14 de marzo del 2026">
+  </mat-form-field>
+  <button mat-raised-button (click)="descargarAL14()" style="margin-left: 12px; background: #c8a84b; color: #1a2a5e;">
+    <mat-icon>download</mat-icon> Descargar AL14
+  </button>
+</mat-toolbar>
+
+<div class="content">
+  @if (loading) {
+    <div class="center"><mat-spinner></mat-spinner></div>
+  }
+  @if (!loading) {
+    <div class="table-actions">
+      <button mat-raised-button color="primary" (click)="guardarNotas()" [disabled]="guardando">
+        <mat-icon>save</mat-icon> {{ guardando ? 'Guardando...' : 'Guardar Notas' }}
+      </button>
+      <span class="hint">Las notas se guardan por celda. Puedes editar y guardar en cualquier momento.</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="notas-table">
+        <thead>
+          <tr>
+            <th class="th-num">No.</th>
+            <th class="th-nombre">Nombres y Apellidos</th>
+            @for (materia of materias; track materia.id) {
+              <th class="th-materia">{{ materia.nombre }}</th>
+            }
+            <th class="th-promedio">Promedio</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (matricula of matriculas; track matricula.id; let i = $index) {
+            <tr>
+              <td class="td-num">{{ i + 1 }}</td>
+              <td class="td-nombre">{{ matricula.apellidos }} {{ matricula.nombres }}</td>
+              @for (materia of materias; track materia.id) {
+                <td class="td-nota">
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    class="nota-input"
+                    [(ngModel)]="notas[matricula.id][materia.id]"
+                    placeholder="-">
+                </td>
+              }
+              <td class="td-promedio">{{ calcularPromedio(matricula.id) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
