@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  ADMIN
+  PROFESOR
+  ESTUDIANTE
+}
+
+model Usuario {
+  id        Int        @id @default(autoincrement())
+  nombre    String
+  apellido  String
+  correo    String     @unique
+  password  String
+  rol       Rol        @default(ESTUDIANTE)
+  createdAt DateTime   @default(now())
+
+  matricula  Matricula?
+  materias   Materia[]
+}
+
+model Curso {
+  id            Int         @id @default(autoincrement())
+  ramaArtesanal String
+  anioFormativo String
+  fechaInicio   DateTime
+  fechaFin      DateTime
+  activo        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+
+  materias   Materia[]
+  matriculas Matricula[]
+}
+
+model Materia {
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  cursoId    Int
+  curso      Curso    @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  profesorId Int?
+  profesor   Usuario? @relation(fields: [profesorId], references: [id], onDelete: SetNull)
+
+  notas Nota[]
+}
+
+model Matricula {
+  id                      Int       @id @default(autoincrement())
+  matriculaNo             String    @unique
+  tomo                    String?
+  pagina                  String?
+  apellidos               String
+  nombres                 String
+  cedula                  String    @unique
+  fechaNacimiento         DateTime?
+  anioNacimiento          String?
+  mesNacimiento           String?
+  diaNacimiento           String?
+  pais                    String?
+  provincia               String?
+  canton                  String?
+  parroquia               String?
+  ciudad                  String?
+  nacionalidad            String?
+  calle                   String?
+  num                     String?
+  transversal             String?
+  telefono                String?
+  correo                  String?
+  cursoanterior           String?
+  unidadeducativa         String?
+  centroformacionanterior String?
+  nombrepapa              String?
+  profesionpapa           String?
+  ocupacionpapa           String?
+  nombremama              String?
+  profesionmama           String?
+  ocupacionmama           String?
+  nombrerepresentante     String?
+  ocupacionrepresentante  String?
+  domiciliorepresentante  String?
+  telefonorepresentante   String?
+  correoestudiante        String?
+  lugarfechamatricula     String?
+  especialidad            String?
+  lugarfechacertificado   String?
+  createdAt               DateTime  @default(now())
+
+  cursoId   Int
+  curso     Curso   @relation(fields: [cursoId], references: [id])
+  usuarioId Int     @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  notas     Nota[]  
+}
+
+model Nota {
+  id          Int      @id @default(autoincrement())
+  valor       Float
+  materiaId   Int
+  materia     Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  matriculaId Int
+  matricula   Matricula @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
+
+  @@unique([materiaId, matriculaId])
+}
