@@ -1,0 +1,52 @@
+<mat-toolbar style="background: linear-gradient(135deg, #1a2a5e, #0d1a3e); color: white;">
+  <button mat-icon-button style="color: white;" (click)="volver()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>{{ materia?.nombre || 'Materia' }} — Semestre {{ semestre }}</span>
+  <span class="spacer"></span>
+  <div class="promedio-chip">
+    <span class="chip-label">Promedio</span>
+    <span class="chip-valor">{{ promedio }}</span>
+  </div>
+</mat-toolbar>
+
+<div class="content">
+  @if (loading) {
+    <div class="center"><mat-spinner></mat-spinner></div>
+  }
+
+  @if (!loading && tareas.length === 0) {
+    <div class="center">
+      <mat-icon class="empty-icon">assignment</mat-icon>
+      <p>No hay tareas registradas en el semestre {{ semestre }}</p>
+    </div>
+  }
+
+  @if (!loading && tareas.length > 0) {
+    <div class="tareas-list">
+      @for (tarea of tareas; track tarea.id; let i = $index) {
+        <div class="tarea-card">
+          <div class="tarea-num">{{ i + 1 }}</div>
+          <div class="tarea-info">
+            <h3>{{ tarea.nombre }}</h3>
+            @if (tarea.descripcion) {
+              <p class="tarea-desc">{{ tarea.descripcion }}</p>
+            }
+            @if (tarea.miObservacion) {
+              <p class="tarea-obs">
+                <mat-icon>comment</mat-icon>
+                {{ tarea.miObservacion }}
+              </p>
+            }
+          </div>
+          <div class="tarea-nota" [class.sin-nota]="tarea.miNota === null"
+            [class.nota-alta]="tarea.miNota >= 7"
+            [class.nota-media]="tarea.miNota >= 5 && tarea.miNota < 7"
+            [class.nota-baja]="tarea.miNota !== null && tarea.miNota < 5">
+            {{ tarea.miNota !== null ? tarea.miNota : '-' }}
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

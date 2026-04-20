@@ -22,7 +22,8 @@ export class DashboardEstudiante implements OnInit {
   usuario: any;
   matricula: any = null;
   loading = true;
-  columnas = ['materia', 'nota'];
+  semestreSeleccionado = 1;
+  materiasConTareas: any[] = [];
 
   constructor(
     private authService: AuthService,
@@ -43,6 +44,54 @@ export class DashboardEstudiante implements OnInit {
     this.http.get(`http://localhost:3001/api/usuarios/perfil-estudiante/${this.usuario.id}`, { headers }).subscribe({
       next: (matricula: any) => {
         this.matricula = matricula;
+        this.cargarNotasSemestre();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  cargarNotasSemestre() {
+    if (!this.matricula?.cursoId) return;
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    });
+
+    this.http.get<any>(
+      `http://localhost:3001/api/tareas/curso/${this.matricula.cursoId}?semestre=${this.semestreSeleccionado}`,
+      { headers }
+    ).subscribe({
+      next: (data) => {
+        // Armar materias con tareas y notas del estudiante
+        this.materiasConTareas = data.materias.map((materia: any) => {
+          const tareasConNota = materia.tareas.map((tarea: any) => {
+            const notaTarea = this.matricula.notasTarea?.find(
+              (n: any) => n.tarea?.materiaId === materia.id && n.tareaId === tarea.id
+            );
+            return {
+              ...tarea,
+              miNota: notaTarea?.valor ?? null,
+              miObservacion: notaTarea?.observacion || ''
+            };
+          });
+
+          const notasValidas = tareasConNota.filter((t: any) => t.miNota !== null);
+          const promedio = notasValidas.length > 0
+            ? notasValidas.reduce((a: number, b: any) => a + b.miNota, 0) / notasValidas.length
+            : null;
+
+          return {
+            ...materia,
+            tareas: tareasConNota,
+            promedio: promedio !== null
+              ? (promedio % 1 === 0 ? String(promedio) : promedio.toFixed(1))
+              : '-'
+          };
+        }).filter((m: any) => m.tareas.length > 0);
+
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -51,6 +100,16 @@ export class DashboardEstudiante implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  cambiarSemestre(semestre: number) {
+    this.semestreSeleccionado = semestre;
+    this.loading = true;
+    this.cargarNotasSemestre();
+  }
+
+  verDetalleMateria(materiaId: number) {
+    this.router.navigate(['/estudiante/materia', materiaId, this.semestreSeleccionado]);
   }
 
   descargarCertificado() {
@@ -66,12 +125,6 @@ export class DashboardEstudiante implements OnInit {
       },
       error: () => this.snackBar.open('Error al descargar certificado', 'OK', { duration: 3000 })
     });
-  }
-
-  calcularPromedio(): string {
-    if (!this.matricula?.notas?.length) return '-';
-    const suma = this.matricula.notas.reduce((a: number, b: any) => a + b.valor, 0);
-    return (suma / this.matricula.notas.length).toFixed(2);
   }
 
   logout() {

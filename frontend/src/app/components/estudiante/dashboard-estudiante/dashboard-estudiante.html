@@ -2,9 +2,17 @@
   <img src="logo.jpg" alt="Logo" style="height: 40px; margin-right: 12px;">
   <span>Portal Estudiantil</span>
   <span class="spacer"></span>
-  <span style="color: #c8a84b; margin-right: 12px; font-size: 14px;">
+  <div class="semestre-tabs">
+    <button class="tab-btn" [class.active]="semestreSeleccionado === 1" (click)="cambiarSemestre(1)">
+      1er Semestre
+    </button>
+    <button class="tab-btn" [class.active]="semestreSeleccionado === 2" (click)="cambiarSemestre(2)">
+      2do Semestre
+    </button>
+  </div>
+  <span style="color: #c8a84b; margin: 0 12px; font-size: 14px;">
     <mat-icon style="vertical-align: middle; font-size: 18px;">account_circle</mat-icon>
-    {{ usuario?.nombre }} {{ usuario?.apellido }}
+    {{ usuario?.nombre }}
   </span>
   <button mat-icon-button style="color: white;" (click)="logout()">
     <mat-icon>logout</mat-icon>
@@ -25,77 +33,51 @@
 
   @if (!loading && matricula) {
     <div class="estudiante-header">
-      <div class="avatar">
-        <mat-icon>person</mat-icon>
-      </div>
+      <div class="avatar"><mat-icon>person</mat-icon></div>
       <div class="estudiante-info">
         <h1>{{ matricula.apellidos }} {{ matricula.nombres }}</h1>
         <p>{{ matricula.curso?.ramaArtesanal }} — {{ matricula.curso?.anioFormativo }}</p>
         <span class="cedula">CI: {{ matricula.cedula }}</span>
       </div>
-      <div class="promedio-badge">
-        <span class="promedio-label">Promedio General</span>
-        <span class="promedio-valor">{{ calcularPromedio() }}</span>
+      <div class="header-actions">
+        <div class="doc-card" (click)="descargarCertificado()">
+          <div class="doc-icon"><mat-icon>workspace_premium</mat-icon></div>
+          <div>
+            <h4>Certificado de Matrícula</h4>
+            <span class="download-hint">Click para descargar</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="cards-row">
-      <mat-card class="info-card">
-        <mat-card-content>
-          <h3 class="card-title"><mat-icon>phone</mat-icon> Contacto</h3>
-          <p><strong>Teléfono:</strong> {{ matricula.telefono || '-' }}</p>
-          <p><strong>Correo:</strong> {{ matricula.correoestudiante || '-' }}</p>
-          <p><strong>Ciudad:</strong> {{ matricula.ciudad || '-' }}</p>
-        </mat-card-content>
-      </mat-card>
+    <h2 class="section-title">Mis Calificaciones — Semestre {{ semestreSeleccionado }}</h2>
 
-      <mat-card class="info-card">
-        <mat-card-content>
-          <h3 class="card-title"><mat-icon>school</mat-icon> Datos Académicos</h3>
-          <p><strong>Especialidad:</strong> {{ matricula.especialidad || '-' }}</p>
-          <p><strong>Matrícula N°:</strong> {{ matricula.matriculaNo }}</p>
-          <p><strong>Unidad Educativa:</strong> {{ matricula.unidadeducativa || '-' }}</p>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="doc-card" (click)="descargarCertificado()">
-        <mat-card-content>
-          <div class="doc-icon">
-            <mat-icon>workspace_premium</mat-icon>
-          </div>
-          <h3>Certificado de Matrícula</h3>
-          <p>Descargar documento oficial</p>
-          <span class="download-hint">Click para descargar</span>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
-    <h2 class="section-title">Mis Calificaciones</h2>
-
-    @if (!matricula.notas?.length) {
+    @if (materiasConTareas.length === 0) {
       <div class="center">
         <mat-icon class="empty-icon">grade</mat-icon>
-        <p>Aún no tienes calificaciones registradas</p>
+        <p>No hay tareas registradas en el semestre {{ semestreSeleccionado }}</p>
       </div>
     }
 
-    @if (matricula.notas?.length > 0) {
-      <table mat-table [dataSource]="matricula.notas" class="notas-table mat-elevation-z2">
-        <ng-container matColumnDef="materia">
-          <th mat-header-cell *matHeaderCellDef>Materia</th>
-          <td mat-cell *matCellDef="let n">{{ n.materia?.nombre }}</td>
-        </ng-container>
-        <ng-container matColumnDef="nota">
-          <th mat-header-cell *matHeaderCellDef>Calificación</th>
-          <td mat-cell *matCellDef="let n">
-            <span class="nota-badge" [class.alta]="n.valor >= 8" [class.media]="n.valor >= 6 && n.valor < 8" [class.baja]="n.valor < 6">
-              {{ n.valor }}
-            </span>
-          </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
-        <tr mat-row *matRowDef="let row; columns: columnas;"></tr>
-      </table>
+    @if (materiasConTareas.length > 0) {
+      <div class="materias-list">
+        @for (materia of materiasConTareas; track materia.id) {
+          <div class="materia-row" (click)="verDetalleMateria(materia.id)">
+            <div class="materia-icon">
+              <mat-icon>menu_book</mat-icon>
+            </div>
+            <div class="materia-info">
+              <h3>{{ materia.nombre }}</h3>
+              <span class="tareas-count">{{ materia.tareas.length }} tareas registradas</span>
+            </div>
+            <div class="materia-promedio">
+              <span class="prom-label">Promedio</span>
+              <span class="prom-valor">{{ materia.promedio }}</span>
+            </div>
+            <mat-icon class="arrow">chevron_right</mat-icon>
+          </div>
+        }
+      </div>
     }
   }
 </div>

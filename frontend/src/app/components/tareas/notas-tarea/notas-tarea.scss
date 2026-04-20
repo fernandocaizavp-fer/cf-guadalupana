@@ -1,0 +1,110 @@
+.spacer { flex: 1 1 auto; }
+
+.content {
+  padding: 32px 48px;
+  background: #f0f2f8;
+  min-height: calc(100vh - 64px);
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  margin-top: 80px;
+}
+
+.tarea-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: white;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  border: 1px solid #e8eaf0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #555;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #c8a84b;
+  }
+}
+
+.table-wrapper {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1px solid #e8eaf0;
+}
+
+.notas-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    background: #1a2a5e;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 14px 16px;
+    text-align: left;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f2f8;
+    font-size: 14px;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f8f9fc; }
+  tr:hover td { background: #fff8e1 !important; }
+}
+
+.th-num { width: 50px; text-align: center !important; }
+.th-nombre { width: 280px; }
+.th-nota { width: 120px; }
+.th-obs { }
+
+.td-num { text-align: center; color: #666; font-weight: 600; }
+.td-nombre { font-weight: 500; color: #1a2a5e; }
+
+.nota-input {
+  width: 80px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  transition: border 0.2s;
+
+  &:focus { border-color: #1a2a5e; background: white; }
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button { opacity: 0; }
+}
+
+.obs-input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  background: transparent;
+  transition: border 0.2s;
+
+  &:focus { border-color: #1a2a5e; background: white; }
+}

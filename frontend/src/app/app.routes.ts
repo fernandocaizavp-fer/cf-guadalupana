@@ -11,6 +11,10 @@ import { AuthGuard } from './guards/auth.guard';
 import { DashboardProfesor } from './components/profesor/dashboard-profesor/dashboard-profesor';
 import { DashboardEstudiante } from './components/estudiante/dashboard-estudiante/dashboard-estudiante';
 import { GestionDocentes } from './components/usuarios/gestion-docentes/gestion-docentes';
+import { GestionarTareas } from './components/tareas/gestionar-tareas/gestionar-tareas';
+import { NotasTarea } from './components/tareas/notas-tarea/notas-tarea';
+import { DetalleMateria } from './components/estudiante/detalle-materia/detalle-materia';
+
 
 export const routes: Routes = [
   { path: '', component: Landing },
@@ -23,5 +27,9 @@ export const routes: Routes = [
   { path: 'matriculas/nueva', component: NuevaMatricula, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'profesor', component: DashboardProfesor, canActivate: [AuthGuard], data: { roles: ['PROFESOR'] } },
   { path: 'estudiante', component: DashboardEstudiante, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
+  { path: 'tareas/:materiaId', component: GestionarTareas, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
+  { path: 'tareas/:materiaId/notas/:tareaId', component: NotasTarea, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
   { path: 'docentes', component: GestionDocentes, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
+  { path: 'estudiante/materia/:materiaId/:semestre', component: DetalleMateria, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
+
 ];

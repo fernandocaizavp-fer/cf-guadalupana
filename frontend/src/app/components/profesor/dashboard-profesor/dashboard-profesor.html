@@ -14,7 +14,7 @@
 <div class="content">
   <div class="header">
     <h1>Mis Cursos Asignados</h1>
-    <p>Selecciona un curso para ingresar calificaciones</p>
+    <p>Selecciona una materia para gestionar tareas y calificaciones</p>
   </div>
 
   @if (loading) {
@@ -33,7 +33,7 @@
     <div class="cursos-list">
       @for (curso of cursosAgrupados; track curso.id) {
         <div class="curso-card">
-          <div class="curso-header" (click)="irANotas(curso.id)">
+          <div class="curso-header">
             <div class="curso-icon">
               <mat-icon>school</mat-icon>
             </div>
@@ -41,13 +41,13 @@
               <h3>{{ curso.ramaArtesanal }}</h3>
               <span class="periodo">{{ curso.anioFormativo }}</span>
             </div>
-            <mat-icon class="arrow">chevron_right</mat-icon>
           </div>
           <div class="materias-list">
             @for (materia of curso.materias; track materia.id) {
-              <div class="materia-item">
+              <div class="materia-item" (click)="irANotas(curso.id, materia.id)">
                 <mat-icon>menu_book</mat-icon>
                 <span>{{ materia.nombre }}</span>
+                <mat-icon class="arrow-small">chevron_right</mat-icon>
               </div>
             }
           </div>

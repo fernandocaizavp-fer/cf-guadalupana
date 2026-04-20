@@ -62,8 +62,12 @@ export class DashboardProfesor implements OnInit {
     });
   }
 
-  irANotas(cursoId: number) {
-    this.router.navigate(['/cursos', cursoId, 'notas']);
+  irANotas(cursoId: number, materiaId?: number) {
+    if (materiaId) {
+      this.router.navigate(['/tareas', materiaId]);
+    } else {
+      this.router.navigate(['/cursos', cursoId, 'notas']);
+    }
   }
 
   logout() {

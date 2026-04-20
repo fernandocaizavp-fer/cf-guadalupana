@@ -1,96 +1,39 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 
-// Obtener notas de un curso con todos sus estudiantes
-export const getNotasCurso = async (req: Request, res: Response) => {
-  const { cursoId } = req.params;
-  try {
-    const matriculas = await prisma.matricula.findMany({
-      where: { cursoId: Number(cursoId) },
-      include: {
-        notas: {
-          include: { materia: true }
-        }
-      },
-      orderBy: { apellidos: 'asc' }
-    });
-
-    const materias = await prisma.materia.findMany({
-      where: { cursoId: Number(cursoId) },
-      orderBy: { id: 'asc' }
-    });
-
-    res.json({ matriculas, materias });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener notas' });
-  }
+const formatearNota = (valor: number | string): string => {
+  if (valor === '' || valor === null || valor === undefined) return '';
+  const num = Number(valor);
+  if (isNaN(num)) return '';
+  return num % 1 === 0 ? String(num) : num.toFixed(1);
 };
 
-// Guardar o actualizar una nota
-export const guardarNota = async (req: Request, res: Response) => {
-  const { matriculaId, materiaId, valor } = req.body;
-  try {
-    const nota = await prisma.nota.upsert({
-      where: {
-        materiaId_matriculaId: {
-          materiaId: Number(materiaId),
-          matriculaId: Number(matriculaId)
-        }
-      },
-      update: { valor: Number(valor) },
-      create: {
-        materiaId: Number(materiaId),
-        matriculaId: Number(matriculaId),
-        valor: Number(valor)
-      }
-    });
-    res.json({ message: 'Nota guardada', nota });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al guardar nota' });
-  }
-};
-
-// Guardar múltiples notas a la vez
-export const guardarNotasMasivo = async (req: Request, res: Response) => {
-  const { notas } = req.body;
-  // notas: [{ matriculaId, materiaId, valor }]
-  try {
-    const resultados = await Promise.all(
-      notas.map((n: any) =>
-        prisma.nota.upsert({
-          where: {
-            materiaId_matriculaId: {
-              materiaId: Number(n.materiaId),
-              matriculaId: Number(n.matriculaId)
-            }
-          },
-          update: { valor: Number(n.valor) },
-          create: {
-            materiaId: Number(n.materiaId),
-            matriculaId: Number(n.matriculaId),
-            valor: Number(n.valor)
-          }
-        })
-      )
-    );
-    res.json({ message: 'Notas guardadas', total: resultados.length });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al guardar notas' });
-  }
-};
-
-// Descargar AL14 Word
 export const descargarAL14 = async (req: Request, res: Response) => {
   const { cursoId } = req.params;
-  const { lugarFecha } = req.query;
+  const { lugarFecha, semestre } = req.query;
   try {
     const curso = await prisma.curso.findUnique({
       where: { id: Number(cursoId) },
       include: {
-        materias: { orderBy: { id: 'asc' } },
+        materias: {
+          orderBy: { id: 'asc' },
+          include: {
+            tareas: {
+              where: semestre ? { semestre: Number(semestre) } : undefined,
+              orderBy: { fecha: 'asc' }
+            }
+          }
+        },
         matriculas: {
           include: {
-            notas: { include: { materia: true } }
+            notasTarea: {
+              include: {
+                tarea: { include: { materia: true } }
+              },
+              where: semestre ? {
+                tarea: { semestre: Number(semestre) }
+              } : undefined
+            }
           },
           orderBy: { apellidos: 'asc' }
         }
@@ -113,33 +56,37 @@ export const descargarAL14 = async (req: Request, res: Response) => {
       delimiters: { start: '{', end: '}' }
     });
 
-    // Armar datos de estudiantes
     const estudiantes = curso.matriculas.map((m, index) => {
-      const getNota = (nombreMateria: string) => {
-        const nota = m.notas.find(n =>
-          n.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase())
+      const getPromedioPorMateria = (nombreMateria: string): string => {
+        const notasMateria = m.notasTarea.filter(n =>
+          n.tarea.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase()) &&
+          n.valor !== null
         );
-        return nota ? String(nota.valor) : '';
+        if (notasMateria.length === 0) return '';
+        const suma = notasMateria.reduce((a, b) => a + (b.valor || 0), 0);
+        return formatearNota(suma / notasMateria.length);
       };
 
-      const todasNotas = m.notas.map(n => n.valor);
-      const promedio = todasNotas.length > 0
-        ? (todasNotas.reduce((a, b) => a + b, 0) / todasNotas.length).toFixed(2)
+      const todasNotas = m.notasTarea
+        .filter(n => n.valor !== null)
+        .map(n => n.valor || 0);
+      const promedioGeneral = todasNotas.length > 0
+        ? formatearNota(todasNotas.reduce((a, b) => a + b, 0) / todasNotas.length)
         : '';
 
       return {
         num: String(index + 1),
         nombres: `${m.apellidos} ${m.nombres}`,
-        teoria: getNota('Teoría'),
-        practica: getNota('Práctica'),
-        administracion: getNota('Administración'),
-        contabilidad: getNota('Contabilidad'),
-        tics: getNota('TICs'),
-        ingles: getNota('Inglés'),
-        desarrollo: getNota('Desarrollo Humano'),
-        legislacion: getNota('Legislación'),
-        disciplina: getNota('Disciplina'),
-        promedio,
+        teoria: getPromedioPorMateria('Teoría'),
+        practica: getPromedioPorMateria('Práctica'),
+        administracion: getPromedioPorMateria('Administración'),
+        contabilidad: getPromedioPorMateria('Contabilidad'),
+        tics: getPromedioPorMateria('TICs'),
+        ingles: getPromedioPorMateria('Inglés'),
+        desarrollo: getPromedioPorMateria('Desarrollo Humano'),
+        legislacion: getPromedioPorMateria('Legislación'),
+        disciplina: getPromedioPorMateria('Disciplina'),
+        promedio: promedioGeneral,
         observaciones: ''
       };
     });
@@ -156,7 +103,8 @@ export const descargarAL14 = async (req: Request, res: Response) => {
     });
 
     const buffer = doc.getZip().generate({ type: 'nodebuffer' });
-    res.setHeader('Content-Disposition', `attachment; filename=AL14_${curso.ramaArtesanal}.docx`);
+    const semestreLabel = semestre ? `_semestre${semestre}` : '';
+    res.setHeader('Content-Disposition', `attachment; filename=AL14_${curso.ramaArtesanal}${semestreLabel}.docx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.send(buffer);
   } catch (error) {

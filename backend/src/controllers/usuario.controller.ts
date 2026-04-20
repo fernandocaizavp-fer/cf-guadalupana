@@ -84,7 +84,11 @@ export const getPerfilEstudiante = async (req: Request, res: Response) => {
       where: { usuarioId: Number(usuarioId) },
       include: {
         curso: { include: { materias: true } },
-        notas: { include: { materia: true } }
+        notasTarea: {
+          include: {
+            tarea: { include: { materia: true } }
+          }
+        }
       }
     });
     if (!matricula) return res.status(404).json({ error: 'Matrícula no encontrada' });

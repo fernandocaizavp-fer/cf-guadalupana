@@ -1,17 +1,49 @@
 .spacer { flex: 1 1 auto; }
 
+/* ===== TABS ===== */
+.semestre-tabs {
+  display: flex;
+  gap: 8px;
+  margin-right: 16px;
+}
+
+.tab-btn {
+  padding: 6px 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &.active {
+    background: #c8a84b;
+    border-color: #c8a84b;
+    color: #1a2a5e;
+  }
+
+  &:hover:not(.active) {
+    border-color: white;
+    color: white;
+  }
+}
+
+/* ===== CONTENIDO ===== */
 .content {
-  padding: 40px 48px;
+  padding: 32px 48px;
   background: #f0f2f8;
   min-height: calc(100vh - 64px);
 }
 
+/* ===== VACÍO ===== */
 .center {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 80px;
+  margin-top: 60px;
   gap: 12px;
   color: #aaa;
 
@@ -23,21 +55,22 @@
   }
 }
 
+/* ===== HEADER ESTUDIANTE ===== */
 .estudiante-header {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   background: white;
   border-radius: 16px;
-  padding: 28px 32px;
-  margin-bottom: 24px;
+  padding: 24px 28px;
+  margin-bottom: 28px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   border: 1px solid #e8eaf0;
 }
 
 .avatar {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
   display: flex;
@@ -45,14 +78,29 @@
   justify-content: center;
   flex-shrink: 0;
 
-  mat-icon { color: white; font-size: 36px; width: 36px; height: 36px; }
+  mat-icon {
+    color: white;
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
 }
 
 .estudiante-info {
   flex: 1;
 
-  h1 { font-size: 22px; font-weight: 800; color: #1a2a5e; margin: 0 0 4px; }
-  p { font-size: 14px; color: #888; margin: 0 0 6px; }
+  h1 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1a2a5e;
+    margin: 0 0 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #888;
+    margin: 0 0 6px;
+  }
 }
 
 .cedula {
@@ -60,109 +108,70 @@
   color: #1a2a5e;
   font-size: 12px;
   font-weight: 600;
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
 }
 
-.promedio-badge {
-  text-align: center;
-  background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
-  border-radius: 14px;
-  padding: 16px 28px;
-
-  .promedio-label {
-    display: block;
-    font-size: 11px;
-    color: rgba(255,255,255,0.6);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-
-  .promedio-valor {
-    display: block;
-    font-size: 32px;
-    font-weight: 900;
-    color: #c8a84b;
-  }
+.header-actions {
+  flex-shrink: 0;
 }
 
-.cards-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 32px;
-}
-
-.info-card {
-  border-radius: 14px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
-  border: 1px solid #e8eaf0;
-
-  h3.card-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #1a2a5e;
-    margin: 0 0 12px;
-
-    mat-icon { font-size: 18px; width: 18px; height: 18px; color: #c8a84b; }
-  }
-
-  p {
-    font-size: 13px;
-    color: #666;
-    margin: 4px 0;
-  }
-}
-
+/* ===== DOCUMENTO ===== */
 .doc-card {
-  border-radius: 14px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8f9fc;
   border: 1px solid #e8eaf0;
+  border-radius: 12px;
+  padding: 14px 18px;
   cursor: pointer;
-  text-align: center;
   transition: all 0.25s;
 
   &:hover {
     border-color: #c8a84b;
-    box-shadow: 0 8px 24px rgba(200,168,75,0.2) !important;
-    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(200,168,75,0.2);
   }
 
-  .doc-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #c8a84b, #e0c060);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 12px;
-
-    mat-icon { color: #1a2a5e; font-size: 28px; width: 28px; height: 28px; }
-  }
-
-  h3 { font-size: 15px; font-weight: 700; color: #1a2a5e; margin: 0 0 4px; }
-  p { font-size: 12px; color: #888; margin: 0 0 8px; }
-
-  .download-hint {
-    font-size: 11px;
-    color: #c8a84b;
-    font-weight: 600;
-    letter-spacing: 1px;
+  h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a2a5e;
+    margin: 0 0 2px;
   }
 }
 
+.doc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #c8a84b, #e0c060);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    color: #1a2a5e;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.download-hint {
+  font-size: 11px;
+  color: #c8a84b;
+  font-weight: 600;
+}
+
+/* ===== TÍTULO ===== */
 .section-title {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: #1a2a5e;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -176,26 +185,95 @@
   }
 }
 
-.notas-table {
-  width: 100%;
-  max-width: 500px;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid #e8eaf0;
+/* ===================================================== */
+/* ===== NUEVA SECCIÓN MATERIAS (LISTA MODERNA) ===== */
+/* ===================================================== */
 
-  ::ng-deep .mat-mdc-header-row { background: #1a2a5e; }
-  ::ng-deep .mat-mdc-header-cell { color: white !important; font-weight: 600; }
-  ::ng-deep .mat-mdc-cell { padding: 12px 16px !important; }
+.materias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 800px;
 }
 
-.nota-badge {
-  display: inline-block;
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 14px;
+.materia-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: white;
+  border-radius: 14px;
+  padding: 18px 24px;
+  cursor: pointer;
+  border: 1px solid #e8eaf0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: all 0.25s;
 
-  &.alta { background: #e8f5e9; color: #2e7d32; }
-  &.media { background: #fff8e1; color: #f57f17; }
-  &.baja { background: #ffebee; color: #c62828; }
+  &:hover {
+    border-color: #c8a84b;
+    box-shadow: 0 6px 20px rgba(200,168,75,0.15);
+    transform: translateX(4px);
+
+    .arrow { color: #c8a84b; }
+  }
+}
+
+.materia-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    color: white;
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.materia-info {
+  flex: 1;
+
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a2a5e;
+    margin: 0 0 4px;
+  }
+}
+
+.tareas-count {
+  font-size: 12px;
+  color: #999;
+}
+
+.materia-promedio {
+  text-align: center;
+  background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
+  border-radius: 10px;
+  padding: 10px 20px;
+
+  .prom-label {
+    display: block;
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .prom-valor {
+    display: block;
+    font-size: 22px;
+    font-weight: 900;
+    color: #c8a84b;
+  }
+}
+
+.arrow {
+  color: #ddd;
+  transition: color 0.2s;
 }

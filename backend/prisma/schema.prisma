@@ -22,8 +22,8 @@ model Usuario {
   rol       Rol        @default(ESTUDIANTE)
   createdAt DateTime   @default(now())
 
-  matricula  Matricula?
-  materias   Materia[]
+  matricula Matricula?
+  materias  Materia[]
 }
 
 model Curso {
@@ -47,7 +47,7 @@ model Materia {
   profesorId Int?
   profesor   Usuario? @relation(fields: [profesorId], references: [id], onDelete: SetNull)
 
-  notas Nota[]
+  tareas Tarea[]
 }
 
 model Matricula {
@@ -96,16 +96,31 @@ model Matricula {
   curso     Curso   @relation(fields: [cursoId], references: [id])
   usuarioId Int     @unique
   usuario   Usuario @relation(fields: [usuarioId], references: [id])
-  notas     Nota[]  
+
+  notasTarea NotaTarea[]
 }
 
-model Nota {
+model Tarea {
   id          Int      @id @default(autoincrement())
-  valor       Float
+  nombre      String
+  descripcion String?
+  fecha       DateTime
+  semestre    Int
   materiaId   Int
   materia     Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  notas NotaTarea[]
+}
+
+model NotaTarea {
+  id          Int       @id @default(autoincrement())
+  valor       Float?
+  observacion String?
+  tareaId     Int
+  tarea       Tarea     @relation(fields: [tareaId], references: [id], onDelete: Cascade)
   matriculaId Int
   matricula   Matricula @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
 
-  @@unique([materiaId, matriculaId])
+  @@unique([tareaId, matriculaId])
 }

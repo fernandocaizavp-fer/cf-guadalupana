@@ -1,0 +1,166 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDividerModule } from '@angular/material/divider';
+import { DatePipe } from '@angular/common';
+import { TareaService } from '../../../services/tarea';
+import { CursoService } from '../../../services/curso';
+import { NotaService } from '../../../services/nota';
+
+@Component({
+  selector: 'app-gestionar-tareas',
+  imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
+    MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
+    MatProgressSpinnerModule, MatSnackBarModule, MatDividerModule, DatePipe],
+  templateUrl: './gestionar-tareas.html',
+  styleUrl: './gestionar-tareas.scss'
+})
+export class GestionarTareas implements OnInit {
+  materiaId = 0;
+  materia: any = null;
+  tareas: any[] = [];
+  loading = true;
+  guardando = false;
+  semestreSeleccionado = 1;
+
+  nuevaTarea = {
+    nombre: '',
+    descripcion: '',
+    fecha: '',
+    semestre: 1
+  };
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private tareaService: TareaService,
+    private cursoService: CursoService,
+    private snackBar: MatSnackBar,
+    private notaService: NotaService,
+    private cdr: ChangeDetectorRef
+    
+  ) {}
+
+  ngOnInit() {
+    this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
+    this.cargarTareas();
+  }
+
+  cargarTareas() {
+    this.loading = true;
+    this.tareaService.getTareasPorMateria(this.materiaId, this.semestreSeleccionado).subscribe({
+      next: (tareas) => {
+        this.tareas = tareas;
+        if (tareas.length > 0) {
+          this.materia = tareas[0].materia;
+        }
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  descargarAL14() {
+    const lugarFecha = prompt('Ingresa el lugar y fecha (Ej: Riobamba, 20 de abril del 2026)');
+    if (!lugarFecha) return;
+    
+    // Necesitamos el cursoId
+    this.tareaService.getTareasPorMateria(this.materiaId).subscribe({
+      next: (tareas) => {
+        if (tareas.length === 0) {
+          this.snackBar.open('No hay tareas para generar el reporte', 'OK', { duration: 3000 });
+          return;
+        }
+        const cursoId = tareas[0].materia?.curso?.id;
+        if (!cursoId) return;
+
+        this.tareaService.descargarAL14(cursoId, lugarFecha, this.semestreSeleccionado).subscribe({
+          next: (blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AL14_semestre${this.semestreSeleccionado}.docx`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+          },
+          error: () => this.snackBar.open('Error al descargar AL14', 'OK', { duration: 3000 })
+        });
+      }
+    });
+  }
+
+  cambiarSemestre(semestre: number) {
+    this.semestreSeleccionado = semestre;
+    this.cargarTareas();
+  }
+
+  crearTarea() {
+    if (!this.nuevaTarea.nombre || !this.nuevaTarea.fecha) {
+      this.snackBar.open('Nombre y fecha son obligatorios', 'OK', { duration: 3000 });
+      return;
+    }
+    this.guardando = true;
+    this.tareaService.crearTarea({
+      ...this.nuevaTarea,
+      semestre: this.semestreSeleccionado,
+      materiaId: this.materiaId
+    }).subscribe({
+      next: () => {
+        this.snackBar.open('Tarea creada exitosamente', 'OK', { duration: 3000 });
+        this.nuevaTarea = { nombre: '', descripcion: '', fecha: '', semestre: 1 };
+        this.guardando = false;
+        this.cargarTareas();
+      },
+      error: () => {
+        this.guardando = false;
+        this.snackBar.open('Error al crear tarea', 'OK', { duration: 3000 });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  irANotas(tareaId: number) {
+    this.router.navigate(['/tareas', this.materiaId, 'notas', tareaId]);
+  }
+
+  eliminarTarea(id: number) {
+    if (confirm('¿Eliminar esta tarea y todas sus notas?')) {
+      this.tareaService.eliminarTarea(id).subscribe({
+        next: () => {
+          this.snackBar.open('Tarea eliminada', 'OK', { duration: 3000 });
+          this.cargarTareas();
+        },
+        error: () => this.snackBar.open('Error al eliminar', 'OK', { duration: 3000 })
+      });
+    }
+  }
+
+  calcularPromedioTarea(tarea: any): string {
+    const notas = tarea.notas?.filter((n: any) => n.valor !== null) || [];
+    if (notas.length === 0) return '-';
+    const suma = notas.reduce((a: number, b: any) => a + b.valor, 0);
+    return (suma / notas.length).toFixed(2);
+  }
+
+  volver() {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (usuario.rol === 'PROFESOR') {
+      this.router.navigate(['/profesor']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+}
