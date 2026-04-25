@@ -48,6 +48,7 @@ model Materia {
   profesor   Usuario? @relation(fields: [profesorId], references: [id], onDelete: SetNull)
 
   tareas Tarea[]
+  supletorios Supletorio[]
 }
 
 model Matricula {
@@ -98,6 +99,7 @@ model Matricula {
   usuario   Usuario @relation(fields: [usuarioId], references: [id])
 
   notasTarea NotaTarea[]
+  supletorios Supletorio[]
 }
 
 model Tarea {
@@ -111,6 +113,17 @@ model Tarea {
   createdAt   DateTime @default(now())
 
   notas NotaTarea[]
+}
+
+model Supletorio {
+  id          Int       @id @default(autoincrement())
+  valor       Float?
+  materiaId   Int
+  materia     Materia   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  matriculaId Int
+  matricula   Matricula @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
+
+  @@unique([materiaId, matriculaId])
 }
 
 model NotaTarea {

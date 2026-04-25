@@ -205,6 +205,45 @@
 }
 
 
+.materia-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f0f2f8;
+    border-color: #e8eaf0;
+  }
+}
+
+.materia-item-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+
+  span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a2a5e;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #c8a84b;
+  }
+}
+
+.materia-acciones {
+  display: flex;
+  gap: 8px;
+}
 
 .materia-item {
   display: flex;

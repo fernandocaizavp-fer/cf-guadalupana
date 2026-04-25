@@ -8,6 +8,8 @@ import documentoRoutes from './routes/documento.routes';
 import notaRoutes from './routes/nota.routes';
 import usuarioRoutes from './routes/usuario.routes';
 import tareaRoutes from './routes/tarea.routes';
+import suplетorioRoutes from './routes/supletorio.routes';
+
 
 
 dotenv.config();
@@ -25,6 +27,9 @@ app.use('/api/documentos', documentoRoutes);
 app.use('/api/notas', notaRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/tareas', tareaRoutes);
+app.use('/api/supletorios', suplетorioRoutes);
+
+
 
 
 app.get('/', (req, res) => {

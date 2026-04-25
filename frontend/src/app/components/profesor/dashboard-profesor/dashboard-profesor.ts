@@ -70,6 +70,10 @@ export class DashboardProfesor implements OnInit {
     }
   }
 
+  irASupletorio(materiaId: number) {
+  this.router.navigate(['/supletorios/materia', materiaId]);
+  }
+
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);

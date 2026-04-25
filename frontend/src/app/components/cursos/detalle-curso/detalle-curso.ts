@@ -127,6 +127,10 @@ export class DetalleCurso implements OnInit {
     this.router.navigate(['/cursos', this.curso.id, 'notas']);
   }
 
+  irACuadroFinal() {
+    this.router.navigate(['/supletorios', this.curso.id]);
+  }
+
   editarMatricula(matricula: any) {
     const dialogRef = this.dialog.open(EditarMatriculaDialog, {
       width: '900px',
@@ -177,6 +181,8 @@ export class DetalleCurso implements OnInit {
     });
   }
 
+
+  
   descargarCertificado(matricula: any) {
     this.descargando = matricula.id;
     this.matriculaService.descargarCertificado(matricula.id).subscribe({

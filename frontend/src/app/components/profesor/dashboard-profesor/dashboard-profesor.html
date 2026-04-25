@@ -44,10 +44,21 @@
           </div>
           <div class="materias-list">
             @for (materia of curso.materias; track materia.id) {
-              <div class="materia-item" (click)="irANotas(curso.id, materia.id)">
-                <mat-icon>menu_book</mat-icon>
-                <span>{{ materia.nombre }}</span>
-                <mat-icon class="arrow-small">chevron_right</mat-icon>
+              <div class="materia-row">
+                <div class="materia-item-info">
+                  <mat-icon>menu_book</mat-icon>
+                  <span>{{ materia.nombre }}</span>
+                </div>
+                <div class="materia-acciones">
+                  <button mat-stroked-button (click)="irANotas(curso.id, materia.id)"
+                    style="font-size: 12px; height: 32px; line-height: 32px;">
+                    <mat-icon style="font-size: 16px;">assignment</mat-icon> Tareas
+                  </button>
+                  <button mat-stroked-button (click)="irASupletorio(materia.id)"
+                    style="font-size: 12px; height: 32px; line-height: 32px; color: #c8a84b; border-color: #c8a84b;">
+                    <mat-icon style="font-size: 16px;">grade</mat-icon> Supletorio
+                  </button>
+                </div>
               </div>
             }
           </div>

@@ -14,6 +14,10 @@ import { GestionDocentes } from './components/usuarios/gestion-docentes/gestion-
 import { GestionarTareas } from './components/tareas/gestionar-tareas/gestionar-tareas';
 import { NotasTarea } from './components/tareas/notas-tarea/notas-tarea';
 import { DetalleMateria } from './components/estudiante/detalle-materia/detalle-materia';
+import { IngresarSupletorios } from './components/supletorios/ingresar-supletorios/ingresar-supletorios';
+import { SupletorioDocente } from './components/supletorios/supletorio-docente/supletorio-docente';
+
+
 
 
 export const routes: Routes = [
@@ -31,5 +35,7 @@ export const routes: Routes = [
   { path: 'tareas/:materiaId/notas/:tareaId', component: NotasTarea, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
   { path: 'docentes', component: GestionDocentes, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'estudiante/materia/:materiaId/:semestre', component: DetalleMateria, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
+  { path: 'supletorios/:cursoId', component: IngresarSupletorios, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
+  { path: 'supletorios/materia/:materiaId', component: SupletorioDocente, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
 
 ];
