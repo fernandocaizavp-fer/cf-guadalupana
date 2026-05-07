@@ -7,10 +7,10 @@
 
 <div class="content">
 
-  <!-- CREAR DOCENTE -->
+  <!-- CREAR / EDITAR DOCENTE -->
   <mat-card class="section-card">
     <mat-card-header>
-      <mat-card-title>Nuevo Docente</mat-card-title>
+      <mat-card-title>{{ editando ? 'Editar Docente' : 'Nuevo Docente' }}</mat-card-title>
     </mat-card-header>
     <mat-card-content>
       <div class="row">
@@ -27,15 +27,23 @@
           <input matInput type="email" [(ngModel)]="nuevoDocente.correo">
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Contraseña</mat-label>
-          <input matInput type="password" [(ngModel)]="nuevoDocente.password">
+          <mat-label>Cédula</mat-label>
+          <input matInput [(ngModel)]="nuevoDocente.cedula">
+          <mat-hint>La cédula será la contraseña inicial</mat-hint>
         </mat-form-field>
       </div>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-raised-button style="background: linear-gradient(135deg, #1a2a5e, #2a4f9f); color: white;"
+      @if (editando) {
+        <button mat-stroked-button (click)="cancelarEdicion()">
+          <mat-icon>close</mat-icon> CANCELAR
+        </button>
+      }
+      <button mat-raised-button
+        style="background: linear-gradient(135deg, #1a2a5e, #2a4f9f); color: white;"
         (click)="crearDocente()" [disabled]="guardando">
-        <mat-icon>person_add</mat-icon> CREAR DOCENTE
+        <mat-icon>{{ editando ? 'save' : 'person_add' }}</mat-icon>
+        {{ guardando ? 'Guardando...' : (editando ? 'GUARDAR CAMBIOS' : 'CREAR DOCENTE') }}
       </button>
     </mat-card-actions>
   </mat-card>
@@ -74,9 +82,54 @@
       </div>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-raised-button style="background: linear-gradient(135deg, #c8a84b, #e0c060); color: #1a2a5e; font-weight: 700;"
+      <button mat-raised-button
+        style="background: linear-gradient(135deg, #c8a84b, #e0c060); color: #1a2a5e; font-weight: 700;"
         (click)="asignarProfesor()">
         <mat-icon>assignment_ind</mat-icon> ASIGNAR
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+
+  <!-- ASIGNAR PROFESOR PRINCIPAL -->
+  <mat-card class="section-card">
+    <mat-card-header>
+      <mat-card-title>Asignar Profesor Principal de Práctica/Teoría</mat-card-title>
+      <mat-card-subtitle>Su cédula aparecerá en los documentos oficiales</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="row">
+        <mat-form-field appearance="outline">
+          <mat-label>Curso</mat-label>
+          <mat-select [(ngModel)]="asignacionPrincipal.cursoId" (ngModelChange)="onCursoPrincipalChange()">
+            @for (curso of cursos; track curso.id) {
+              <mat-option [value]="curso.id">{{ curso.ramaArtesanal }} - {{ curso.anioFormativo }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Materia</mat-label>
+          <mat-select [(ngModel)]="asignacionPrincipal.materiaId" [disabled]="!asignacionPrincipal.cursoId">
+            @for (materia of materiasPrincipal; track materia.id) {
+              <mat-option [value]="materia.id">{{ materia.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Docente Principal</mat-label>
+          <mat-select [(ngModel)]="asignacionPrincipal.profesorId">
+            @for (docente of docentes; track docente.id) {
+              <mat-option [value]="docente.id">{{ docente.nombre }} {{ docente.apellido }} — {{ docente.cedula }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button
+        style="background: linear-gradient(135deg, #2e7d32, #43a047); color: white; font-weight: 700;"
+        (click)="asignarProfesorPrincipal()">
+        <mat-icon>star</mat-icon> ASIGNAR PROFESOR PRINCIPAL
       </button>
     </mat-card-actions>
   </mat-card>
@@ -109,9 +162,16 @@
             <th mat-header-cell *matHeaderCellDef>Correo</th>
             <td mat-cell *matCellDef="let d">{{ d.correo }}</td>
           </ng-container>
+          <ng-container matColumnDef="cedula">
+            <th mat-header-cell *matHeaderCellDef>Cédula</th>
+            <td mat-cell *matCellDef="let d">{{ d.cedula || '—' }}</td>
+          </ng-container>
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef>Acciones</th>
             <td mat-cell *matCellDef="let d">
+              <button mat-icon-button style="color: #1a2a5e;" (click)="editarDocente(d)" title="Editar">
+                <mat-icon>edit</mat-icon>
+              </button>
               <button mat-icon-button color="warn" (click)="eliminarDocente(d.id)" title="Eliminar">
                 <mat-icon>delete</mat-icon>
               </button>
