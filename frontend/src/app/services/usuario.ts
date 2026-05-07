@@ -29,6 +29,12 @@ export class UsuarioService {
     });
   }
 
+  actualizarDocente(id: number, datos: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/usuarios/docentes/${id}`, datos, {
+      headers: this.getHeaders()
+    });
+  }
+
   eliminarDocente(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/usuarios/docentes/${id}`, {
       headers: this.getHeaders()
@@ -40,6 +46,18 @@ export class UsuarioService {
       headers: this.getHeaders()
     });
   }
+
+  asignarProfesorPrincipal(cursoId: number, profesorId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usuarios/asignar-profesor-principal`, { cursoId, profesorId }, {
+      headers: this.getHeaders()
+    });
+  }
+
+  asignarProfesorPrincipalMateria(materiaId: number, profesorId: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/usuarios/asignar-profesor-principal-materia`, { materiaId, profesorId }, {
+    headers: this.getHeaders()
+  });
+}
 
   getMateriasCurso(cursoId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/cursos/${cursoId}`, {

@@ -16,6 +16,13 @@ import { NotasTarea } from './components/tareas/notas-tarea/notas-tarea';
 import { DetalleMateria } from './components/estudiante/detalle-materia/detalle-materia';
 import { IngresarSupletorios } from './components/supletorios/ingresar-supletorios/ingresar-supletorios';
 import { SupletorioDocente } from './components/supletorios/supletorio-docente/supletorio-docente';
+import { RegistrarAsistencia } from './components/asistencia/registrar-asistencia/registrar-asistencia';
+import { Reportes } from './components/reportes/reportes/reportes';
+import { GestionarAnuncios } from './components/anuncios/gestionar-anuncios/gestionar-anuncios';
+import { SubmateriasMateria } from './components/estudiante/submaterias-materia/submaterias-materia';
+import { IngresarDisciplina } from './components/disciplina/ingresar-disciplina/ingresar-disciplina';
+
+
 
 
 
@@ -37,5 +44,12 @@ export const routes: Routes = [
   { path: 'estudiante/materia/:materiaId/:semestre', component: DetalleMateria, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
   { path: 'supletorios/:cursoId', component: IngresarSupletorios, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'supletorios/materia/:materiaId', component: SupletorioDocente, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
+  { path: 'asistencia/materia/:materiaId', component: RegistrarAsistencia, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
+  { path: 'reportes', component: Reportes, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
+  { path: 'anuncios', component: GestionarAnuncios, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
+  { path: 'estudiante/submaterias/:materiaId/:semestre', component: SubmateriasMateria, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
+  { path: 'disciplina/materia/:materiaId', component: IngresarDisciplina, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
+
+
 
 ];

@@ -29,6 +29,18 @@ export class CursoService {
     });
   }
 
+agregarSubmateria(cursoId: number, nombre: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/cursos/submaterias`, { cursoId, nombre }, {
+    headers: this.getHeaders()
+  });
+}
+
+    eliminarSubmateria(id: number): Observable<any> {
+      return this.http.delete(`${this.apiUrl}/cursos/submaterias/${id}`, {
+        headers: this.getHeaders()
+      });
+    }
+
   crearCurso(datos: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/cursos`, datos, {
       headers: this.getHeaders()
