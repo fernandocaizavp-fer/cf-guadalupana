@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import authRoutes from './routes/auth.routes';
 import cursoRoutes from './routes/curso.routes';
 import matriculaRoutes from './routes/matricula.routes';
@@ -9,6 +10,9 @@ import notaRoutes from './routes/nota.routes';
 import usuarioRoutes from './routes/usuario.routes';
 import tareaRoutes from './routes/tarea.routes';
 import suplетorioRoutes from './routes/supletorio.routes';
+import asistenciaRoutes from './routes/asistencia.routes';
+import anuncioRoutes from './routes/anuncio.routes';
+import disciplinaRoutes from './routes/disciplina.routes';
 
 
 
@@ -18,7 +22,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
+// Servir imágenes estáticas
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/cursos', cursoRoutes);
@@ -28,8 +33,9 @@ app.use('/api/notas', notaRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/tareas', tareaRoutes);
 app.use('/api/supletorios', suplетorioRoutes);
-
-
+app.use('/api/asistencias', asistenciaRoutes);
+app.use('/api/anuncios', anuncioRoutes);
+app.use('/api/disciplina', disciplinaRoutes);
 
 
 app.get('/', (req, res) => {

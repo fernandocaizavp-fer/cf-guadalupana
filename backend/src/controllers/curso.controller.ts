@@ -10,8 +10,7 @@ const MATERIAS_DEFAULT = [
   'Inglés Técnico',
   'Desarrollo Humano y Ética Profesional',
   'Elaboración de Proyectos Productivos y/o Servicios',
-  'Legislación',
-  'Promedio General'
+  'Legislación'
 ];
 
 export const crearCurso = async (req: Request, res: Response) => {
@@ -50,7 +49,16 @@ export const obtenerCurso = async (req: Request, res: Response) => {
   try {
     const curso = await prisma.curso.findUnique({
       where: { id: Number(req.params.id) },
-      include: { materias: true, matriculas: true }
+      include: {
+        materias: {
+          include: {
+            profesor: { select: { id: true, nombre: true, apellido: true, cedula: true } },
+            profesorPrincipal: { select: { id: true, nombre: true, apellido: true, cedula: true } }
+          },
+          orderBy: { id: 'asc' }
+        },
+        matriculas: true
+      }
     });
     if (!curso) return res.status(404).json({ error: 'Curso no encontrado' });
     res.json(curso);
@@ -65,5 +73,60 @@ export const eliminarCurso = async (req: Request, res: Response) => {
     res.json({ message: 'Curso eliminado' });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar curso' });
+  }
+};
+
+// Agregar submateria a Práctica o Teoría
+export const agregarSubmateria = async (req: Request, res: Response) => {
+  const { cursoId, nombre } = req.body;
+  try {
+    const [practica, teoria] = await prisma.$transaction([
+      prisma.materia.create({
+        data: { nombre, cursoId: Number(cursoId), esSubmateria: true, materiaParent: 'Práctica' }
+      }),
+      prisma.materia.create({
+        data: { nombre, cursoId: Number(cursoId), esSubmateria: true, materiaParent: 'Teoría' }
+      })
+    ]);
+    res.json({ message: 'Submateria creada en Práctica y Teoría', practica, teoria });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear submateria' });
+  }
+};
+
+// Eliminar submateria
+export const eliminarSubmateria = async (req: Request, res: Response) => {
+  try {
+    const materia = await prisma.materia.findUnique({
+      where: { id: Number(req.params.id) }
+    });
+    if (!materia?.esSubmateria) {
+      return res.status(400).json({ error: 'Solo se pueden eliminar submaterias' });
+    }
+    await prisma.materia.delete({ where: { id: Number(req.params.id) } });
+    res.json({ message: 'Submateria eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar submateria' });
+  }
+};
+
+// Obtener submaterias de un curso por parent
+export const getSubmaterias = async (req: Request, res: Response) => {
+  const { cursoId, parent } = req.params;
+  try {
+    const submaterias = await prisma.materia.findMany({
+      where: {
+        cursoId: Number(cursoId),
+        esSubmateria: true,
+        materiaParent: String(parent)
+      },
+      include: {
+        profesor: { select: { id: true, nombre: true, apellido: true, cedula: true } }
+      },
+      orderBy: { id: 'asc' }
+    });
+    res.json(submaterias);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener submaterias' });
   }
 };

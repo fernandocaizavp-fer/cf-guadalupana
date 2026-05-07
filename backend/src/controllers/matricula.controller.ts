@@ -4,9 +4,10 @@ import prisma from '../lib/prisma';
 
 export const crearMatricula = async (req: Request, res: Response) => {
   const {
-    matriculaNo, tomo, pagina, apellidos, nombres, cedula,
+    tomo, pagina, apellidos, nombres, cedula, sexo,
     fechaNacimiento, pais, provincia, canton, parroquia, ciudad,
     nacionalidad, calle, num, transversal, telefono, correo,
+    nivelEstudio, tipoBachiller, conferidoPorA1, conferidoPorA2,
     cursoanterior, unidadeducativa, centroformacionanterior,
     nombrepapa, profesionpapa, ocupacionpapa,
     nombremama, profesionmama, ocupacionmama,
@@ -18,6 +19,12 @@ export const crearMatricula = async (req: Request, res: Response) => {
 
   try {
     const hash = await bcrypt.hash(cedula, 10);
+
+    // Generar número de matrícula automático por curso
+    const totalMatriculas = await prisma.matricula.count({
+      where: { cursoId: Number(cursoId) }
+    });
+    const matriculaNo = String(totalMatriculas + 1).padStart(3, '0');
 
     const resultado = await prisma.$transaction(async (tx) => {
       const usuario = await tx.usuario.create({
@@ -32,10 +39,13 @@ export const crearMatricula = async (req: Request, res: Response) => {
 
       const matricula = await tx.matricula.create({
         data: {
-          matriculaNo, tomo, pagina,
+          matriculaNo,
+          tomo,
+          pagina,
           apellidos: apellidos.toUpperCase(),
           nombres: nombres.toUpperCase(),
           cedula,
+          sexo,
           fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
           pais: pais?.toUpperCase(),
           provincia: provincia?.toUpperCase(),
@@ -46,6 +56,10 @@ export const crearMatricula = async (req: Request, res: Response) => {
           calle: calle?.toUpperCase(),
           num, transversal, telefono,
           correo: (correoestudiante || correo)?.toLowerCase(),
+          nivelEstudio,
+          tipoBachiller,
+          conferidoPorA1: conferidoPorA1?.toUpperCase(),
+          conferidoPorA2: conferidoPorA2?.toUpperCase(),
           cursoanterior: cursoanterior?.toUpperCase(),
           unidadeducativa: unidadeducativa?.toUpperCase(),
           centroformacionanterior: centroformacionanterior?.toUpperCase(),

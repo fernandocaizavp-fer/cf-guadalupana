@@ -2,16 +2,16 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
 
-// Crear docente
 export const crearDocente = async (req: Request, res: Response) => {
-  const { nombre, apellido, correo, password } = req.body;
+  const { nombre, apellido, correo, cedula } = req.body;
   try {
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(cedula, 10);
     const usuario = await prisma.usuario.create({
       data: {
         nombre: nombre.toUpperCase(),
         apellido: apellido.toUpperCase(),
         correo: correo.toLowerCase(),
+        cedula,
         password: hash,
         rol: 'PROFESOR'
       }
@@ -19,18 +19,17 @@ export const crearDocente = async (req: Request, res: Response) => {
     res.json({ message: 'Docente creado', usuario });
   } catch (error: any) {
     if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'El correo ya está registrado' });
+      return res.status(400).json({ error: 'El correo o cédula ya está registrado' });
     }
     res.status(500).json({ error: 'Error al crear docente' });
   }
 };
 
-// Listar docentes
 export const listarDocentes = async (req: Request, res: Response) => {
   try {
     const docentes = await prisma.usuario.findMany({
       where: { rol: 'PROFESOR' },
-      select: { id: true, nombre: true, apellido: true, correo: true, rol: true, createdAt: true }
+      select: { id: true, nombre: true, apellido: true, correo: true, cedula: true, rol: true, createdAt: true }
     });
     res.json(docentes);
   } catch (error) {
@@ -38,7 +37,30 @@ export const listarDocentes = async (req: Request, res: Response) => {
   }
 };
 
-// Eliminar docente
+export const actualizarDocente = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { nombre, apellido, correo, cedula } = req.body;
+  try {
+    const data: any = {
+      nombre: nombre?.toUpperCase(),
+      apellido: apellido?.toUpperCase(),
+      correo: correo?.toLowerCase(),
+      cedula
+    };
+    if (cedula) data.password = await bcrypt.hash(cedula, 10);
+    const usuario = await prisma.usuario.update({
+      where: { id: Number(id) },
+      data
+    });
+    res.json({ message: 'Docente actualizado', usuario });
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'El correo o cédula ya está registrado' });
+    }
+    res.status(500).json({ error: 'Error al actualizar docente' });
+  }
+};
+
 export const eliminarDocente = async (req: Request, res: Response) => {
   try {
     await prisma.usuario.delete({ where: { id: Number(req.params.id) } });
@@ -48,7 +70,6 @@ export const eliminarDocente = async (req: Request, res: Response) => {
   }
 };
 
-// Asignar profesor a materia
 export const asignarProfesor = async (req: Request, res: Response) => {
   const { materiaId, profesorId } = req.body;
   try {
@@ -62,7 +83,19 @@ export const asignarProfesor = async (req: Request, res: Response) => {
   }
 };
 
-// Obtener materias asignadas a un profesor
+export const asignarProfesorPrincipalMateria = async (req: Request, res: Response) => {
+  const { materiaId, profesorId } = req.body;
+  try {
+    const materia = await prisma.materia.update({
+      where: { id: Number(materiaId) },
+      data: { profesorPrincipalId: Number(profesorId) }
+    });
+    res.json({ message: 'Profesor principal asignado', materia });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al asignar profesor principal' });
+  }
+};
+
 export const getMisMateria = async (req: Request, res: Response) => {
   const { profesorId } = req.params;
   try {
@@ -76,7 +109,6 @@ export const getMisMateria = async (req: Request, res: Response) => {
   }
 };
 
-// Obtener perfil del estudiante con sus notas
 export const getPerfilEstudiante = async (req: Request, res: Response) => {
   const { usuarioId } = req.params;
   try {
@@ -88,7 +120,8 @@ export const getPerfilEstudiante = async (req: Request, res: Response) => {
           include: {
             tarea: { include: { materia: true } }
           }
-        }
+        },
+        notasDisciplina: true
       }
     });
     if (!matricula) return res.status(404).json({ error: 'Matrícula no encontrada' });

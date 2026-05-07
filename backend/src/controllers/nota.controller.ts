@@ -8,6 +8,15 @@ const formatearNota = (valor: number | string): string => {
   return num % 1 === 0 ? String(num) : num.toFixed(1);
 };
 
+const formatearNombre = (texto: string): string => {
+  if (!texto) return '';
+  return texto
+    .toLowerCase()
+    .split(' ')
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+    .join(' ');
+};
+
 export const descargarAL14 = async (req: Request, res: Response) => {
   const { cursoId } = req.params;
   const { lugarFecha, semestre } = req.query;
@@ -33,7 +42,8 @@ export const descargarAL14 = async (req: Request, res: Response) => {
               where: semestre ? {
                 tarea: { semestre: Number(semestre) }
               } : undefined
-            }
+            },
+            notasDisciplina: true
           },
           orderBy: { apellidos: 'asc' }
         }
@@ -56,10 +66,34 @@ export const descargarAL14 = async (req: Request, res: Response) => {
       delimiters: { start: '{', end: '}' }
     });
 
+    // Separar materias principales y submaterias
+    const submateriasPractica = curso.materias.filter(m => m.esSubmateria && m.materiaParent === 'Práctica');
+    const submateriasTeoria = curso.materias.filter(m => m.esSubmateria && m.materiaParent === 'Teoría');
+
     const estudiantes = curso.matriculas.map((m, index) => {
+
+      // Promedio de submaterias de Práctica
+      const getPromedioSubmaterias = (submaterias: any[]): string => {
+        if (submaterias.length === 0) {
+          // Sin submaterias — usar notas directas de la materia principal
+          return '';
+        }
+        const todasNotas: number[] = [];
+        submaterias.forEach(sub => {
+          const notasSub = m.notasTarea.filter(n =>
+            n.tarea.materiaId === sub.id && n.valor !== null
+          );
+          notasSub.forEach(n => todasNotas.push(n.valor || 0));
+        });
+        if (todasNotas.length === 0) return '';
+        return formatearNota(todasNotas.reduce((a, b) => a + b, 0) / todasNotas.length);
+      };
+
+      // Promedio materia normal (sin submaterias)
       const getPromedioPorMateria = (nombreMateria: string): string => {
         const notasMateria = m.notasTarea.filter(n =>
           n.tarea.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase()) &&
+          !n.tarea.materia.esSubmateria &&
           n.valor !== null
         );
         if (notasMateria.length === 0) return '';
@@ -67,38 +101,69 @@ export const descargarAL14 = async (req: Request, res: Response) => {
         return formatearNota(suma / notasMateria.length);
       };
 
-      const todasNotas = m.notasTarea
-        .filter(n => n.valor !== null)
-        .map(n => n.valor || 0);
-      const promedioGeneral = todasNotas.length > 0
-        ? formatearNota(todasNotas.reduce((a, b) => a + b, 0) / todasNotas.length)
+      // Disciplina — promedio de notasDisciplina
+      const getPromedioDisciplina = (): string => {
+        const notas = (m as any).notasDisciplina?.filter((n: any) => n.valor !== null) || [];
+        if (notas.length === 0) return '';
+        const suma = notas.reduce((a: number, b: any) => a + b.valor, 0);
+        return formatearNota(suma / notas.length);
+      };
+
+      // Promedio general (excluye submaterias)
+      const teoria = submateriasPractica.length > 0
+        ? getPromedioSubmaterias(submateriasTeoria)
+        : getPromedioPorMateria('Teoría');
+
+      const practica = submateriasPractica.length > 0
+        ? getPromedioSubmaterias(submateriasPractica)
+        : getPromedioPorMateria('Práctica');
+
+      const administracion = getPromedioPorMateria('Administración');
+      const contabilidad = getPromedioPorMateria('Contabilidad');
+      const tics = getPromedioPorMateria('TICs');
+      const ingles = getPromedioPorMateria('Inglés');
+      const desarrollo = getPromedioPorMateria('Desarrollo Humano');
+      const proyect = getPromedioPorMateria('Elaboración');
+      const legislacion = getPromedioPorMateria('Legislación');
+      const disciplina = getPromedioDisciplina();
+
+      const notasParaPromedio = [teoria, practica, administracion, contabilidad,
+        tics, ingles, desarrollo, proyect, legislacion, disciplina]
+        .filter(n => n !== '')
+        .map(n => parseFloat(n));
+
+      const promedioGeneral = notasParaPromedio.length > 0
+        ? formatearNota(notasParaPromedio.reduce((a, b) => a + b, 0) / notasParaPromedio.length)
         : '';
 
       return {
         num: String(index + 1),
-        nombres: `${m.apellidos} ${m.nombres}`,
-        teoria: getPromedioPorMateria('Teoría'),
-        practica: getPromedioPorMateria('Práctica'),
-        administracion: getPromedioPorMateria('Administración'),
-        contabilidad: getPromedioPorMateria('Contabilidad'),
-        tics: getPromedioPorMateria('TICs'),
-        ingles: getPromedioPorMateria('Inglés'),
-        desarrollo: getPromedioPorMateria('Desarrollo Humano'),
-        legislacion: getPromedioPorMateria('Legislación'),
-        disciplina: getPromedioPorMateria('Disciplina'),
+        nombres: `${formatearNombre(m.apellidos)} ${formatearNombre(m.nombres)}`,
+        teoria,
+        practica,
+        administracion,
+        contabilidad,
+        tics,
+        ingles,
+        desarrollo,
+        proyect,
+        legislacion,
+        disciplina,
         promedio: promedioGeneral,
         observaciones: ''
       };
     });
 
-    const fechaInicio = curso.fechaInicio.toLocaleDateString('es-EC', { month: 'long', year: 'numeric' }).toUpperCase();
-    const fechaFin = curso.fechaFin.toLocaleDateString('es-EC', { month: 'long', year: 'numeric' }).toUpperCase();
+    const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+    const fechaInicio = `${meses[curso.fechaInicio.getMonth()]} ${curso.fechaInicio.getFullYear()}`;
+    const fechaFin = `${meses[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
 
     doc.render({
       ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
       fechaInicio,
       fechaFin,
       lugarFecha: lugarFecha || '',
+      semestre: Number(semestre) === 1 ? 'PRIMER SEMESTRE' : 'SEGUNDO SEMESTRE',
       estudiantes
     });
 

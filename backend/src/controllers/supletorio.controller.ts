@@ -10,6 +10,15 @@ const fmt = (valor: number | null | undefined): string => {
   return valor % 1 === 0 ? String(valor) : valor.toFixed(1);
 };
 
+const formatearNombre = (texto: string): string => {
+  if (!texto) return '';
+  return texto
+    .toLowerCase()
+    .split(' ')
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+    .join(' ');
+};
+
 const calcularSuma = (n1: number | null, n2: number | null): string => {
   if (n1 === null || n2 === null) return '';
   const suma = (n1 + n2) / 2;
@@ -23,7 +32,6 @@ const calcularPf = (n1: number | null, n2: number | null, sup: number | null): s
   return fmt(suma);
 };
 
-// Guardar o actualizar supletorio
 export const guardarSupletorio = async (req: Request, res: Response) => {
   const { matriculaId, materiaId, valor } = req.body;
   try {
@@ -47,7 +55,6 @@ export const guardarSupletorio = async (req: Request, res: Response) => {
   }
 };
 
-// Guardar supletorios masivo
 export const guardarSupletoriosMasivo = async (req: Request, res: Response) => {
   const { supletorios } = req.body;
   try {
@@ -75,7 +82,6 @@ export const guardarSupletoriosMasivo = async (req: Request, res: Response) => {
   }
 };
 
-// Generar AL15
 export const generarAL15 = async (req: Request, res: Response) => {
   const { cursoId } = req.params;
   const { lugarFecha, jornada } = req.query;
@@ -124,10 +130,9 @@ export const generarAL15 = async (req: Request, res: Response) => {
       return sup?.valor ?? null;
     };
 
-    const anioFormativo = curso.anioFormativo || '';
-    const partes = anioFormativo.split('-');
-    const anio1 = partes[0]?.trim() || '';
-    const anio2 = partes[1]?.trim() || '';
+    const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+    const anio1 = `${meses[curso.fechaInicio.getMonth()]} ${curso.fechaInicio.getFullYear()}`;
+    const anio2 = `${meses[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
 
     const estudiantes = curso.matriculas.map((m, index) => {
       const teoria_n1 = getN1(m, 'Teoría');
@@ -165,7 +170,6 @@ export const generarAL15 = async (req: Request, res: Response) => {
       const disciplina_n1 = getN1(m, 'Disciplina');
       const disciplina_n2 = getN2(m, 'Disciplina');
 
-      // Promedio general
       const todasNotas = [
         teoria_n1, teoria_n2, practica_n1, practica_n2,
         adm_n1, adm_n2, cont_n1, cont_n2, tics_n1, tics_n2,
@@ -179,7 +183,7 @@ export const generarAL15 = async (req: Request, res: Response) => {
 
       return {
         num: String(index + 1),
-        nombres: `${m.apellidos} ${m.nombres}`,
+        nombres: `${formatearNombre(m.apellidos)} ${formatearNombre(m.nombres)}`,
         teoria_n1: fmt(teoria_n1), teoria_n2: fmt(teoria_n2),
         teoria_suma: calcularSuma(teoria_n1, teoria_n2),
         teoria_sup: fmt(teoria_sup),
