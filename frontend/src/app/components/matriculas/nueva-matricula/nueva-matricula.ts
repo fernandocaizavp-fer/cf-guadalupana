@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,10 +16,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 @Component({
   selector: 'app-nueva-matricula',
   imports: [
-      FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule,
-      MatIconModule, MatCardModule, MatSelectModule, MatDividerModule,
-      MatSnackBarModule, MatProgressSpinnerModule, MatToolbarModule
-    ],
+    FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatIconModule, MatCardModule, MatSelectModule, MatDividerModule,
+    MatSnackBarModule, MatProgressSpinnerModule, MatToolbarModule
+  ],
   templateUrl: './nueva-matricula.html',
   styleUrl: './nueva-matricula.scss'
 })
@@ -30,11 +30,15 @@ export class NuevaMatricula implements OnInit {
   datos: any = {
     matriculaNo: '', tomo: '', pagina: '', cursoId: '',
     apellidos: '', nombres: '', cedula: '',
+    sexo: '',
     fechaNacimiento: '', pais: 'ECUADOR', provincia: '', canton: '',
     parroquia: '', ciudad: '', nacionalidad: 'ECUATORIANA',
     calle: '', num: '', transversal: '', telefono: '',
     correo: '', correoestudiante: '',
+    nivelEstudio: '',
+    tipoBachiller: '',
     cursoanterior: '', unidadeducativa: '', centroformacionanterior: '',
+    conferidoPorA1: '', conferidoPorA2: '',
     nombrepapa: '', profesionpapa: '', ocupacionpapa: '',
     nombremama: '', profesionmama: '', ocupacionmama: '',
     nombrerepresentante: '', ocupacionrepresentante: '',
@@ -45,17 +49,34 @@ export class NuevaMatricula implements OnInit {
   constructor(
     private matriculaService: MatriculaService,
     private router: Router,
+    private route: ActivatedRoute,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
     this.matriculaService.getCursos().subscribe({
-      next: (cursos) => this.cursos = cursos,
+      next: (cursos) => {
+        this.cursos = cursos;
+        const cursoId = this.route.snapshot.queryParams['cursoId'];
+        if (cursoId) this.datos.cursoId = Number(cursoId);
+      },
       error: () => this.snackBar.open('Error al cargar cursos', 'OK', { duration: 3000 })
     });
   }
 
+  get prefijo(): string {
+    return this.datos.sexo === 'Masculino' ? 'El' : 'La';
+  }
+
+  get tratamiento(): string {
+    return this.datos.sexo === 'Masculino' ? 'Sr.' : 'Srta.';
+  }
+
   guardarYDescargar() {
+    if (!this.datos.cursoId) {
+      this.snackBar.open('Selecciona un curso', 'OK', { duration: 3000 });
+      return;
+    }
     this.loading = true;
     this.matriculaService.crearMatricula(this.datos).subscribe({
       next: (res) => {
@@ -89,20 +110,20 @@ export class NuevaMatricula implements OnInit {
   }
 
   descargarCertificado(id: number) {
-  this.matriculaService.descargarCertificado(id).subscribe({
-    next: (blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `certificado_${this.datos.cedula}.docx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    },
-    error: () => {
-      this.snackBar.open('Error al descargar certificado', 'OK', { duration: 3000 });
-    }
-  });
-}
+    this.matriculaService.descargarCertificado(id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `certificado_${this.datos.cedula}.docx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.snackBar.open('Error al descargar certificado', 'OK', { duration: 3000 });
+      }
+    });
+  }
 
   volver() {
     this.router.navigate(['/dashboard']);
