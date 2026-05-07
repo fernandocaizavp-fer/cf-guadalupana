@@ -12,58 +12,128 @@
 </mat-toolbar>
 
 <div class="content">
-  <div class="header">
-    <h1>Mis Cursos Asignados</h1>
-    <p>Selecciona una materia para gestionar tareas y calificaciones</p>
-  </div>
+  <div class="main-layout">
 
-  @if (loading) {
-    <div class="center"><mat-spinner></mat-spinner></div>
-  }
+    <!-- COLUMNA IZQUIERDA: CURSOS -->
+    <div class="columna-cursos">
+      <div class="header">
+        <h1>Mis Cursos Asignados</h1>
+        <p>Selecciona una materia para gestionar tareas y calificaciones</p>
+      </div>
 
-  @if (!loading && cursosAgrupados.length === 0) {
-    <div class="center">
-      <mat-icon class="empty-icon">assignment</mat-icon>
-      <p>No tienes materias asignadas aún</p>
-      <small>Contacta al administrador para que te asigne materias</small>
-    </div>
-  }
+      @if (loading) {
+        <div class="center"><mat-spinner></mat-spinner></div>
+      }
 
-  @if (!loading && cursosAgrupados.length > 0) {
-    <div class="cursos-list">
-      @for (curso of cursosAgrupados; track curso.id) {
-        <div class="curso-card">
-          <div class="curso-header">
-            <div class="curso-icon">
-              <mat-icon>school</mat-icon>
-            </div>
-            <div class="curso-info">
-              <h3>{{ curso.ramaArtesanal }}</h3>
-              <span class="periodo">{{ curso.anioFormativo }}</span>
-            </div>
-          </div>
-          <div class="materias-list">
-            @for (materia of curso.materias; track materia.id) {
-              <div class="materia-row">
-                <div class="materia-item-info">
-                  <mat-icon>menu_book</mat-icon>
-                  <span>{{ materia.nombre }}</span>
+      @if (!loading && cursosAgrupados.length === 0) {
+        <div class="center">
+          <mat-icon class="empty-icon">assignment</mat-icon>
+          <p>No tienes materias asignadas aún</p>
+          <small>Contacta al administrador para que te asigne materias</small>
+        </div>
+      }
+
+      @if (!loading && cursosAgrupados.length > 0) {
+        <div class="cursos-list">
+          @for (curso of cursosAgrupados; track curso.id) {
+            <div class="curso-card">
+              <div class="curso-header">
+                <div class="curso-icon">
+                  <mat-icon>school</mat-icon>
                 </div>
-                <div class="materia-acciones">
-                  <button mat-stroked-button (click)="irANotas(curso.id, materia.id)"
-                    style="font-size: 12px; height: 32px; line-height: 32px;">
-                    <mat-icon style="font-size: 16px;">assignment</mat-icon> Tareas
-                  </button>
-                  <button mat-stroked-button (click)="irASupletorio(materia.id)"
-                    style="font-size: 12px; height: 32px; line-height: 32px; color: #c8a84b; border-color: #c8a84b;">
-                    <mat-icon style="font-size: 16px;">grade</mat-icon> Supletorio
-                  </button>
+                <div class="curso-info">
+                  <h3>{{ curso.ramaArtesanal }}</h3>
+                  <span class="periodo">{{ curso.anioFormativo }}</span>
                 </div>
               </div>
-            }
-          </div>
+              <div class="materias-list">
+                @for (materia of curso.materias; track materia.id) {
+                  <div class="materia-row">
+                    <div class="materia-item-info">
+                      <mat-icon>menu_book</mat-icon>
+                      <div class="materia-nombre-wrap">
+                        <span class="materia-nombre">{{ materia.nombre }}</span>
+                        @if (materia.esSubmateria) {
+                          <span class="sub-badge-row">
+                            <span class="tag-p">Práctica</span>
+                            <span class="tag-t">Teoría</span>
+                          </span>
+                        }
+                      </div>
+                    </div>
+                    <div class="materia-acciones">
+                      @if (materia.esSubmateria) {
+                        <button mat-stroked-button (click)="irANotas(curso.id, materia.id)" class="btn-accion azul">
+                          <mat-icon>build</mat-icon> Tareas Práctica
+                        </button>
+                        <button mat-stroked-button (click)="irANotas(curso.id, materia.idGemela)" class="btn-accion verde">
+                          <mat-icon>menu_book</mat-icon> Tareas Teoría
+                        </button>
+                        <button mat-stroked-button (click)="irAAsistencia(materia.id)" class="btn-accion verde-claro">
+                          <mat-icon>how_to_reg</mat-icon> Asistencia
+                        </button>
+                        <button mat-stroked-button (click)="irADisciplina(materia.id)" class="btn-accion morado">
+                          <mat-icon>star</mat-icon> Disciplina
+                        </button>
+                      } @else {
+                        <button mat-stroked-button (click)="irANotas(curso.id, materia.id)" class="btn-accion azul-oscuro">
+                          <mat-icon>assignment</mat-icon> Tareas
+                        </button>
+                        <button mat-stroked-button (click)="irASupletorio(materia.id)" class="btn-accion dorado">
+                          <mat-icon>grade</mat-icon> Supletorio
+                        </button>
+                        <button mat-stroked-button (click)="irAAsistencia(materia.id)" class="btn-accion verde-claro">
+                          <mat-icon>how_to_reg</mat-icon> Asistencia
+                        </button>
+                        <button mat-stroked-button (click)="irADisciplina(materia.id)" class="btn-accion morado">
+                          <mat-icon>star</mat-icon> Disciplina
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
       }
     </div>
-  }
+
+    <!-- COLUMNA DERECHA: ANUNCIOS -->
+    <div class="columna-anuncios">
+      <div class="anuncios-header">
+        <mat-icon>campaign</mat-icon>
+        <h2>Anuncios del Centro</h2>
+      </div>
+
+      @if (anuncios.length === 0) {
+        <div class="sin-anuncios">
+          <mat-icon>notifications_none</mat-icon>
+          <p>No hay anuncios publicados</p>
+        </div>
+      }
+
+      @if (anuncios.length > 0) {
+        <div class="anuncios-list">
+          @for (anuncio of anuncios; track anuncio.id) {
+            <div class="anuncio-card">
+              @if (anuncio.imagen) {
+                <img [src]="'http://localhost:3001' + anuncio.imagen"
+                  alt="{{ anuncio.titulo }}" class="anuncio-img">
+              }
+              <div class="anuncio-body">
+                <div class="anuncio-fecha">
+                  <mat-icon>calendar_today</mat-icon>
+                  {{ anuncio.createdAt | date:'dd/MM/yyyy' }}
+                </div>
+                <h4>{{ anuncio.titulo }}</h4>
+                <p>{{ anuncio.contenido }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+  </div>
 </div>

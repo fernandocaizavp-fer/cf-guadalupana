@@ -8,16 +8,19 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../services/auth';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard-profesor',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule, MatSnackBarModule],
+  imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
+    MatProgressSpinnerModule, MatSnackBarModule, DatePipe],
   templateUrl: './dashboard-profesor.html',
   styleUrl: './dashboard-profesor.scss'
 })
 export class DashboardProfesor implements OnInit {
   usuario: any;
   cursosAgrupados: any[] = [];
+  anuncios: any[] = [];
   loading = true;
 
   constructor(
@@ -37,7 +40,6 @@ export class DashboardProfesor implements OnInit {
 
     this.http.get<any[]>(`http://localhost:3001/api/usuarios/mis-materias/${this.usuario.id}`, { headers }).subscribe({
       next: (materias) => {
-        // Agrupar materias por curso
         const mapa: { [key: number]: any } = {};
         materias.forEach(m => {
           if (!mapa[m.cursoId]) {
@@ -48,6 +50,22 @@ export class DashboardProfesor implements OnInit {
               materias: []
             };
           }
+
+          // Ignorar materias principales de Práctica/Teoría
+          if (!m.esSubmateria && (m.nombre === 'Práctica' || m.nombre === 'Teoría')) {
+            return;
+          }
+
+          if (m.esSubmateria) {
+            const yaExiste = mapa[m.cursoId].materias.find(
+              (x: any) => x.esSubmateria && x.nombre === m.nombre
+            );
+            if (yaExiste) {
+              yaExiste.idGemela = m.id;
+              return;
+            }
+          }
+
           mapa[m.cursoId].materias.push(m);
         });
         this.cursosAgrupados = Object.values(mapa);
@@ -60,6 +78,17 @@ export class DashboardProfesor implements OnInit {
         this.snackBar.open('Error al cargar materias', 'OK', { duration: 3000 });
       }
     });
+
+    this.http.get<any[]>('http://localhost:3001/api/anuncios', { headers }).subscribe({
+      next: (anuncios) => {
+        this.anuncios = anuncios;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  irAAsistencia(materiaId: number) {
+    this.router.navigate(['/asistencia/materia', materiaId]);
   }
 
   irANotas(cursoId: number, materiaId?: number) {
@@ -71,8 +100,12 @@ export class DashboardProfesor implements OnInit {
   }
 
   irASupletorio(materiaId: number) {
-  this.router.navigate(['/supletorios/materia', materiaId]);
+    this.router.navigate(['/supletorios/materia', materiaId]);
   }
+
+  irADisciplina(materiaId: number) {
+  this.router.navigate(['/disciplina/materia', materiaId]);
+}
 
   logout() {
     this.authService.logout();
