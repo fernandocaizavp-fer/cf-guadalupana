@@ -18,9 +18,11 @@ model Usuario {
   nombre    String
   apellido  String
   correo    String     @unique
+  cedula    String?  @unique
   password  String
   rol       Rol        @default(ESTUDIANTE)
   createdAt DateTime   @default(now())
+  materiasComoProfesorPrincipal Materia[] @relation("ProfesorPrincipalMateria")
 
   matricula Matricula?
   materias  Materia[]
@@ -35,8 +37,10 @@ model Curso {
   activo        Boolean     @default(true)
   createdAt     DateTime    @default(now())
 
+
   materias   Materia[]
   matriculas Matricula[]
+  observacionesAsistencia ObservacionAsistencia[]
 }
 
 model Materia {
@@ -46,9 +50,16 @@ model Materia {
   curso      Curso    @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   profesorId Int?
   profesor   Usuario? @relation(fields: [profesorId], references: [id], onDelete: SetNull)
+  esSubmateria  Boolean @default(false)
+  materiaParent String?
+  profesorPrincipalId Int?
+  profesorPrincipal   Usuario? @relation("ProfesorPrincipalMateria", fields: [profesorPrincipalId], references: [id])
+
 
   tareas Tarea[]
   supletorios Supletorio[]
+  asistencias Asistencia[]
+  notasDisciplina NotaDisciplina[]
 }
 
 model Matricula {
@@ -89,9 +100,16 @@ model Matricula {
   telefonorepresentante   String?
   correoestudiante        String?
   lugarfechamatricula     String?
+  sexo                    String?
+  nivelEstudio            String?
+  tipoBachiller           String?
+  conferidoPorA1          String?
+  conferidoPorA2          String?
   especialidad            String?
   lugarfechacertificado   String?
+  observacionAsistencia ObservacionAsistencia?
   createdAt               DateTime  @default(now())
+  
 
   cursoId   Int
   curso     Curso   @relation(fields: [cursoId], references: [id])
@@ -100,6 +118,8 @@ model Matricula {
 
   notasTarea NotaTarea[]
   supletorios Supletorio[]
+  asistenciaDetalles AsistenciaDetalle[]
+  notasDisciplina NotaDisciplina[]
 }
 
 model Tarea {
@@ -136,4 +156,56 @@ model NotaTarea {
   matricula   Matricula @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
 
   @@unique([tareaId, matriculaId])
+}
+
+model Asistencia {
+  id          Int       @id @default(autoincrement())
+  fecha       DateTime
+  materiaId   Int
+  materia     Materia   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  detalles AsistenciaDetalle[]
+}
+
+model AsistenciaDetalle {
+  id           Int        @id @default(autoincrement())
+  presente     Boolean    @default(true)
+  asistenciaId Int
+  asistencia   Asistencia @relation(fields: [asistenciaId], references: [id], onDelete: Cascade)
+  matriculaId  Int
+  matricula    Matricula  @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
+
+  @@unique([asistenciaId, matriculaId])
+}
+
+model ObservacionAsistencia {
+  id          Int       @id @default(autoincrement())
+  observacion String
+  matriculaId Int       @unique
+  matricula   Matricula @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
+  cursoId     Int
+  curso       Curso     @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+}
+
+model Anuncio {
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  contenido String
+  imagen    String?
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotaDisciplina {
+  id          Int      @id @default(autoincrement())
+  valor       Float
+  matriculaId Int
+  materiaId   Int
+  matricula   Matricula @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
+  materia     Materia   @relation(fields: [materiaId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@unique([matriculaId, materiaId])
 }
