@@ -32,52 +32,95 @@
   }
 
   @if (!loading && matricula) {
-    <div class="estudiante-header">
-      <div class="avatar"><mat-icon>person</mat-icon></div>
-      <div class="estudiante-info">
-        <h1>{{ matricula.apellidos }} {{ matricula.nombres }}</h1>
-        <p>{{ matricula.curso?.ramaArtesanal }} — {{ matricula.curso?.anioFormativo }}</p>
-        <span class="cedula">CI: {{ matricula.cedula }}</span>
-      </div>
-      <div class="header-actions">
-        <div class="doc-card" (click)="descargarCertificado()">
-          <div class="doc-icon"><mat-icon>workspace_premium</mat-icon></div>
-          <div>
-            <h4>Certificado de Matrícula</h4>
-            <span class="download-hint">Click para descargar</span>
+    <div class="main-layout">
+
+      <!-- COLUMNA IZQUIERDA: CALIFICACIONES -->
+      <div class="columna-notas">
+        <div class="estudiante-header">
+          <div class="avatar"><mat-icon>person</mat-icon></div>
+          <div class="estudiante-info">
+            <h1>{{ matricula.apellidos }} {{ matricula.nombres }}</h1>
+            <p>{{ matricula.curso?.ramaArtesanal }} — {{ matricula.curso?.anioFormativo }}</p>
+            <span class="cedula">CI: {{ matricula.cedula }}</span>
+          </div>
+          <div class="header-actions">
+            <div class="doc-card" (click)="descargarCertificado()">
+              <div class="doc-icon"><mat-icon>workspace_premium</mat-icon></div>
+              <div>
+                <h4>Certificado de Matrícula</h4>
+                <span class="download-hint">Click para descargar</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <h2 class="section-title">Mis Calificaciones — Semestre {{ semestreSeleccionado }}</h2>
+        <h2 class="section-title">Mis Calificaciones — Semestre {{ semestreSeleccionado }}</h2>
 
-    @if (materiasConTareas.length === 0) {
-      <div class="center">
-        <mat-icon class="empty-icon">grade</mat-icon>
-        <p>No hay tareas registradas en el semestre {{ semestreSeleccionado }}</p>
-      </div>
-    }
+        @if (materiasConTareas.length === 0) {
+          <div class="center">
+            <mat-icon class="empty-icon">grade</mat-icon>
+            <p>No hay tareas registradas en el semestre {{ semestreSeleccionado }}</p>
+          </div>
+        }
 
-    @if (materiasConTareas.length > 0) {
-      <div class="materias-list">
-        @for (materia of materiasConTareas; track materia.id) {
-          <div class="materia-row" (click)="verDetalleMateria(materia.id)">
-            <div class="materia-icon">
-              <mat-icon>menu_book</mat-icon>
-            </div>
-            <div class="materia-info">
-              <h3>{{ materia.nombre }}</h3>
-              <span class="tareas-count">{{ materia.tareas.length }} tareas registradas</span>
-            </div>
-            <div class="materia-promedio">
-              <span class="prom-label">Promedio</span>
-              <span class="prom-valor">{{ materia.promedio }}</span>
-            </div>
-            <mat-icon class="arrow">chevron_right</mat-icon>
+        @if (materiasConTareas.length > 0) {
+          <div class="materias-list">
+            @for (materia of materiasConTareas; track materia.id) {
+              <div class="materia-row" (click)="irAMateria(materia)">
+                <div class="materia-icon">
+                  <mat-icon>menu_book</mat-icon>
+                </div>
+                <div class="materia-info">
+                  <h3>{{ materia.nombre }}</h3>
+                  <span class="tareas-count">{{ materia.tareas.length }} tareas registradas</span>
+                </div>
+                <div class="materia-promedio">
+                  <span class="prom-label">Promedio</span>
+                  <span class="prom-valor">{{ materia.promedio }}</span>
+                </div>
+                <mat-icon class="arrow">chevron_right</mat-icon>
+              </div>
+            }
           </div>
         }
       </div>
-    }
+
+      <!-- COLUMNA DERECHA: ANUNCIOS -->
+      <div class="columna-anuncios">
+        <div class="anuncios-header">
+          <mat-icon>campaign</mat-icon>
+          <h2>Anuncios del Centro</h2>
+        </div>
+
+        @if (anuncios.length === 0) {
+          <div class="sin-anuncios">
+            <mat-icon>notifications_none</mat-icon>
+            <p>No hay anuncios publicados</p>
+          </div>
+        }
+
+        @if (anuncios.length > 0) {
+          <div class="anuncios-list">
+            @for (anuncio of anuncios; track anuncio.id) {
+              <div class="anuncio-card">
+                @if (anuncio.imagen) {
+                  <img [src]="'http://localhost:3001' + anuncio.imagen"
+                    alt="{{ anuncio.titulo }}" class="anuncio-img">
+                }
+                <div class="anuncio-body">
+                  <div class="anuncio-fecha">
+                    <mat-icon>calendar_today</mat-icon>
+                    {{ anuncio.createdAt | date:'dd/MM/yyyy' }}
+                  </div>
+                  <h4>{{ anuncio.titulo }}</h4>
+                  <p>{{ anuncio.contenido }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
   }
 </div>

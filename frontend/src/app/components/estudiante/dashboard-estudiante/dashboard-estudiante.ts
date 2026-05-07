@@ -7,6 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../services/auth';
 import { MatriculaService } from '../../../services/matricula';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -14,7 +15,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 @Component({
   selector: 'app-dashboard-estudiante',
   imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
-    MatProgressSpinnerModule, MatSnackBarModule, MatTableModule],
+    MatProgressSpinnerModule, MatSnackBarModule, MatTableModule, DatePipe],
   templateUrl: './dashboard-estudiante.html',
   styleUrl: './dashboard-estudiante.scss'
 })
@@ -24,6 +25,7 @@ export class DashboardEstudiante implements OnInit {
   loading = true;
   semestreSeleccionado = 1;
   materiasConTareas: any[] = [];
+  anuncios: any[] = [];
 
   constructor(
     private authService: AuthService,
@@ -52,6 +54,13 @@ export class DashboardEstudiante implements OnInit {
         this.cdr.detectChanges();
       }
     });
+
+    this.http.get<any[]>('http://localhost:3001/api/anuncios', { headers }).subscribe({
+      next: (anuncios) => {
+        this.anuncios = anuncios;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   cargarNotasSemestre() {
@@ -65,8 +74,37 @@ export class DashboardEstudiante implements OnInit {
       { headers }
     ).subscribe({
       next: (data) => {
-        // Armar materias con tareas y notas del estudiante
-        this.materiasConTareas = data.materias.map((materia: any) => {
+        const materiasPrincipales = data.materias.filter((m: any) =>
+          !m.esSubmateria && m.nombre !== 'Disciplina'
+        );
+
+        const materiasMapeadas = materiasPrincipales.map((materia: any) => {
+          if (materia.nombre === 'Práctica' || materia.nombre === 'Teoría') {
+            const submaterias = data.materias.filter((m: any) =>
+              m.esSubmateria && m.materiaParent === materia.nombre
+            );
+
+            const todasNotas: number[] = [];
+            submaterias.forEach((sub: any) => {
+              const notasSub = this.matricula.notasTarea?.filter((n: any) =>
+                n.tarea?.materiaId === sub.id && n.valor !== null
+              ) || [];
+              notasSub.forEach((n: any) => todasNotas.push(n.valor));
+            });
+
+            const promedio = todasNotas.length > 0
+              ? todasNotas.reduce((a, b) => a + b, 0) / todasNotas.length
+              : null;
+
+            return {
+              ...materia,
+              tareas: [],
+              promedio: promedio !== null
+                ? (promedio % 1 === 0 ? String(promedio) : promedio.toFixed(1))
+                : '-'
+            };
+          }
+
           const tareasConNota = materia.tareas.map((tarea: any) => {
             const notaTarea = this.matricula.notasTarea?.find(
               (n: any) => n.tarea?.materiaId === materia.id && n.tareaId === tarea.id
@@ -90,8 +128,26 @@ export class DashboardEstudiante implements OnInit {
               ? (promedio % 1 === 0 ? String(promedio) : promedio.toFixed(1))
               : '-'
           };
-        }).filter((m: any) => m.tareas.length > 0);
+        });
 
+        // Agregar Disciplina como fila especial
+        const notasDisciplina = this.matricula.notasDisciplina || [];
+        const promedioDisciplina = notasDisciplina.length > 0
+          ? notasDisciplina.reduce((a: number, b: any) => a + b.valor, 0) / notasDisciplina.length
+          : null;
+
+        const filaDisciplina = {
+          id: -1,
+          nombre: 'Disciplina',
+          esSubmateria: false,
+          tareas: [],
+          esDisciplina: true,
+          promedio: promedioDisciplina !== null
+            ? (promedioDisciplina % 1 === 0 ? String(promedioDisciplina) : promedioDisciplina.toFixed(1))
+            : '-'
+        };
+
+        this.materiasConTareas = [...materiasMapeadas, filaDisciplina];
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -108,8 +164,13 @@ export class DashboardEstudiante implements OnInit {
     this.cargarNotasSemestre();
   }
 
-  verDetalleMateria(materiaId: number) {
-    this.router.navigate(['/estudiante/materia', materiaId, this.semestreSeleccionado]);
+  irAMateria(materia: any) {
+    if (materia.esDisciplina) return;
+    if (materia.nombre === 'Práctica' || materia.nombre === 'Teoría') {
+      this.router.navigate(['/estudiante/submaterias', materia.id, this.semestreSeleccionado]);
+    } else {
+      this.router.navigate(['/estudiante/materia', materia.id, this.semestreSeleccionado]);
+    }
   }
 
   descargarCertificado() {
