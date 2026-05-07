@@ -39,6 +39,17 @@
       <span class="card-status active">● Activo</span>
     </div>
 
+    <div class="menu-card active-card" (click)="irAAnuncios()">
+      <div class="card-icon-wrap">
+        <mat-icon>campaign</mat-icon>
+      </div>
+      <div class="card-info">
+        <h3>Anuncios</h3>
+        <p>Publicar noticias y eventos para docentes y estudiantes</p>
+      </div>
+      <span class="card-status active">● Activo</span>
+</div>
+
     <div class="menu-card disabled-card">
       <div class="card-icon-wrap disabled">
         <mat-icon>grade</mat-icon>
@@ -77,16 +88,20 @@
       <span class="card-status active">● Activo</span>
     </div>
 
-    <div class="menu-card disabled-card">
-      <div class="card-icon-wrap disabled">
+
+
+    <div class="menu-card active-card" (click)="irAReportes()">
+      <div class="card-icon-wrap">
         <mat-icon>bar_chart</mat-icon>
       </div>
       <div class="card-info">
         <h3>Reportes</h3>
-        <p>Estadísticas y reportes del centro</p>
+        <p>Asistencia y reportes del centro</p>
       </div>
-      <span class="card-status soon">● Próximamente</span>
+      <span class="card-status active">● Activo</span>
     </div>
+
+    
 
     <div class="menu-card disabled-card">
       <div class="card-icon-wrap disabled">

@@ -22,14 +22,22 @@ export class Dashboard {
   irANuevaMatricula() {
     this.router.navigate(['/matriculas/nueva']);
   }
+
+  irAReportes() {
+    this.router.navigate(['/reportes']);
+  }
   
   irACursos() {
-  this.router.navigate(['/cursos']);
-}
+    this.router.navigate(['/cursos']);
+  }
 
-irADocentes() {
-  this.router.navigate(['/docentes']);
-}
+  irADocentes() {
+    this.router.navigate(['/docentes']);
+  }
+
+  irAAnuncios() {
+    this.router.navigate(['/anuncios']);
+  }
 
   logout() {
     this.authService.logout();
