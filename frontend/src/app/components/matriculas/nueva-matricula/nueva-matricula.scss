@@ -1,110 +1,170 @@
-.form-container {
-  padding: 32px 48px;
-  background: #f0f2f8;
-  min-height: calc(100vh - 64px);
-}
+$navy: #1a2a5e;
+$navy-light: #2a4f9f;
+$gold: #c8a84b;
+$bg-body: #f4f7fa;
+$border: #e2e8f0;
+$white: #ffffff;
 
-mat-toolbar {
-  color: white !important;
+.admin-toolbar {
+  background: linear-gradient(135deg, $navy, #0d1a3e);
+  color: $white;
+  height: 85px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 
-  button {
-    color: white !important;
+  .toolbar-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0 30px;
   }
 
-  span {
-    color: white !important;
+  .nav-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .back-pill {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(-3px);
+      }
+    }
+
+    .title-meta {
+      h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+      span { font-size: 13px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+    }
+  }
+
+  .toolbar-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
   }
 }
 
-mat-card {
-  border-radius: 16px !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
-  border: 1px solid #e8eaf0;
+.flex-spacer { flex: 1; }
+
+.page-wrapper {
+  padding: 40px;
+  background-color: $bg-body;
+  min-height: calc(100vh - 85px);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.enrollment-card {
+  border-radius: 20px !important;
+  border: 1px solid $border !important;
+  box-shadow: 0 10px 30px rgba($navy, 0.05) !important;
   overflow: hidden;
-}
 
-mat-card-header {
-  background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
-  padding: 20px 24px !important;
-  margin-bottom: 0 !important;
-
-  ::ng-deep .mat-mdc-card-header-text {
-    margin: 0 !important;
+  .main-card-header {
+    background: linear-gradient(135deg, $navy, $navy-light);
+    padding: 24px 40px !important;
+    
+    mat-card-title {
+      color: white !important;
+      font-size: 18px !important;
+      font-weight: 700 !important;
+      margin: 0 !important;
+    }
   }
 
-  mat-card-title {
-    color: white !important;
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
+  mat-card-content { padding: 40px !important; }
+}
+
+.form-section {
+  margin-bottom: 30px;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+
+    mat-icon {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 10px;
+      &.icon-navy { background: rgba($navy, 0.1); color: $navy; }
+      &.icon-gold { background: rgba($gold, 0.1); color: $gold; }
+    }
+
+    h3 { margin: 0; font-size: 15px; font-weight: 700; color: $navy; text-transform: uppercase; letter-spacing: 1px; }
+  }
+
+  .sub-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: $gold;
+    text-transform: uppercase;
+    margin: 25px 0 15px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    &::after { content: ''; flex: 1; height: 1px; background: #eee; }
   }
 }
 
-mat-card-content {
-  padding: 24px !important;
-}
-
-.section-title {
-  color: #1a2a5e;
-  margin: 20px 0 12px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  &::before {
-    content: '';
-    width: 4px;
-    height: 16px;
-    background: linear-gradient(135deg, #c8a84b, #e0c060);
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, #e8eaf0, transparent);
-  }
-}
-
-.row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 8px;
-}
+// Grids Responsivos
+.row-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.row-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.row-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.full-width { width: 100%; }
 
 mat-form-field {
   width: 100%;
+  ::ng-deep .mat-mdc-text-field-wrapper { background: #fdfdfd; border-radius: 8px; }
+}
 
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    background: white;
-    border-radius: 8px;
+mat-divider { margin: 35px 0 !important; border-color: #f1f1f1 !important; }
+
+.form-actions {
+  padding: 0 40px 40px !important;
+  gap: 15px;
+
+  .btn-cancel {
+    color: #64748b;
+    font-weight: 600;
+    height: 52px;
+    padding: 0 25px !important;
+    border-radius: 12px;
+    &:hover { background: #f1f5f9; }
   }
-}
 
-mat-divider {
-  margin: 20px 0 !important;
-  border-color: #f0f2f8 !important;
-}
-
-mat-card-actions button[color="primary"] {
-  color: white !important;
-
-  mat-icon {
+  .btn-submit {
+    background: linear-gradient(135deg, $navy, $navy-light) !important;
     color: white !important;
+    padding: 0 35px !important;
+    height: 52px;
+    border-radius: 12px;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba($navy, 0.2);
+    
+    mat-icon { margin-right: 8px; font-size: 20px; }
   }
 }
 
-.spacer { flex: 1 1 auto; }
+// Mobile adjust
+@media (max-width: 900px) {
+  .row-grid-3, .row-grid-4 { grid-template-columns: 1fr 1fr; }
+}
 
-.toolbar-hint {
-  font-size: 12px;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: 1px;
+@media (max-width: 600px) {
+  .row-grid-2, .row-grid-3, .row-grid-4 { grid-template-columns: 1fr; }
+  .page-wrapper { padding: 15px; }
+  .enrollment-card mat-card-content { padding: 20px !important; }
 }
