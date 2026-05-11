@@ -23,6 +23,8 @@ export class IngresarDisciplina implements OnInit {
   materia: any = null;
   matriculas: any[] = [];
   notas: { [key: number]: string } = {};
+  materiaPracticaId: number = 0;
+  materiaTeoriaId: number = 0;
   loading = true;
   guardando = false;
 
@@ -35,81 +37,22 @@ export class IngresarDisciplina implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-ngOnInit() {
-  this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${this.authService.getToken()}`
-  });
-
-  this.http.get<any>(`http://localhost:3001/api/disciplina/estudiantes/${this.materiaId}`, { headers }).subscribe({
-    next: (data) => {
-      this.materia = data.materia;
-      this.matriculas = data.matriculas;
-
-      this.http.get<any[]>(`http://localhost:3001/api/disciplina/materia/${this.materiaId}`, { headers }).subscribe({
-        next: (notasExistentes) => {
-          notasExistentes.forEach(n => {
-            this.notas[n.matriculaId] = String(n.valor);
-          });
-          this.loading = false;
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.loading = false;
-          this.cdr.detectChanges();
-        }
-      });
-    },
-    error: () => {
-      this.loading = false;
-      this.cdr.detectChanges();
-    }
-  });
-}
-
-  cargarMatriculas(headers: HttpHeaders) {
-    // Obtener la materia para saber el cursoId
-    this.http.get<any[]>(`http://localhost:3001/api/tareas/${this.materiaId}`, { headers }).subscribe({
-      next: (tareas) => {
-        const cursoId = tareas[0]?.materia?.cursoId;
-        if (!cursoId) {
-          // Sin tareas aún — obtener materia directo
-          this.cargarMatriculasPorMateria(headers);
-          return;
-        }
-        this.cargarEstudiantesCurso(cursoId, headers);
-      },
-      error: () => {
-        this.cargarMatriculasPorMateria(headers);
-      }
+  ngOnInit() {
+    this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getToken()}`
     });
-  }
 
-  cargarMatriculasPorMateria(headers: HttpHeaders) {
-    this.http.get<any>(`http://localhost:3001/api/asistencias/materia/${this.materiaId}`, { headers }).subscribe({
+    this.http.get<any>(`http://localhost:3001/api/disciplina/estudiantes/${this.materiaId}`, { headers }).subscribe({
       next: (data) => {
-        const cursoId = data[0]?.materia?.cursoId;
-        if (cursoId) this.cargarEstudiantesCurso(cursoId, headers);
-        else {
-          this.loading = false;
-          this.cdr.detectChanges();
-        }
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
+        this.materia = data.materia;
+        this.matriculas = data.matriculas;
+        this.materiaPracticaId = data.materiaPracticaId || 0;
+        this.materiaTeoriaId = data.materiaTeoriaId || 0;
 
-  cargarEstudiantesCurso(cursoId: number, headers: HttpHeaders) {
-    this.http.get<any>(`http://localhost:3001/api/cursos/${cursoId}`, { headers }).subscribe({
-      next: (curso) => {
-        this.materia = curso.materias?.find((m: any) => m.id === this.materiaId);
-        this.matriculas = curso.matriculas || [];
-
-        // Cargar notas existentes
-        this.http.get<any[]>(`http://localhost:3001/api/disciplina/materia/${this.materiaId}`, { headers }).subscribe({
+        // Cargar notas existentes — buscar por Práctica o Teoría
+        const idBusqueda = this.materiaPracticaId || this.materiaTeoriaId || this.materiaId;
+        this.http.get<any[]>(`http://localhost:3001/api/disciplina/materia/${idBusqueda}`, { headers }).subscribe({
           next: (notasExistentes) => {
             notasExistentes.forEach(n => {
               this.notas[n.matriculaId] = String(n.valor);
@@ -131,13 +74,22 @@ ngOnInit() {
   }
 
   guardar() {
-    const notasArray = this.matriculas
+    const notasArray: any[] = [];
+
+    this.matriculas
       .filter(m => this.notas[m.id] !== undefined && this.notas[m.id] !== '')
-      .map(m => ({
-        matriculaId: m.id,
-        materiaId: this.materiaId,
-        valor: Number(this.notas[m.id])
-      }));
+      .forEach(m => {
+        const valor = Number(this.notas[m.id]);
+        if (this.materiaPracticaId) {
+          notasArray.push({ matriculaId: m.id, materiaId: this.materiaPracticaId, valor });
+        }
+        if (this.materiaTeoriaId) {
+          notasArray.push({ matriculaId: m.id, materiaId: this.materiaTeoriaId, valor });
+        }
+        if (!this.materiaPracticaId && !this.materiaTeoriaId) {
+          notasArray.push({ matriculaId: m.id, materiaId: this.materiaId, valor });
+        }
+      });
 
     if (notasArray.length === 0) {
       this.snackBar.open('Ingresa al menos una nota', 'OK', { duration: 3000 });
