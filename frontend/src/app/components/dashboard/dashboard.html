@@ -48,28 +48,17 @@
         <p>Publicar noticias y eventos para docentes y estudiantes</p>
       </div>
       <span class="card-status active">● Activo</span>
-</div>
-
-    <div class="menu-card disabled-card">
-      <div class="card-icon-wrap disabled">
-        <mat-icon>grade</mat-icon>
-      </div>
-      <div class="card-info">
-        <h3>Notas</h3>
-        <p>Gestionar calificaciones por materia</p>
-      </div>
-      <span class="card-status soon">● Próximamente</span>
     </div>
 
-    <div class="menu-card disabled-card">
-      <div class="card-icon-wrap disabled">
+    <div class="menu-card active-card" (click)="irADocumentos()">
+      <div class="card-icon-wrap">
         <mat-icon>description</mat-icon>
       </div>
       <div class="card-info">
         <h3>Documentos</h3>
-        <p>Generar matrículas y certificados</p>
+        <p>Buscar estudiantes y descargar matrículas y certificados</p>
       </div>
-      <span class="card-status soon">● Próximamente</span>
+      <span class="card-status active">● Activo</span>
     </div>
 
   </div>
@@ -88,8 +77,6 @@
       <span class="card-status active">● Activo</span>
     </div>
 
-
-
     <div class="menu-card active-card" (click)="irAReportes()">
       <div class="card-icon-wrap">
         <mat-icon>bar_chart</mat-icon>
@@ -99,19 +86,6 @@
         <p>Asistencia y reportes del centro</p>
       </div>
       <span class="card-status active">● Activo</span>
-    </div>
-
-    
-
-    <div class="menu-card disabled-card">
-      <div class="card-icon-wrap disabled">
-        <mat-icon>settings</mat-icon>
-      </div>
-      <div class="card-info">
-        <h3>Configuración</h3>
-        <p>Ajustes generales del sistema</p>
-      </div>
-      <span class="card-status soon">● Próximamente</span>
     </div>
 
   </div>

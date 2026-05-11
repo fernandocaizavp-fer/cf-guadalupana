@@ -39,6 +39,10 @@ export class Dashboard {
     this.router.navigate(['/anuncios']);
   }
 
+  irADocumentos() {
+    this.router.navigate(['/documentos']);
+  }
+
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
