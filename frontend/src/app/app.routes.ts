@@ -21,6 +21,8 @@ import { Reportes } from './components/reportes/reportes/reportes';
 import { GestionarAnuncios } from './components/anuncios/gestionar-anuncios/gestionar-anuncios';
 import { SubmateriasMateria } from './components/estudiante/submaterias-materia/submaterias-materia';
 import { IngresarDisciplina } from './components/disciplina/ingresar-disciplina/ingresar-disciplina';
+import { Documentos } from './components/documentos/documentos/documentos';
+
 
 
 
@@ -49,7 +51,7 @@ export const routes: Routes = [
   { path: 'anuncios', component: GestionarAnuncios, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'estudiante/submaterias/:materiaId/:semestre', component: SubmateriasMateria, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
   { path: 'disciplina/materia/:materiaId', component: IngresarDisciplina, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
-
+  { path: 'documentos', component: Documentos, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
 
 
 ];
