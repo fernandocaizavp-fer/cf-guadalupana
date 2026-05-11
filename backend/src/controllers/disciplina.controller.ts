@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 
-// Guardar nota de disciplina
 export const guardarNotaDisciplina = async (req: Request, res: Response) => {
   const { matriculaId, materiaId, valor } = req.body;
   try {
@@ -25,7 +24,6 @@ export const guardarNotaDisciplina = async (req: Request, res: Response) => {
   }
 };
 
-// Guardar notas de disciplina masivo
 export const guardarNotasDisciplinaMasivo = async (req: Request, res: Response) => {
   const { notas } = req.body;
   try {
@@ -53,7 +51,6 @@ export const guardarNotasDisciplinaMasivo = async (req: Request, res: Response) 
   }
 };
 
-// Obtener notas de disciplina por materia
 export const getNotasDisciplinaPorMateria = async (req: Request, res: Response) => {
   const { materiaId } = req.params;
   try {
@@ -72,41 +69,12 @@ export const getNotasDisciplinaPorMateria = async (req: Request, res: Response) 
   }
 };
 
-export const getEstudiantesPorMateria = async (req: Request, res: Response) => {
-  const { materiaId } = req.params;
-  try {
-    const materia = await prisma.materia.findUnique({
-      where: { id: Number(materiaId) },
-      include: {
-        curso: {
-          include: {
-            matriculas: {
-              orderBy: { apellidos: 'asc' }
-            }
-          }
-        }
-      }
-    });
-    if (!materia) return res.status(404).json({ error: 'Materia no encontrada' });
-    res.json({
-      materia: { id: materia.id, nombre: materia.nombre },
-      matriculas: materia.curso.matriculas
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener estudiantes' });
-  }
-};
-
-
-// Obtener notas de disciplina por curso
 export const getNotasDisciplinaPorCurso = async (req: Request, res: Response) => {
   const { cursoId } = req.params;
   try {
     const matriculas = await prisma.matricula.findMany({
       where: { cursoId: Number(cursoId) },
-      include: {
-        notasDisciplina: true
-      },
+      include: { notasDisciplina: true },
       orderBy: { apellidos: 'asc' }
     });
 
@@ -128,5 +96,40 @@ export const getNotasDisciplinaPorCurso = async (req: Request, res: Response) =>
     res.json(resumen);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener notas de disciplina' });
+  }
+};
+
+export const getEstudiantesPorMateria = async (req: Request, res: Response) => {
+  const { materiaId } = req.params;
+  try {
+    const materia = await prisma.materia.findUnique({
+      where: { id: Number(materiaId) },
+      include: {
+        curso: {
+          include: {
+            matriculas: { orderBy: { apellidos: 'asc' } },
+            materias: {
+              where: {
+                esSubmateria: false,
+                nombre: { in: ['Práctica', 'Teoría'] }
+              }
+            }
+          }
+        }
+      }
+    });
+    if (!materia) return res.status(404).json({ error: 'Materia no encontrada' });
+
+    const practica = materia.curso.materias.find(m => m.nombre === 'Práctica');
+    const teoria = materia.curso.materias.find(m => m.nombre === 'Teoría');
+
+    res.json({
+      materia: { id: materia.id, nombre: materia.nombre },
+      matriculas: materia.curso.matriculas,
+      materiaPracticaId: practica?.id || null,
+      materiaTeoriaId: teoria?.id || null
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener estudiantes' });
   }
 };
