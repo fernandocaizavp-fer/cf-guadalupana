@@ -59,6 +59,11 @@ export class UsuarioService {
   });
 }
 
+getCursosConSubmaterias(profesorId: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/usuarios/cursos-con-submaterias/${profesorId}`,
+    { headers: this.getHeaders() });
+}
+
   getMateriasCurso(cursoId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/cursos/${cursoId}`, {
       headers: this.getHeaders()
