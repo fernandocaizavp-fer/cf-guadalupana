@@ -13,6 +13,7 @@ import { CursoService } from '../../../services/curso';
 import { AsistenciaService } from '../../../services/asistencia';
 import { TareaService } from '../../../services/tarea';
 import { SuplетorioService } from '../../../services/supletorio';
+import { ReporteService } from '../../../services/reporte';
 
 @Component({
   selector: 'app-reportes',
@@ -48,12 +49,19 @@ export class Reportes implements OnInit {
   lugarFechaAL15 = '';
   jornadaAL15 = 'MATUTINA';
 
+  // Nómina AL9
+  cursoAL9: number | null = null;
+  lugarFechaAL9 = '';
+  jornadaAL9 = 'MATUTINA';
+  regimenAL9 = 'SIERRA';
+
   constructor(
     private router: Router,
     private cursoService: CursoService,
     private asistenciaService: AsistenciaService,
     private tareaService: TareaService,
     private suplетorioService: SuplетorioService,
+    private reporteService: ReporteService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
   ) {}
@@ -201,6 +209,26 @@ export class Reportes implements OnInit {
         window.URL.revokeObjectURL(url);
       },
       error: () => this.snackBar.open('Error al generar AL15', 'OK', { duration: 3000 })
+    });
+  }
+
+  // NÓMINA AL9
+  descargarAL9() {
+    if (!this.cursoAL9 || !this.lugarFechaAL9) {
+      this.snackBar.open('Selecciona curso y completa lugar y fecha', 'OK', { duration: 3000 });
+      return;
+    }
+    this.reporteService.generarAL9(this.cursoAL9, this.lugarFechaAL9, this.jornadaAL9, this.regimenAL9).subscribe({
+      next: (blob: Blob) => {
+        const curso = this.cursos.find(c => c.id === this.cursoAL9);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `AL9_${curso?.ramaArtesanal || 'nomina'}.docx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => this.snackBar.open('Error al generar AL9', 'OK', { duration: 3000 })
     });
   }
 

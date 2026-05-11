@@ -1,71 +1,82 @@
-<mat-toolbar style="background: linear-gradient(135deg, #1a2a5e, #0d1a3e); color: white;">
-  <button mat-icon-button style="color: white;" (click)="volver()">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <span>Reportes</span>
-  <span class="spacer"></span>
+<mat-toolbar class="admin-toolbar">
+  <div class="toolbar-content">
+    <div class="nav-group">
+      <button mat-icon-button (click)="volver()" class="back-pill">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-meta">
+        <h1>Centro de Reportes</h1>
+        <span>Administración de documentos oficiales</span>
+      </div>
+    </div>
+  </div>
 </mat-toolbar>
 
-<div class="content">
+<div class="page-wrapper">
 
   @if (!seccionActiva) {
-    <div class="reportes-header">
-      <h1>Centro de Reportes</h1>
-      <p>Selecciona el tipo de reporte que deseas generar</p>
+    <div class="reportes-welcome">
+      <h2>Panel de Selección</h2>
+      <p>Elija el tipo de reporte oficial que desea generar</p>
     </div>
 
     <div class="reportes-grid">
-      <div class="reporte-card" (click)="abrirSeccion('asistencia')">
-        <div class="reporte-icon asistencia">
-          <mat-icon>how_to_reg</mat-icon>
-        </div>
-        <div class="reporte-info">
+      <div class="reporte-card-modern" (click)="abrirSeccion('asistencia')">
+        <div class="card-accent asistencia"></div>
+        <div class="icon-box asistencia"><mat-icon>how_to_reg</mat-icon></div>
+        <div class="info">
           <h3>Reporte de Asistencia</h3>
-          <p>Consulta el porcentaje de asistencia por estudiante y descarga el documento oficial AL18</p>
+          <p>Porcentaje de asistencia por estudiante. Documento oficial <strong>AL18</strong></p>
         </div>
-        <mat-icon class="reporte-arrow">arrow_forward</mat-icon>
+        <mat-icon class="arrow">chevron_right</mat-icon>
       </div>
 
-      <div class="reporte-card" (click)="abrirSeccion('calificaciones')">
-        <div class="reporte-icon calificaciones">
-          <mat-icon>grade</mat-icon>
-        </div>
-        <div class="reporte-info">
+      <div class="reporte-card-modern" (click)="abrirSeccion('calificaciones')">
+        <div class="card-accent calificaciones"></div>
+        <div class="icon-box calificaciones"><mat-icon>grade</mat-icon></div>
+        <div class="info">
           <h3>Reporte de Calificaciones</h3>
-          <p>Consulta los promedios por materia y semestre, y descarga el cuadro oficial AL14</p>
+          <p>Promedios por materia y semestre. Documento oficial <strong>AL14</strong></p>
         </div>
-        <mat-icon class="reporte-arrow">arrow_forward</mat-icon>
+        <mat-icon class="arrow">chevron_right</mat-icon>
       </div>
 
-      <div class="reporte-card" (click)="abrirSeccion('cuadrofinal')">
-        <div class="reporte-icon cuadrofinal">
-          <mat-icon>summarize</mat-icon>
-        </div>
-        <div class="reporte-info">
+      <div class="reporte-card-modern" (click)="abrirSeccion('cuadrofinal')">
+        <div class="card-accent cuadrofinal"></div>
+        <div class="icon-box cuadrofinal"><mat-icon>summarize</mat-icon></div>
+        <div class="info">
           <h3>Cuadro Final de Notas</h3>
-          <p>Genera el cuadro final con ambos semestres, supletorios y promedios finales. Documento oficial AL15</p>
+          <p>Consolidado anual y supletorios. Documento oficial <strong>AL15</strong></p>
         </div>
-        <mat-icon class="reporte-arrow">arrow_forward</mat-icon>
+        <mat-icon class="arrow">chevron_right</mat-icon>
+      </div>
+
+      <div class="reporte-card-modern" (click)="abrirSeccion('nomina')">
+        <div class="card-accent nomina"></div>
+        <div class="icon-box nomina"><mat-icon>people</mat-icon></div>
+        <div class="info">
+          <h3>Nómina de Participantes</h3>
+          <p>Listado de matriculados. Documento oficial <strong>AL9</strong></p>
+        </div>
+        <mat-icon class="arrow">chevron_right</mat-icon>
       </div>
     </div>
   }
 
-  <!-- SECCION ASISTENCIA -->
   @if (seccionActiva === 'asistencia') {
-    <div class="seccion-header">
-      <button mat-icon-button style="color: #1a2a5e;" (click)="seccionActiva = null">
+    <div class="seccion-header-detail">
+      <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <div class="seccion-icon asistencia"><mat-icon>how_to_reg</mat-icon></div>
-      <div>
+      <div class="header-text">
         <h2>Reporte de Asistencia</h2>
-        <p>Documento oficial AL18</p>
+        <span class="badge asistencia">OFICIAL AL18</span>
       </div>
     </div>
 
-    <div class="filtros-card">
-      <div class="filtros-row" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-        <mat-form-field appearance="outline" class="curso-select" subscriptSizing="dynamic">
+    <div class="card-panel filter-panel">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
           <mat-label>Curso</mat-label>
           <mat-select [(ngModel)]="cursoSeleccionado" (ngModelChange)="seleccionarCurso()">
             @for (curso of cursos; track curso.id) {
@@ -73,79 +84,63 @@
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-form-field appearance="outline">
           <mat-label>Jornada</mat-label>
           <input matInput [(ngModel)]="jornada">
         </mat-form-field>
-        <mat-form-field appearance="outline" class="lugar-field" subscriptSizing="dynamic">
+        <mat-form-field appearance="outline" class="span-2">
           <mat-label>Lugar y Fecha</mat-label>
-          <input matInput [(ngModel)]="lugarFecha" placeholder="Riobamba, 24 de abril del 2026">
+          <input matInput [(ngModel)]="lugarFecha">
         </mat-form-field>
-        @if (cursoSeleccionado) {
-          <button mat-raised-button
-            style="background: linear-gradient(135deg, #1a2a5e, #2a4f9f); color: white; height: 56px; display: flex; align-items: center;"
-            (click)="descargarAL18()">
-            <mat-icon>download</mat-icon> Descargar AL18
-          </button>
-        }
+        <div class="action-btn">
+          @if (cursoSeleccionado) {
+            <button mat-flat-button class="btn-download navy" (click)="descargarAL18()">
+              <mat-icon>download</mat-icon> DESCARGAR AL18
+            </button>
+          }
+        </div>
       </div>
     </div>
 
-    @if (loading) {
-      <div class="center"><mat-spinner></mat-spinner></div>
-    }
-
+    @if (loading) { <div class="center-box"><mat-spinner diameter="40"></mat-spinner></div> }
     @if (!loading && cursoSeleccionado && resumen.length === 0) {
-      <div class="center">
-        <mat-icon class="empty-icon">event_busy</mat-icon>
-        <p>No hay registros de asistencia para este curso</p>
-      </div>
+      <div class="empty-box"><mat-icon>event_busy</mat-icon><p>Sin registros encontrados</p></div>
     }
-
     @if (!loading && resumen.length > 0) {
-      <div class="info-bar">
-        <span>Total de clases registradas: <strong>{{ totalClases }}</strong></span>
-        <span>{{ resumen.length }} estudiantes</span>
-      </div>
-      <div class="table-wrapper">
-        <table class="reporte-table">
+      <div class="table-container-modern">
+        <div class="table-info-bar">
+          <span>Clases registradas: <strong>{{ totalClases }}</strong></span>
+          <span><strong>{{ resumen.length }}</strong> Estudiantes</span>
+        </div>
+        <table class="modern-table">
           <thead>
             <tr>
-              <th class="th-num">No.</th>
-              <th class="th-nombre">Apellidos y Nombres</th>
+              <th class="w-50">No.</th>
+              <th class="text-left">Apellidos y Nombres</th>
               <th>Cédula</th>
               <th>Presentes</th>
               <th>Faltas</th>
-              <th>% Asistencia</th>
+              <th>% Asist.</th>
               <th>Observación</th>
-              <th>Guardar</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             @for (est of resumen; track est.id; let i = $index) {
               <tr>
-                <td class="td-num">{{ i + 1 }}</td>
-                <td class="td-nombre">{{ est.apellidos }} {{ est.nombres }}</td>
-                <td>{{ est.cedula }}</td>
-                <td>{{ est.totalPresente }}</td>
-                <td>{{ est.totalFaltas }}</td>
-                <td>
-                  <div class="porcentaje-chip"
-                    [style.background]="getColorPorcentaje(est.porcentaje) + '22'"
-                    [style.color]="getColorPorcentaje(est.porcentaje)">
+                <td class="text-center">{{ i + 1 }}</td>
+                <td class="text-left font-bold">{{ est.apellidos }} {{ est.nombres }}</td>
+                <td class="text-center"><code>{{ est.cedula }}</code></td>
+                <td class="text-center">{{ est.totalPresente }}</td>
+                <td class="text-center">{{ est.totalFaltas }}</td>
+                <td class="text-center">
+                  <span class="chip" [style.color]="getColorPorcentaje(est.porcentaje)" [style.background]="getColorPorcentaje(est.porcentaje) + '15'">
                     {{ est.porcentaje }}%
-                  </div>
+                  </span>
                 </td>
-                <td>
-                  <input type="text" class="obs-input"
-                    [(ngModel)]="observaciones[est.id]"
-                    placeholder="Observación...">
-                </td>
-                <td>
-                  <button mat-icon-button style="color: #1a2a5e;"
-                    (click)="guardarObservacion(est.id)">
-                    <mat-icon>save</mat-icon>
-                  </button>
+                <td><input type="text" class="table-input" [(ngModel)]="observaciones[est.id]"></td>
+                <td class="text-center">
+                  <button mat-icon-button class="save-btn" (click)="guardarObservacion(est.id)"><mat-icon>save</mat-icon></button>
                 </td>
               </tr>
             }
@@ -155,22 +150,20 @@
     }
   }
 
-  <!-- SECCION CALIFICACIONES -->
   @if (seccionActiva === 'calificaciones') {
-    <div class="seccion-header">
-      <button mat-icon-button style="color: #1a2a5e;" (click)="seccionActiva = null">
+    <div class="seccion-header-detail">
+      <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <div class="seccion-icon calificaciones"><mat-icon>grade</mat-icon></div>
-      <div>
+      <div class="header-text">
         <h2>Reporte de Calificaciones</h2>
-        <p>Documento oficial AL14</p>
+        <span class="badge gold">OFICIAL AL14</span>
       </div>
     </div>
 
-    <div class="filtros-card">
-      <div class="filtros-row" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-        <mat-form-field appearance="outline" class="curso-select" subscriptSizing="dynamic">
+    <div class="card-panel filter-panel">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
           <mat-label>Curso</mat-label>
           <mat-select [(ngModel)]="cursoCalificaciones" (ngModelChange)="seleccionarCursoCalificaciones()">
             @for (curso of cursos; track curso.id) {
@@ -178,40 +171,37 @@
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-form-field appearance="outline">
           <mat-label>Semestre</mat-label>
           <mat-select [(ngModel)]="semestreCalificaciones">
             <mat-option [value]="1">1er Semestre</mat-option>
             <mat-option [value]="2">2do Semestre</mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" class="lugar-field" subscriptSizing="dynamic">
+        <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
-          <input matInput [(ngModel)]="lugarFechaCalificaciones" placeholder="Riobamba, 24 de abril del 2026">
+          <input matInput [(ngModel)]="lugarFechaCalificaciones">
         </mat-form-field>
-        @if (cursoCalificaciones) {
-          <button mat-raised-button
-            style="background: linear-gradient(135deg, #c8a84b, #e0c060); color: #1a2a5e; font-weight: 700; height: 56px; display: flex; align-items: center;"
-            (click)="descargarAL14()">
-            <mat-icon>download</mat-icon> Descargar AL14
-          </button>
-        }
+        <div class="action-btn">
+          @if (cursoCalificaciones) {
+            <button mat-flat-button class="btn-download gold" (click)="descargarAL14()">
+              <mat-icon>download</mat-icon> AL14
+            </button>
+          }
+        </div>
       </div>
     </div>
 
-    @if (loadingCalificaciones) {
-      <div class="center"><mat-spinner></mat-spinner></div>
-    }
-
+    @if (loadingCalificaciones) { <div class="center-box"><mat-spinner diameter="40"></mat-spinner></div> }
     @if (!loadingCalificaciones && resumenCalificaciones.length > 0) {
-      <div class="table-wrapper">
-        <table class="reporte-table">
+      <div class="table-container-modern">
+        <table class="modern-table">
           <thead>
             <tr>
-              <th class="th-num">No.</th>
-              <th class="th-nombre">Apellidos y Nombres</th>
+              <th class="w-50">No.</th>
+              <th class="text-left">Apellidos y Nombres</th>
               @for (materia of materiasCalificaciones; track materia.id) {
-                <th class="th-materia">{{ materia.nombre }}</th>
+                <th class="v-text">{{ materia.nombre }}</th>
               }
               <th>Promedio</th>
             </tr>
@@ -219,12 +209,12 @@
           <tbody>
             @for (est of resumenCalificaciones; track est.id; let i = $index) {
               <tr>
-                <td class="td-num">{{ i + 1 }}</td>
-                <td class="td-nombre">{{ est.apellidos }} {{ est.nombres }}</td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td class="text-left font-bold">{{ est.apellidos }} {{ est.nombres }}</td>
                 @for (materia of materiasCalificaciones; track materia.id) {
-                  <td>{{ getPromedioMateria(est, materia.id) }}</td>
+                  <td class="text-center">{{ getPromedioMateria(est, materia.id) }}</td>
                 }
-                <td class="td-promedio">{{ getPromedioGeneral(est) }}</td>
+                <td class="text-center highlight-cell">{{ getPromedioGeneral(est) }}</td>
               </tr>
             }
           </tbody>
@@ -233,22 +223,20 @@
     }
   }
 
-  <!-- SECCION CUADRO FINAL AL15 -->
   @if (seccionActiva === 'cuadrofinal') {
-    <div class="seccion-header">
-      <button mat-icon-button style="color: #1a2a5e;" (click)="seccionActiva = null">
+    <div class="seccion-header-detail">
+      <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <div class="seccion-icon cuadrofinal"><mat-icon>summarize</mat-icon></div>
-      <div>
+      <div class="header-text">
         <h2>Cuadro Final de Notas</h2>
-        <p>Documento oficial AL15</p>
+        <span class="badge purple">OFICIAL AL15</span>
       </div>
     </div>
 
-    <div class="filtros-card">
-      <div class="filtros-row" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-        <mat-form-field appearance="outline" class="curso-select" subscriptSizing="dynamic">
+    <div class="card-panel filter-panel">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
           <mat-label>Curso</mat-label>
           <mat-select [(ngModel)]="cursoAL15">
             @for (curso of cursos; track curso.id) {
@@ -256,27 +244,70 @@
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-form-field appearance="outline">
           <mat-label>Jornada</mat-label>
           <input matInput [(ngModel)]="jornadaAL15">
         </mat-form-field>
-        <mat-form-field appearance="outline" class="lugar-field" subscriptSizing="dynamic">
+        <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
-          <input matInput [(ngModel)]="lugarFechaAL15" placeholder="Riobamba, 24 de abril del 2026">
+          <input matInput [(ngModel)]="lugarFechaAL15">
         </mat-form-field>
-        @if (cursoAL15) {
-          <button mat-raised-button
-            style="background: linear-gradient(135deg, #7b1fa2, #9c27b0); color: white; font-weight: 700; height: 56px; display: flex; align-items: center;"
-            (click)="descargarAL15()">
-            <mat-icon>download</mat-icon> Descargar AL15
-          </button>
-        }
+        <div class="action-btn">
+          @if (cursoAL15) {
+            <button mat-flat-button class="btn-download purple" (click)="descargarAL15()">
+              <mat-icon>download</mat-icon> AL15
+            </button>
+          }
+        </div>
       </div>
     </div>
 
-    <div class="al15-info">
+    <div class="info-note-box purple">
       <mat-icon>info</mat-icon>
-      <span>El AL15 incluye automáticamente las notas de ambos semestres y los supletorios ingresados por los docentes.</span>
+      <span>El documento AL15 consolida notas de ambos semestres y exámenes supletorios.</span>
+    </div>
+  }
+
+  @if (seccionActiva === 'nomina') {
+    <div class="seccion-header-detail">
+      <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h2>Nómina de Participantes</h2>
+        <span class="badge orange">OFICIAL AL9</span>
+      </div>
+    </div>
+
+    <div class="card-panel filter-panel">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Curso</mat-label>
+          <mat-select [(ngModel)]="cursoAL9">
+            @for (curso of cursos; track curso.id) {
+              <mat-option [value]="curso.id">{{ curso.ramaArtesanal }} — {{ curso.anioFormativo }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Régimen</mat-label>
+          <mat-select [(ngModel)]="regimenAL9">
+            <mat-option value="SIERRA">Sierra</mat-option>
+            <mat-option value="COSTA">Costa</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Jornada</mat-label>
+          <input matInput [(ngModel)]="jornadaAL9">
+        </mat-form-field>
+        <div class="action-btn">
+          @if (cursoAL9) {
+            <button mat-flat-button class="btn-download orange" (click)="descargarAL9()">
+              <mat-icon>download</mat-icon> AL9
+            </button>
+          }
+        </div>
+      </div>
     </div>
   }
 
