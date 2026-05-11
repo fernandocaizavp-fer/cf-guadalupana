@@ -1,9 +1,55 @@
-.spacer { flex: 1 1 auto; }
+/* VARIABLES */
+$navy: #1a2a5e;
+$navy-light: #2a4f9f;
+$gold: #c8a84b;
 
+/* ENCABEZADO PROFESIONAL (Igual que Docentes) */
+.admin-toolbar {
+  background: linear-gradient(135deg, $navy, #0d1a3e);
+  color: white;
+  height: 85px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+
+  .toolbar-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0 30px;
+  }
+
+  .nav-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .back-pill {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(-3px);
+      }
+    }
+
+    .title-meta {
+      h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+      span { font-size: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+    }
+  }
+}
+
+.flex-spacer { flex: 1; }
+
+/* CONTENIDO Y FORMULARIO (Se mantiene tu estilo original) */
 .content {
   padding: 32px 48px;
   background: #f0f2f8;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 85px);
 }
 
 .form-card {
@@ -22,7 +68,7 @@
   padding: 16px 24px;
   background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
 
-  mat-icon { color: #c8a84b; font-size: 22px; }
+  mat-icon { color: $gold; font-size: 22px; }
   h2 { color: white; margin: 0; font-size: 16px; font-weight: 700; }
 }
 
@@ -124,7 +170,7 @@
     content: '';
     width: 4px;
     height: 16px;
-    background: linear-gradient(135deg, #c8a84b, #e0c060);
+    background: linear-gradient(135deg, $gold, #e0c060);
     border-radius: 2px;
   }
 }
@@ -223,7 +269,7 @@
   font-size: 12px;
   color: #aaa;
 
-  mat-icon { font-size: 14px; width: 14px; height: 14px; color: #c8a84b; }
+  mat-icon { font-size: 14px; width: 14px; height: 14px; color: $gold; }
 }
 
 .badge-inactivo {

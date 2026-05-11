@@ -1,14 +1,20 @@
-<mat-toolbar style="background: linear-gradient(135deg, #1a2a5e, #0d1a3e); color: white;">
-  <button mat-icon-button style="color: white;" (click)="volver()">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <span>Gestionar Anuncios</span>
-  <span class="spacer"></span>
+<mat-toolbar class="admin-toolbar">
+  <div class="toolbar-content">
+    <div class="nav-group">
+      <button mat-icon-button (click)="volver()" class="back-pill">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-meta">
+        <h1>Gestionar Anuncios</h1>
+        <span>Comunicación institucional y eventos</span>
+      </div>
+    </div>
+    <span class="flex-spacer"></span>
+  </div>
 </mat-toolbar>
 
 <div class="content">
 
-  <!-- FORMULARIO -->
   <div class="form-card">
     <div class="form-header">
       <mat-icon>{{ editando ? 'edit' : 'add_circle' }}</mat-icon>
@@ -65,7 +71,6 @@
     </div>
   </div>
 
-  <!-- LISTA DE ANUNCIOS -->
   <h2 class="section-title">Anuncios Publicados ({{ anuncios.length }})</h2>
 
   @if (loading) {
