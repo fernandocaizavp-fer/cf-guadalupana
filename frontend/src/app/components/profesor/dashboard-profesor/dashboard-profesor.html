@@ -72,9 +72,11 @@
                         <button mat-stroked-button (click)="irAAsistencia(materia.id)" class="btn-accion verde-claro">
                           <mat-icon>how_to_reg</mat-icon> Asistencia
                         </button>
-                        <button mat-stroked-button (click)="irADisciplina(materia.id)" class="btn-accion morado">
-                          <mat-icon>star</mat-icon> Disciplina
-                        </button>
+                        @if (materia.tieneDisciplina) {
+                          <button mat-stroked-button (click)="irADisciplina(materia.id)" class="btn-accion morado">
+                            <mat-icon>star</mat-icon> Disciplina
+                          </button>
+                        }
                       } @else {
                         <button mat-stroked-button (click)="irANotas(curso.id, materia.id)" class="btn-accion azul-oscuro">
                           <mat-icon>assignment</mat-icon> Tareas

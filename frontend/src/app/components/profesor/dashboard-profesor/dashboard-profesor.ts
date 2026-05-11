@@ -12,8 +12,11 @@ import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard-profesor',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
-    MatProgressSpinnerModule, MatSnackBarModule, DatePipe],
+  standalone: true,
+  imports: [
+    MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
+    MatProgressSpinnerModule, MatSnackBarModule, DatePipe
+  ],
   templateUrl: './dashboard-profesor.html',
   styleUrl: './dashboard-profesor.scss'
 })
@@ -41,7 +44,10 @@ export class DashboardProfesor implements OnInit {
     this.http.get<any[]>(`http://localhost:3001/api/usuarios/mis-materias/${this.usuario.id}`, { headers }).subscribe({
       next: (materias) => {
         const mapa: { [key: number]: any } = {};
+
         materias.forEach(m => {
+          console.log(m.nombre, m.id, m.materiaParent, m.tieneDisciplina);
+
           if (!mapa[m.cursoId]) {
             mapa[m.cursoId] = {
               id: m.cursoId,
@@ -51,7 +57,6 @@ export class DashboardProfesor implements OnInit {
             };
           }
 
-          // Ignorar materias principales de Práctica/Teoría
           if (!m.esSubmateria && (m.nombre === 'Práctica' || m.nombre === 'Teoría')) {
             return;
           }
@@ -62,12 +67,14 @@ export class DashboardProfesor implements OnInit {
             );
             if (yaExiste) {
               yaExiste.idGemela = m.id;
+              if (m.tieneDisciplina) yaExiste.tieneDisciplina = true;
               return;
             }
           }
 
           mapa[m.cursoId].materias.push(m);
         });
+
         this.cursosAgrupados = Object.values(mapa);
         this.loading = false;
         this.cdr.detectChanges();
@@ -104,8 +111,8 @@ export class DashboardProfesor implements OnInit {
   }
 
   irADisciplina(materiaId: number) {
-  this.router.navigate(['/disciplina/materia', materiaId]);
-}
+    this.router.navigate(['/disciplina/materia', materiaId]);
+  }
 
   logout() {
     this.authService.logout();
