@@ -29,7 +29,8 @@ export const listarDocentes = async (req: Request, res: Response) => {
   try {
     const docentes = await prisma.usuario.findMany({
       where: { rol: 'PROFESOR' },
-      select: { id: true, nombre: true, apellido: true, correo: true, cedula: true, rol: true, createdAt: true }
+      select: { id: true, nombre: true, apellido: true, correo: true, cedula: true, rol: true, createdAt: true },
+      orderBy: { apellido: 'asc' }
     });
     res.json(docentes);
   } catch (error) {
@@ -48,10 +49,7 @@ export const actualizarDocente = async (req: Request, res: Response) => {
       cedula
     };
     if (cedula) data.password = await bcrypt.hash(cedula, 10);
-    const usuario = await prisma.usuario.update({
-      where: { id: Number(id) },
-      data
-    });
+    const usuario = await prisma.usuario.update({ where: { id: Number(id) }, data });
     res.json({ message: 'Docente actualizado', usuario });
   } catch (error: any) {
     if (error.code === 'P2002') {
@@ -96,14 +94,72 @@ export const asignarProfesorPrincipalMateria = async (req: Request, res: Respons
   }
 };
 
+export const getCursosConSubmaterias = async (req: Request, res: Response) => {
+  const { profesorId } = req.params;
+  try {
+    const submaterias = await prisma.materia.findMany({
+      where: { profesorId: Number(profesorId), esSubmateria: true },
+      include: { curso: true },
+      distinct: ['cursoId']
+    });
+    const cursos = submaterias.map(s => s.curso);
+    res.json(cursos);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener cursos' });
+  }
+};
+
 export const getMisMateria = async (req: Request, res: Response) => {
   const { profesorId } = req.params;
   try {
-    const materias = await prisma.materia.findMany({
-      where: { profesorId: Number(profesorId) },
-      include: { curso: true }
+    const id = Number(profesorId);
+
+      const materias = await prisma.materia.findMany({
+        where: { profesorId: id },
+        include: { curso: true },
+        orderBy: [{ nombre: 'asc' }, { materiaParent: 'asc' }]
+      });
+
+    const materiasComoProfesorPrincipal = await prisma.materia.findMany({
+      where: { profesorPrincipalId: id },
+      select: { cursoId: true }
     });
-    res.json(materias);
+
+    const cursosConProfesorPrincipal = new Set(
+      materiasComoProfesorPrincipal.map(m => m.cursoId)
+    );
+
+    console.log('cursosConProfesorPrincipal:', Array.from(cursosConProfesorPrincipal));
+
+    const primerasSubmaterias: { [cursoId: number]: number } = {};
+    if (cursosConProfesorPrincipal.size > 0) {
+      const submaterias = await prisma.materia.findMany({
+        where: {
+          cursoId: { in: Array.from(cursosConProfesorPrincipal) },
+          esSubmateria: true,
+          profesorId: id
+        },
+        orderBy: { id: 'asc' }
+      });
+
+      console.log('submaterias encontradas:', submaterias.map(s => ({ id: s.id, nombre: s.nombre, cursoId: s.cursoId })));
+
+      submaterias.forEach(s => {
+        if (!primerasSubmaterias[s.cursoId]) {
+          primerasSubmaterias[s.cursoId] = s.id;
+        }
+      });
+    }
+
+    console.log('primerasSubmaterias:', primerasSubmaterias);
+
+    const materiasConInfo = materias.map(m => ({
+      ...m,
+      esProfesorPrincipalEnCurso: cursosConProfesorPrincipal.has(m.cursoId),
+      tieneDisciplina: primerasSubmaterias[m.cursoId] === m.id
+    }));
+
+    res.json(materiasConInfo);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener materias' });
   }
@@ -117,9 +173,7 @@ export const getPerfilEstudiante = async (req: Request, res: Response) => {
       include: {
         curso: { include: { materias: true } },
         notasTarea: {
-          include: {
-            tarea: { include: { materia: true } }
-          }
+          include: { tarea: { include: { materia: true } } }
         },
         notasDisciplina: true
       }
