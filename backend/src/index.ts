@@ -13,6 +13,8 @@ import suplетorioRoutes from './routes/supletorio.routes';
 import asistenciaRoutes from './routes/asistencia.routes';
 import anuncioRoutes from './routes/anuncio.routes';
 import disciplinaRoutes from './routes/disciplina.routes';
+import reporteRoutes from './routes/reporte.routes';
+
 
 
 
@@ -36,6 +38,8 @@ app.use('/api/supletorios', suplетorioRoutes);
 app.use('/api/asistencias', asistenciaRoutes);
 app.use('/api/anuncios', anuncioRoutes);
 app.use('/api/disciplina', disciplinaRoutes);
+app.use('/api/reportes', reporteRoutes);
+
 
 
 app.get('/', (req, res) => {
