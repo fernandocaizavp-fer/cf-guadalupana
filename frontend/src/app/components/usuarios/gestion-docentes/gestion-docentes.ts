@@ -31,27 +31,18 @@ export class GestionDocentes implements OnInit {
   editando: any = null;
   columnas = ['nombre', 'apellido', 'correo', 'cedula', 'acciones'];
 
-  nuevoDocente = {
-    nombre: '',
-    apellido: '',
-    correo: '',
-    cedula: ''
-  };
+  nuevoDocente = { nombre: '', apellido: '', correo: '', cedula: '' };
 
-  asignacion = {
-    cursoId: '',
-    materiaId: '',
-    profesorId: ''
-  };
-
-  asignacionPrincipal = {
-    cursoId: '',
-    materiaId: '',
-    profesorId: ''
-  };
-
+  // Materias normales
+  asignacion = { cursoId: '', materiaId: '', profesorId: '' };
   materiasCurso: any[] = [];
-  materiasPrincipal: any[] = [];
+
+  // Submaterias
+  asignacionSub = { cursoId: '', submateriaNombre: '', profesorId: '' };
+  submateriasCurso: any[] = [];
+
+  // Profesor principal
+  asignacionPrincipal = { cursoId: '', profesorId: '' };
 
   constructor(
     private usuarioService: UsuarioService,
@@ -94,7 +85,7 @@ export class GestionDocentes implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.snackBar.open(this.editando ? 'Docente actualizado' : 'Docente creado exitosamente', 'OK', { duration: 3000 });
+        this.snackBar.open(this.editando ? 'Docente actualizado' : 'Docente creado', 'OK', { duration: 3000 });
         this.nuevoDocente = { nombre: '', apellido: '', correo: '', cedula: '' };
         this.editando = null;
         this.guardando = false;
@@ -102,7 +93,7 @@ export class GestionDocentes implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.snackBar.open(err.error?.error || 'Error al guardar docente', 'OK', { duration: 3000 });
+        this.snackBar.open(err.error?.error || 'Error al guardar', 'OK', { duration: 3000 });
         this.cdr.detectChanges();
       }
     });
@@ -138,20 +129,19 @@ export class GestionDocentes implements OnInit {
     }
   }
 
+  // MATERIAS NORMALES
   onCursoChange() {
     this.asignacion.materiaId = '';
     this.materiasCurso = [];
     if (this.asignacion.cursoId) {
       this.cursoService.obtenerCurso(Number(this.asignacion.cursoId)).subscribe({
         next: (curso) => {
-          const vistas = new Set<string>();
-          this.materiasCurso = (curso.materias || []).filter((m: any) => {
-            if (!m.esSubmateria) return true;
-            const key = m.nombre;
-            if (vistas.has(key)) return false;
-            vistas.add(key);
-            return true;
-          });
+          this.materiasCurso = (curso.materias || []).filter((m: any) =>
+            !m.esSubmateria &&
+            m.nombre !== 'Práctica' &&
+            m.nombre !== 'Teoría' &&
+            m.nombre !== 'Disciplina'
+          );
           this.cdr.detectChanges();
         }
       });
@@ -163,84 +153,99 @@ export class GestionDocentes implements OnInit {
       this.snackBar.open('Selecciona curso, materia y docente', 'OK', { duration: 3000 });
       return;
     }
+    this.usuarioService.asignarProfesor(
+      Number(this.asignacion.materiaId),
+      Number(this.asignacion.profesorId)
+    ).subscribe({
+      next: () => {
+        this.snackBar.open('Profesor asignado exitosamente', 'OK', { duration: 3000 });
+        this.asignacion = { cursoId: '', materiaId: '', profesorId: '' };
+        this.materiasCurso = [];
+        this.cdr.detectChanges();
+      },
+      error: () => this.snackBar.open('Error al asignar', 'OK', { duration: 3000 })
+    });
+  }
 
-    const materiaSeleccionada = this.materiasCurso.find(
-      (m: any) => m.id === Number(this.asignacion.materiaId)
-    );
-
-    if (materiaSeleccionada?.esSubmateria) {
-      // Buscar la materia gemela (mismo nombre, diferente parent)
-      this.cursoService.obtenerCurso(Number(this.asignacion.cursoId)).subscribe({
+  // SUBMATERIAS
+  onCursoSubChange() {
+    this.asignacionSub.submateriaNombre = '';
+    this.submateriasCurso = [];
+    if (this.asignacionSub.cursoId) {
+      this.cursoService.obtenerCurso(Number(this.asignacionSub.cursoId)).subscribe({
         next: (curso) => {
-          const gemelas = curso.materias.filter((m: any) =>
-            m.esSubmateria && m.nombre === materiaSeleccionada.nombre
-          );
-          let completados = 0;
-          gemelas.forEach((m: any) => {
-            this.usuarioService.asignarProfesor(m.id, Number(this.asignacion.profesorId)).subscribe({
-              next: () => {
-                completados++;
-                if (completados === gemelas.length) {
-                  this.snackBar.open('Profesor asignado a Práctica y Teoría', 'OK', { duration: 3000 });
-                  this.asignacion = { cursoId: '', materiaId: '', profesorId: '' };
-                  this.materiasCurso = [];
-                  this.cdr.detectChanges();
-                }
-              },
-              error: () => this.snackBar.open('Error al asignar', 'OK', { duration: 3000 })
-            });
+          const vistas = new Set<string>();
+          this.submateriasCurso = (curso.materias || []).filter((m: any) => {
+            if (!m.esSubmateria) return false;
+            if (vistas.has(m.nombre)) return false;
+            vistas.add(m.nombre);
+            return true;
           });
-        }
-      });
-    } else {
-      this.usuarioService.asignarProfesor(
-        Number(this.asignacion.materiaId),
-        Number(this.asignacion.profesorId)
-      ).subscribe({
-        next: () => {
-          this.snackBar.open('Profesor asignado exitosamente', 'OK', { duration: 3000 });
-          this.asignacion = { cursoId: '', materiaId: '', profesorId: '' };
-          this.materiasCurso = [];
-          this.cdr.detectChanges();
-        },
-        error: () => this.snackBar.open('Error al asignar', 'OK', { duration: 3000 })
-      });
-    }
-  }
-
-    onCursoPrincipalChange() {
-    this.asignacionPrincipal.materiaId = '';
-    this.materiasPrincipal = [];
-    if (this.asignacionPrincipal.cursoId) {
-      this.cursoService.obtenerCurso(Number(this.asignacionPrincipal.cursoId)).subscribe({
-        next: (curso) => {
-          this.materiasPrincipal = curso.materias.filter((m: any) =>
-            m.nombre === 'Práctica' || m.nombre === 'Teoría'
-          );
           this.cdr.detectChanges();
         }
       });
     }
   }
 
-asignarProfesorPrincipal() {
-  if (!this.asignacionPrincipal.materiaId || !this.asignacionPrincipal.profesorId) {
-    this.snackBar.open('Selecciona materia y docente', 'OK', { duration: 3000 });
-    return;
+  asignarProfesorSubmateria() {
+    if (!this.asignacionSub.cursoId || !this.asignacionSub.submateriaNombre || !this.asignacionSub.profesorId) {
+      this.snackBar.open('Selecciona curso, submateria y docente', 'OK', { duration: 3000 });
+      return;
+    }
+    this.cursoService.obtenerCurso(Number(this.asignacionSub.cursoId)).subscribe({
+      next: (curso) => {
+        const gemelas = curso.materias.filter((m: any) =>
+          m.esSubmateria && m.nombre === this.asignacionSub.submateriaNombre
+        );
+        let completados = 0;
+        gemelas.forEach((m: any) => {
+          this.usuarioService.asignarProfesor(m.id, Number(this.asignacionSub.profesorId)).subscribe({
+            next: () => {
+              completados++;
+              if (completados === gemelas.length) {
+                this.snackBar.open('Profesor asignado a Práctica y Teoría', 'OK', { duration: 3000 });
+                this.asignacionSub = { cursoId: '', submateriaNombre: '', profesorId: '' };
+                this.submateriasCurso = [];
+                this.cdr.detectChanges();
+              }
+            },
+            error: () => this.snackBar.open('Error al asignar', 'OK', { duration: 3000 })
+          });
+        });
+      }
+    });
   }
-  this.usuarioService.asignarProfesorPrincipalMateria(
-    Number(this.asignacionPrincipal.materiaId),
-    Number(this.asignacionPrincipal.profesorId)
-  ).subscribe({
-    next: () => {
-      this.snackBar.open('Profesor principal asignado', 'OK', { duration: 3000 });
-      this.asignacionPrincipal = { cursoId: '', materiaId: '', profesorId: '' };
-      this.materiasPrincipal = [];
-      this.cdr.detectChanges();
-    },
-    error: () => this.snackBar.open('Error al asignar', 'OK', { duration: 3000 })
-  });
-}
+
+  // PROFESOR PRINCIPAL
+  asignarProfesorPrincipal() {
+    if (!this.asignacionPrincipal.cursoId || !this.asignacionPrincipal.profesorId) {
+      this.snackBar.open('Selecciona curso y docente', 'OK', { duration: 3000 });
+      return;
+    }
+    this.cursoService.obtenerCurso(Number(this.asignacionPrincipal.cursoId)).subscribe({
+      next: (curso) => {
+        const materiasPT = curso.materias.filter((m: any) =>
+          m.nombre === 'Práctica' || m.nombre === 'Teoría'
+        );
+        let completados = 0;
+        materiasPT.forEach((m: any) => {
+          this.usuarioService.asignarProfesorPrincipalMateria(
+            m.id, Number(this.asignacionPrincipal.profesorId)
+          ).subscribe({
+            next: () => {
+              completados++;
+              if (completados === materiasPT.length) {
+                this.snackBar.open('Profesor principal asignado', 'OK', { duration: 3000 });
+                this.asignacionPrincipal = { cursoId: '', profesorId: '' };
+                this.cdr.detectChanges();
+              }
+            },
+            error: () => this.snackBar.open('Error al asignar', 'OK', { duration: 3000 })
+          });
+        });
+      }
+    });
+  }
 
   volver() {
     this.router.navigate(['/dashboard']);

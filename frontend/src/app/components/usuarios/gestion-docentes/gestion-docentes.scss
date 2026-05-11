@@ -1,68 +1,196 @@
-.content {
-  padding: 32px 48px;
-  background: #f0f2f8;
-  min-height: calc(100vh - 64px);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+$navy: #1a2a5e;
+$blue-accent: #2a4f9f;
+$gold: #c8a84b;
+$bg-light: #f4f7fa;
+$white: #ffffff;
+$border: #e2e8f0;
 
-.section-card {
-  border-radius: 16px !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
-  border: 1px solid #e8eaf0;
-  overflow: hidden;
+.admin-toolbar {
+  background: $navy;
+  color: white;
+  height: 80px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 
-  ::ng-deep mat-card-header {
-    background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
-    padding: 16px 24px !important;
+  .toolbar-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0 40px;
+  }
 
-    mat-card-title {
-      color: white !important;
-      font-size: 16px !important;
-      font-weight: 700 !important;
-      margin: 0 !important;
+  .nav-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .back-btn { background: rgba(255,255,255,0.1); color: white; border-radius: 12px; }
+    
+    .title-meta {
+      h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+      span { font-size: 13px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; display: block; }
     }
   }
-
-  ::ng-deep mat-card-content {
-    padding: 20px 24px !important;
-  }
-
-  ::ng-deep mat-card-actions {
-    padding: 12px 24px 20px !important;
-  }
 }
 
-.row {
+.page-wrapper {
+  padding: 30px 40px;
+  background-color: $bg-light;
+  min-height: calc(100vh - 80px);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+// Estructura de Filas
+.top-row-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-
-  mat-form-field { width: 100%; }
+  grid-template-columns: 1fr 1fr; // Mitad y mitad exacto
+  gap: 30px;
+  margin-bottom: 30px;
+  align-items: stretch; // Hace que tengan la misma altura si el contenido es similar
 }
 
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  color: #aaa;
-}
-
-.docentes-table {
+.full-width-row {
   width: 100%;
-  border-radius: 10px;
+  margin-bottom: 30px;
+}
+
+// Tarjetas Premium
+.premium-card {
+  background: $white !important;
+  border-radius: 16px !important;
+  border: 1px solid $border !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  .card-edge {
+    position: absolute;
+    top: 0; left: 0; width: 4px; height: 100%;
+    &.navy { background: $navy; }
+    &.blue { background: $blue-accent; }
+    &.gold { background: $gold; }
+  }
+
+  mat-card-header {
+    padding: 24px 24px 10px !important;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .header-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      &.navy { background: rgba($navy, 0.08); color: $navy; }
+      &.blue { background: rgba($blue-accent, 0.08); color: $blue-accent; }
+      &.gold { background: rgba($gold, 0.1); color: $gold; }
+    }
+
+    h2 { margin: 0; font-size: 17px; font-weight: 700; color: #1e293b; }
+    p { margin: 0; font-size: 13px; color: #94a3b8; }
+  }
+
+  mat-card-content { 
+    padding: 15px 24px !important; 
+    flex-grow: 1; // Para que el contenido use el espacio disponible
+  }
+}
+
+.principal { border: 1px solid rgba($gold, 0.3) !important; background: #fffdf8 !important; }
+
+// Grids de Formulario
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.form-row-triple {
+  display: grid;
+  grid-template-columns: 1fr 1fr 250px; // Dos campos iguales y el botón
+  gap: 20px;
+  align-items: center;
+  padding-top: 10px;
+  
+  mat-form-field { width: 100%; margin-bottom: -1.25em; } // Alinea el botón con el campo
+}
+
+.full-width { width: 100%; }
+
+.spacer-content { height: 20px; } // Pequeño ajuste para equilibrio visual
+
+// Botones
+.btn-main {
+  border-radius: 10px !important;
+  padding: 10px 24px !important;
+  font-weight: 700 !important;
+  &.navy { background: $navy !important; color: white !important; }
+  &.blue { background: $blue-accent !important; color: white !important; }
+}
+
+.btn-gold-full {
+  background: $gold !important;
+  color: white !important;
+  border-radius: 10px !important;
+  font-weight: 800 !important;
+  padding: 12px 24px !important;
+  width: 100%;
+}
+
+// Tabla
+.table-card {
+  border-radius: 16px !important;
+  border: 1px solid $border !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
   overflow: hidden;
 
-  ::ng-deep .mat-mdc-header-row { background: #f0f2f8; }
-  ::ng-deep .mat-mdc-header-cell {
-    color: #1a2a5e !important;
+  .table-header {
+    padding: 24px;
+    border-bottom: 1px solid $border;
+    h3 { 
+      margin: 0; color: $navy; font-weight: 800; 
+      span { font-weight: 400; color: #94a3b8; font-size: 14px; }
+    }
+  }
+}
+
+.modern-table {
+  width: 100%;
+  th.mat-mdc-header-cell { background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+  td.mat-mdc-cell { color: #334155; padding: 16px !important; font-size: 14px; }
+  .email-cell { color: $blue-accent; font-weight: 500; }
+  .id-tag { background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-family: monospace; }
+  .edit-btn { color: $navy; background: rgba($navy, 0.05); margin-right: 8px; }
+}
+
+// Adaptabilidad
+@media (max-width: 1100px) {
+  .top-row-grid { grid-template-columns: 1fr; }
+  .form-row-triple { grid-template-columns: 1fr; }
+}
+
+.sub-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+
+  span {
+    font-size: 11px;
     font-weight: 700;
-    font-size: 12px;
     letter-spacing: 1px;
     text-transform: uppercase;
+    color: #94a3b8;
+    white-space: nowrap;
   }
-  ::ng-deep .mat-mdc-cell { padding: 12px 16px !important; font-size: 14px; }
-  ::ng-deep .mat-mdc-row:hover { background: #f8f9fc !important; }
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+  }
+}
+
+.sub-action-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
