@@ -201,11 +201,12 @@ model Anuncio {
 model NotaDisciplina {
   id          Int      @id @default(autoincrement())
   valor       Float
+  semestre    Int      @default(1)
   matriculaId Int
   materiaId   Int
   matricula   Matricula @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
   materia     Materia   @relation(fields: [materiaId], references: [id])
   createdAt   DateTime  @default(now())
 
-  @@unique([matriculaId, materiaId])
+  @@unique([matriculaId, materiaId, semestre])
 }
