@@ -20,6 +20,9 @@ export class AuthService {
     );
   }
 
+
+
+
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
@@ -47,4 +50,30 @@ export class AuthService {
       default: return '/login';
     }
   }
+
+  debeCambiarPassword(): boolean {
+    const usuario = this.getUsuario();
+    return usuario?.debeCambiarPassword === true;
+  }
+
+  cambiarPassword(usuarioId: number, passwordActual: string, passwordNueva: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/cambiar-password`, { usuarioId, passwordActual, passwordNueva });
+  }
+
+  marcarPasswordCambiada() {
+    const usuario = this.getUsuario();
+    if (usuario) {
+      usuario.debeCambiarPassword = false;
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+    }
+  }
+
+  solicitarRecuperacion(correo: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/solicitar-recuperacion`, { correo });
+  }
+
+  restablecerPassword(correo: string, codigo: string, passwordNueva: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/restablecer-password`, { correo, codigo, passwordNueva });
+  }
+
 }
