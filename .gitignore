@@ -137,3 +137,9 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Respaldos de base de datos
+backend/respaldo_cfguadalupana.sql
+
+# Archivos subidos por usuarios
+backend/uploads/
