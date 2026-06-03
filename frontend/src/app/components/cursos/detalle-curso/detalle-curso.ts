@@ -60,6 +60,7 @@ import { MatriculaService } from '../../../services/matricula';
               <mat-select [(ngModel)]="datos.sexo">
                 <mat-option value="Masculino">Masculino</mat-option>
                 <mat-option value="Femenino">Femenino</mat-option>
+                <mat-option value="Otro">Otro</mat-option>
               </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline">

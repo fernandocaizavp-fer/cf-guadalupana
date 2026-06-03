@@ -5,7 +5,8 @@ import prisma from '../lib/prisma';
 export const crearMatricula = async (req: Request, res: Response) => {
   const {
     tomo, pagina, apellidos, nombres, cedula, sexo,
-    fechaNacimiento, pais, provincia, canton, parroquia, ciudad,
+    fechaNacimiento, anioNacimiento, mesNacimiento, diaNacimiento,
+    pais, provincia, canton, parroquia, ciudad,
     nacionalidad, calle, num, transversal, telefono, correo,
     nivelEstudio, tipoBachiller, conferidoPorA1, conferidoPorA2,
     cursoanterior, unidadeducativa, centroformacionanterior,
@@ -20,7 +21,6 @@ export const crearMatricula = async (req: Request, res: Response) => {
   try {
     const hash = await bcrypt.hash(cedula, 10);
 
-    // Generar número de matrícula automático por curso
     const totalMatriculas = await prisma.matricula.count({
       where: { cursoId: Number(cursoId) }
     });
@@ -46,41 +46,69 @@ export const crearMatricula = async (req: Request, res: Response) => {
           nombres: nombres.toUpperCase(),
           cedula,
           sexo,
-          fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
-          pais: pais?.toUpperCase(),
-          provincia: provincia?.toUpperCase(),
-          canton: canton?.toUpperCase(),
-          parroquia: parroquia?.toUpperCase(),
-          ciudad: ciudad?.toUpperCase(),
-          nacionalidad: nacionalidad?.toUpperCase(),
-          calle: calle?.toUpperCase(),
-          num, transversal, telefono,
-          correo: (correoestudiante || correo)?.toLowerCase(),
           nivelEstudio,
-          tipoBachiller,
-          conferidoPorA1: conferidoPorA1?.toUpperCase(),
-          conferidoPorA2: conferidoPorA2?.toUpperCase(),
-          cursoanterior: cursoanterior?.toUpperCase(),
-          unidadeducativa: unidadeducativa?.toUpperCase(),
-          centroformacionanterior: centroformacionanterior?.toUpperCase(),
-          nombrepapa: nombrepapa?.toUpperCase(),
-          profesionpapa: profesionpapa?.toUpperCase(),
-          ocupacionpapa: ocupacionpapa?.toUpperCase(),
-          nombremama: nombremama?.toUpperCase(),
-          profesionmama: profesionmama?.toUpperCase(),
-          ocupacionmama: ocupacionmama?.toUpperCase(),
-          nombrerepresentante: nombrerepresentante?.toUpperCase(),
-          ocupacionrepresentante: ocupacionrepresentante?.toUpperCase(),
-          domiciliorepresentante: domiciliorepresentante?.toUpperCase(),
-          telefonorepresentante,
-          correoestudiante: (correoestudiante || correo)?.toLowerCase(),
           lugarfechamatricula: lugarfechamatricula?.toUpperCase(),
-          especialidad: especialidad?.toUpperCase(),
-          lugarfechacertificado: lugarfechacertificado?.toUpperCase(),
           cursoId: Number(cursoId),
-          usuarioId: usuario.id
+          usuarioId: usuario.id,
+
+          // Datos personales en tabla separada
+          datosPersonales: {
+            create: {
+              fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+              anioNacimiento,
+              mesNacimiento,
+              diaNacimiento,
+              pais: pais?.toUpperCase(),
+              provincia: provincia?.toUpperCase(),
+              canton: canton?.toUpperCase(),
+              parroquia: parroquia?.toUpperCase(),
+              ciudad: ciudad?.toUpperCase(),
+              nacionalidad: nacionalidad?.toUpperCase(),
+              calle: calle?.toUpperCase(),
+              num,
+              transversal,
+              telefono,
+              correo: (correoestudiante || correo)?.toLowerCase()
+            }
+          },
+
+          // Datos familiares en tabla separada
+          datosFamiliares: {
+            create: {
+              nombrepapa: nombrepapa?.toUpperCase(),
+              profesionpapa: profesionpapa?.toUpperCase(),
+              ocupacionpapa: ocupacionpapa?.toUpperCase(),
+              nombremama: nombremama?.toUpperCase(),
+              profesionmama: profesionmama?.toUpperCase(),
+              ocupacionmama: ocupacionmama?.toUpperCase(),
+              nombrerepresentante: nombrerepresentante?.toUpperCase(),
+              ocupacionrepresentante: ocupacionrepresentante?.toUpperCase(),
+              domiciliorepresentante: domiciliorepresentante?.toUpperCase(),
+              telefonorepresentante,
+              correoestudiante: (correoestudiante || correo)?.toLowerCase()
+            }
+          },
+
+          // Datos académicos en tabla separada
+          datosAcademicos: {
+            create: {
+              cursoanterior: cursoanterior?.toUpperCase(),
+              unidadeducativa: unidadeducativa?.toUpperCase(),
+              centroformacionanterior: centroformacionanterior?.toUpperCase(),
+              tipoBachiller,
+              conferidoPorA1: conferidoPorA1?.toUpperCase(),
+              conferidoPorA2: conferidoPorA2?.toUpperCase(),
+              especialidad: especialidad?.toUpperCase(),
+              lugarfechacertificado: lugarfechacertificado?.toUpperCase()
+            }
+          }
         },
-        include: { curso: true }
+        include: {
+          curso: true,
+          datosPersonales: true,
+          datosFamiliares: true,
+          datosAcademicos: true
+        }
       });
 
       return { usuario, matricula };
@@ -105,13 +133,128 @@ export const crearMatricula = async (req: Request, res: Response) => {
 
 export const actualizarMatricula = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const {
+    tomo, pagina, apellidos, nombres, cedula, sexo,
+    nivelEstudio, lugarfechamatricula,
+    fechaNacimiento, anioNacimiento, mesNacimiento, diaNacimiento,
+    pais, provincia, canton, parroquia, ciudad,
+    nacionalidad, calle, num, transversal, telefono, correo,
+    nombrepapa, profesionpapa, ocupacionpapa,
+    nombremama, profesionmama, ocupacionmama,
+    nombrerepresentante, ocupacionrepresentante,
+    domiciliorepresentante, telefonorepresentante, correoestudiante,
+    cursoanterior, unidadeducativa, centroformacionanterior,
+    tipoBachiller, conferidoPorA1, conferidoPorA2,
+    especialidad, lugarfechacertificado
+  } = req.body;
+
   try {
     const matricula = await prisma.matricula.update({
       where: { id: Number(id) },
-      data: req.body
+      data: {
+        tomo, pagina,
+        apellidos: apellidos?.toUpperCase(),
+        nombres: nombres?.toUpperCase(),
+        cedula, sexo, nivelEstudio,
+        lugarfechamatricula: lugarfechamatricula?.toUpperCase(),
+
+        datosPersonales: {
+          upsert: {
+            create: {
+              fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+              anioNacimiento, mesNacimiento, diaNacimiento,
+              pais: pais?.toUpperCase(),
+              provincia: provincia?.toUpperCase(),
+              canton: canton?.toUpperCase(),
+              parroquia: parroquia?.toUpperCase(),
+              ciudad: ciudad?.toUpperCase(),
+              nacionalidad: nacionalidad?.toUpperCase(),
+              calle: calle?.toUpperCase(),
+              num, transversal, telefono,
+              correo: correo?.toLowerCase()
+            },
+            update: {
+              fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+              anioNacimiento, mesNacimiento, diaNacimiento,
+              pais: pais?.toUpperCase(),
+              provincia: provincia?.toUpperCase(),
+              canton: canton?.toUpperCase(),
+              parroquia: parroquia?.toUpperCase(),
+              ciudad: ciudad?.toUpperCase(),
+              nacionalidad: nacionalidad?.toUpperCase(),
+              calle: calle?.toUpperCase(),
+              num, transversal, telefono,
+              correo: correo?.toLowerCase()
+            }
+          }
+        },
+
+        datosFamiliares: {
+          upsert: {
+            create: {
+              nombrepapa: nombrepapa?.toUpperCase(),
+              profesionpapa: profesionpapa?.toUpperCase(),
+              ocupacionpapa: ocupacionpapa?.toUpperCase(),
+              nombremama: nombremama?.toUpperCase(),
+              profesionmama: profesionmama?.toUpperCase(),
+              ocupacionmama: ocupacionmama?.toUpperCase(),
+              nombrerepresentante: nombrerepresentante?.toUpperCase(),
+              ocupacionrepresentante: ocupacionrepresentante?.toUpperCase(),
+              domiciliorepresentante: domiciliorepresentante?.toUpperCase(),
+              telefonorepresentante,
+              correoestudiante: correoestudiante?.toLowerCase()
+            },
+            update: {
+              nombrepapa: nombrepapa?.toUpperCase(),
+              profesionpapa: profesionpapa?.toUpperCase(),
+              ocupacionpapa: ocupacionpapa?.toUpperCase(),
+              nombremama: nombremama?.toUpperCase(),
+              profesionmama: profesionmama?.toUpperCase(),
+              ocupacionmama: ocupacionmama?.toUpperCase(),
+              nombrerepresentante: nombrerepresentante?.toUpperCase(),
+              ocupacionrepresentante: ocupacionrepresentante?.toUpperCase(),
+              domiciliorepresentante: domiciliorepresentante?.toUpperCase(),
+              telefonorepresentante,
+              correoestudiante: correoestudiante?.toLowerCase()
+            }
+          }
+        },
+
+        datosAcademicos: {
+          upsert: {
+            create: {
+              cursoanterior: cursoanterior?.toUpperCase(),
+              unidadeducativa: unidadeducativa?.toUpperCase(),
+              centroformacionanterior: centroformacionanterior?.toUpperCase(),
+              tipoBachiller,
+              conferidoPorA1: conferidoPorA1?.toUpperCase(),
+              conferidoPorA2: conferidoPorA2?.toUpperCase(),
+              especialidad: especialidad?.toUpperCase(),
+              lugarfechacertificado: lugarfechacertificado?.toUpperCase()
+            },
+            update: {
+              cursoanterior: cursoanterior?.toUpperCase(),
+              unidadeducativa: unidadeducativa?.toUpperCase(),
+              centroformacionanterior: centroformacionanterior?.toUpperCase(),
+              tipoBachiller,
+              conferidoPorA1: conferidoPorA1?.toUpperCase(),
+              conferidoPorA2: conferidoPorA2?.toUpperCase(),
+              especialidad: especialidad?.toUpperCase(),
+              lugarfechacertificado: lugarfechacertificado?.toUpperCase()
+            }
+          }
+        }
+      },
+      include: {
+        curso: true,
+        datosPersonales: true,
+        datosFamiliares: true,
+        datosAcademicos: true
+      }
     });
     res.json({ message: 'Matrícula actualizada', matricula });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error al actualizar matrícula' });
   }
 };
@@ -119,7 +262,10 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
 export const eliminarMatricula = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    await prisma.matricula.delete({ where: { id: Number(id) } });
+    await prisma.matricula.update({
+      where: { id: Number(id) },
+      data: { activo: false }
+    });
     res.json({ message: 'Matrícula eliminada' });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar matrícula' });
@@ -131,13 +277,19 @@ export const buscarEstudiante = async (req: Request, res: Response) => {
   try {
     const matriculas = await prisma.matricula.findMany({
       where: {
+        activo: true,
         OR: [
           { nombres: { contains: String(q), mode: 'insensitive' } },
           { apellidos: { contains: String(q), mode: 'insensitive' } },
           { cedula: { contains: String(q) } }
         ]
       },
-      include: { curso: true }
+      include: {
+        curso: true,
+        datosPersonales: true,
+        datosFamiliares: true,
+        datosAcademicos: true
+      }
     });
     res.json(matriculas);
   } catch (error) {
@@ -149,7 +301,12 @@ export const obtenerMatricula = async (req: Request, res: Response) => {
   try {
     const matricula = await prisma.matricula.findUnique({
       where: { id: Number(req.params.id) },
-      include: { curso: { include: { materias: true } } }
+      include: {
+        curso: { include: { materias: true } },
+        datosPersonales: true,
+        datosFamiliares: true,
+        datosAcademicos: true
+      }
     });
     if (!matricula) return res.status(404).json({ error: 'Matrícula no encontrada' });
     res.json(matricula);

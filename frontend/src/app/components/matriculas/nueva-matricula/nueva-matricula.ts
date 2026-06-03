@@ -65,11 +65,13 @@ export class NuevaMatricula implements OnInit {
   }
 
   get prefijo(): string {
-    return this.datos.sexo === 'Masculino' ? 'El' : 'La';
+    return this.datos.sexo === 'Masculino' ? 'El' : 
+          this.datos.sexo === 'Femenino' ? 'La' : '';
   }
 
   get tratamiento(): string {
-    return this.datos.sexo === 'Masculino' ? 'Sr.' : 'Srta.';
+    return this.datos.sexo === 'Masculino' ? 'Sr.' : 
+          this.datos.sexo === 'Femenino' ? 'Srta.' : '';
   }
 
   guardarYDescargar() {
