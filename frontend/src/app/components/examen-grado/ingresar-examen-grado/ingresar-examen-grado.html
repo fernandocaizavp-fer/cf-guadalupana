@@ -1,0 +1,78 @@
+<mat-toolbar class="examen-toolbar">
+  <div class="toolbar-content">
+    <div class="nav-group">
+      <button mat-icon-button (click)="volver()" class="back-pill">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-meta">
+        <h1>{{ materia?.nombre || 'Materia' }}</h1>
+        <span>Examen Escrito de Grado</span>
+      </div>
+    </div>
+    <span class="flex-spacer"></span>
+    <div class="students-chip">
+      <mat-icon>assignment_turned_in</mat-icon>
+      <div>
+        <span class="chip-valor">{{ estudiantesConNota }}/{{ estudiantes.length }}</span>
+        <span class="chip-label">Calificados</span>
+      </div>
+    </div>
+  </div>
+</mat-toolbar>
+
+<div class="page-wrapper">
+  @if (loading) {
+    <div class="center"><mat-spinner diameter="48"></mat-spinner></div>
+  }
+
+  @if (!loading) {
+    <div class="info-card">
+      <div class="info-icon">
+        <mat-icon>info</mat-icon>
+      </div>
+      <p>Ingresa la nota del examen escrito de grado para cada estudiante. Esta nota corresponde al examen final del curso y se registra una sola vez.</p>
+    </div>
+
+    @if (estudiantes.length === 0) {
+      <div class="center">
+        <mat-icon class="empty-icon">people</mat-icon>
+        <p>No hay estudiantes matriculados</p>
+      </div>
+    }
+
+    @if (estudiantes.length > 0) {
+      <div class="tabla-card">
+        <div class="tabla-header">
+          <span class="col-num">No.</span>
+          <span class="col-nombre">Apellidos y Nombres</span>
+          <span class="col-nota">Nota Examen</span>
+        </div>
+
+        @for (est of estudiantes; track est.id; let i = $index) {
+          <div class="tabla-row">
+            <span class="col-num">
+              <span class="num-badge" [class.num-gold]="notas[est.id] !== null && notas[est.id] !== undefined">
+                {{ i + 1 }}
+              </span>
+            </span>
+            <span class="col-nombre">{{ est.apellidos }} {{ est.nombres }}</span>
+            <span class="col-nota">
+              <input type="number" class="nota-input"
+                [(ngModel)]="notas[est.id]"
+                min="0" max="10" step="0.1"
+                placeholder="—">
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="guardar-row">
+        <button mat-flat-button class="guardar-btn"
+          (click)="guardar()" [disabled]="guardando">
+          <mat-icon>save</mat-icon>
+          {{ guardando ? 'Guardando...' : 'Guardar Exámenes de Grado' }}
+        </button>
+      </div>
+    }
+  }
+</div>
