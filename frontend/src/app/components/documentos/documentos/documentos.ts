@@ -12,6 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { CursoService } from '../../../services/curso';
 import { MatriculaService } from '../../../services/matricula';
 
+
 @Component({
   selector: 'app-documentos',
   imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,

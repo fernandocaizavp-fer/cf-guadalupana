@@ -63,100 +63,111 @@ export class DashboardEstudiante implements OnInit {
     });
   }
 
-  cargarNotasSemestre() {
-    if (!this.matricula?.cursoId) return;
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.authService.getToken()}`
-    });
+cargarNotasSemestre() {
+  if (!this.matricula?.cursoId) return;
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${this.authService.getToken()}`
+  });
 
-    this.http.get<any>(
-      `http://localhost:3001/api/tareas/curso/${this.matricula.cursoId}?semestre=${this.semestreSeleccionado}`,
-      { headers }
-    ).subscribe({
-      next: (data) => {
-        const materiasPrincipales = data.materias.filter((m: any) =>
-          !m.esSubmateria && m.nombre !== 'Disciplina'
-        );
+  this.http.get<any>(
+    `http://localhost:3001/api/tareas/curso/${this.matricula.cursoId}?semestre=${this.semestreSeleccionado}`,
+    { headers }
+  ).subscribe({
+    next: (data) => {
+      const todasMaterias = data.todasMaterias || data.materias || [];
+      const materiasPrincipales = (data.materias || []).filter((m: any) =>
+        !m.esSubmateria && m.nombre !== 'Disciplina'
+      );
 
-        const materiasMapeadas = materiasPrincipales.map((materia: any) => {
-          if (materia.nombre === 'Práctica' || materia.nombre === 'Teoría') {
-            const submaterias = data.materias.filter((m: any) =>
-              m.esSubmateria && m.materiaParent === materia.nombre
-            );
+      const matriculaData = (data.matriculas || []).find(
+        (m: any) => m.id === this.matricula.id
+      );
 
-            const todasNotas: number[] = [];
-            submaterias.forEach((sub: any) => {
-              const notasSub = this.matricula.notasTarea?.filter((n: any) =>
-                n.tarea?.materiaId === sub.id && n.valor !== null
-              ) || [];
-              notasSub.forEach((n: any) => todasNotas.push(n.valor));
-            });
+      const notasTarea = matriculaData?.notasTarea || [];
+      const notasDisciplina = matriculaData?.notasDisciplina || [];
 
-            const promedio = todasNotas.length > 0
-              ? todasNotas.reduce((a, b) => a + b, 0) / todasNotas.length
-              : null;
+      const materiasMapeadas = materiasPrincipales.map((materia: any) => {
 
-            return {
-              ...materia,
-              tareas: [],
-              promedio: promedio !== null
-                ? (promedio % 1 === 0 ? String(promedio) : promedio.toFixed(1))
-                : '-'
-            };
-          }
+        // Práctica y Teoría — promedio de submaterias
+        if (materia.nombre === 'Práctica' || materia.nombre === 'Teoría') {
+          const submaterias = todasMaterias.filter((m: any) =>
+            m.esSubmateria && m.materiaParent === materia.nombre
+          );
 
-          const tareasConNota = materia.tareas.map((tarea: any) => {
-            const notaTarea = this.matricula.notasTarea?.find(
-              (n: any) => n.tarea?.materiaId === materia.id && n.tareaId === tarea.id
-            );
-            return {
-              ...tarea,
-              miNota: notaTarea?.valor ?? null,
-              miObservacion: notaTarea?.observacion || ''
-            };
+          const todasNotas: number[] = [];
+          submaterias.forEach((sub: any) => {
+            notasTarea
+              .filter((n: any) => n.tarea?.materiaId === sub.id && n.valor !== null)
+              .forEach((n: any) => todasNotas.push(n.valor));
           });
 
-          const notasValidas = tareasConNota.filter((t: any) => t.miNota !== null);
-          const promedio = notasValidas.length > 0
-            ? notasValidas.reduce((a: number, b: any) => a + b.miNota, 0) / notasValidas.length
+          const promedio = todasNotas.length > 0
+            ? todasNotas.reduce((a: number, b: number) => a + b, 0) / todasNotas.length
             : null;
 
           return {
             ...materia,
-            tareas: tareasConNota,
+            tareas: [],
             promedio: promedio !== null
               ? (promedio % 1 === 0 ? String(promedio) : promedio.toFixed(1))
               : '-'
           };
-        });
+        }
 
-        // Agregar Disciplina como fila especial
-        const notasDisciplina = this.matricula.notasDisciplina || [];
-        const promedioDisciplina = notasDisciplina.length > 0
-          ? notasDisciplina.reduce((a: number, b: any) => a + b.valor, 0) / notasDisciplina.length
+        // Materia normal — calcular desde notasTarea directamente
+        const notasDeEstaMateria = notasTarea.filter((n: any) =>
+          n.tarea?.materiaId === materia.id && n.valor !== null
+        );
+
+        const promedio = notasDeEstaMateria.length > 0
+          ? notasDeEstaMateria.reduce((a: number, b: any) => a + b.valor, 0) / notasDeEstaMateria.length
           : null;
 
-        const filaDisciplina = {
-          id: -1,
-          nombre: 'Disciplina',
-          esSubmateria: false,
-          tareas: [],
-          esDisciplina: true,
-          promedio: promedioDisciplina !== null
-            ? (promedioDisciplina % 1 === 0 ? String(promedioDisciplina) : promedioDisciplina.toFixed(1))
+        const tareasConNota = notasDeEstaMateria.map((n: any) => ({
+          ...n.tarea,
+          miNota: n.valor,
+          miObservacion: n.observacion || ''
+        }));
+
+        return {
+          ...materia,
+          tareas: tareasConNota,
+          promedio: promedio !== null
+            ? (promedio % 1 === 0 ? String(promedio) : promedio.toFixed(1))
             : '-'
         };
+      });
 
-        this.materiasConTareas = [...materiasMapeadas, filaDisciplina];
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
+      // Disciplina
+      const semActual = this.semestreSeleccionado;
+      const notasDisc = notasDisciplina.filter(
+        (n: any) => !n.semestre || n.semestre === semActual
+      );
+      const promedioDisciplina = notasDisc.length > 0
+        ? notasDisc.reduce((a: number, b: any) => a + b.valor, 0) / notasDisc.length
+        : null;
+
+      const filaDisciplina = {
+        id: -1,
+        nombre: 'Disciplina',
+        esSubmateria: false,
+        tareas: [],
+        esDisciplina: true,
+        promedio: promedioDisciplina !== null
+          ? (promedioDisciplina % 1 === 0 ? String(promedioDisciplina) : promedioDisciplina.toFixed(1))
+          : '-'
+      };
+
+      this.materiasConTareas = [...materiasMapeadas, filaDisciplina];
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   cambiarSemestre(semestre: number) {
     this.semestreSeleccionado = semestre;

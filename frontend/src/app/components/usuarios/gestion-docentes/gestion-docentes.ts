@@ -43,6 +43,7 @@ export class GestionDocentes implements OnInit {
 
   // Profesor principal
   asignacionPrincipal = { cursoId: '', profesorId: '' };
+  cursosConMaterias: any[] = [];
 
   constructor(
     private usuarioService: UsuarioService,
@@ -68,6 +69,23 @@ export class GestionDocentes implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => { this.loading = false; this.cdr.detectChanges(); }
+    });
+    this.cursoService.listarCursos().subscribe({
+      next: (cursos) => {
+        // Para cada curso cargamos sus materias
+        let pendientes = cursos.length;
+        this.cursosConMaterias = [];
+        if (cursos.length === 0) return;
+        cursos.forEach(curso => {
+          this.cursoService.obtenerCurso(curso.id).subscribe({
+            next: (c) => {
+              this.cursosConMaterias.push(c);
+              pendientes--;
+              if (pendientes === 0) this.cdr.detectChanges();
+            }
+          });
+        });
+      }
     });
   }
 
@@ -117,6 +135,61 @@ export class GestionDocentes implements OnInit {
     this.cdr.detectChanges();
   }
 
+getMateriasDocente(docente: any): any[] {
+  const resultado: any[] = [];
+  const submateriasPorCurso: { [cursoId: number]: { cursoNombre: string; subs: string[] } } = {};
+
+  this.cursosConMaterias.forEach(curso => {
+    const esPrincipal = (curso.materias || []).some((m: any) =>
+      m.profesorPrincipalId === docente.id
+    );
+
+    if (esPrincipal) {
+      resultado.push({
+        tipo: 'principal',
+        id: `principal-${curso.id}`,
+        cursoNombre: curso.ramaArtesanal
+      });
+    }
+
+    // Materias normales
+    (curso.materias || []).forEach((m: any) => {
+      if (m.profesorId !== docente.id) return;
+      if (m.esSubmateria) return;
+      if (m.nombre === 'Práctica' || m.nombre === 'Teoría') return;
+      resultado.push({
+        tipo: 'normal',
+        id: m.id,
+        nombre: m.nombre,
+        cursoNombre: curso.ramaArtesanal
+      });
+    });
+
+    // Submaterias agrupadas por curso
+    (curso.materias || []).forEach((m: any) => {
+      if (!m.esSubmateria || m.profesorId !== docente.id) return;
+      if (!submateriasPorCurso[curso.id]) {
+        submateriasPorCurso[curso.id] = { cursoNombre: curso.ramaArtesanal, subs: [] };
+      }
+      if (!submateriasPorCurso[curso.id].subs.includes(m.nombre)) {
+        submateriasPorCurso[curso.id].subs.push(m.nombre);
+      }
+    });
+  });
+
+  // Agregar grupos de submaterias
+  Object.entries(submateriasPorCurso).forEach(([cursoId, grupo]) => {
+    resultado.push({
+      tipo: 'submateria-grupo',
+      id: `sub-grupo-${cursoId}`,
+      cursoNombre: grupo.cursoNombre,
+      subs: grupo.subs
+    });
+  });
+
+  return resultado;
+}
+
   eliminarDocente(id: number) {
     if (confirm('¿Eliminar este docente?')) {
       this.usuarioService.eliminarDocente(id).subscribe({
@@ -130,23 +203,24 @@ export class GestionDocentes implements OnInit {
   }
 
   // MATERIAS NORMALES
-  onCursoChange() {
-    this.asignacion.materiaId = '';
-    this.materiasCurso = [];
-    if (this.asignacion.cursoId) {
-      this.cursoService.obtenerCurso(Number(this.asignacion.cursoId)).subscribe({
-        next: (curso) => {
-          this.materiasCurso = (curso.materias || []).filter((m: any) =>
-            !m.esSubmateria &&
-            m.nombre !== 'Práctica' &&
-            m.nombre !== 'Teoría' &&
-            m.nombre !== 'Disciplina'
-          );
-          this.cdr.detectChanges();
-        }
-      });
-    }
+onCursoChange() {
+  this.asignacion.materiaId = '';
+  this.materiasCurso = [];
+  if (this.asignacion.cursoId) {
+    this.cursoService.obtenerCurso(Number(this.asignacion.cursoId)).subscribe({
+      next: (curso) => {
+        this.materiasCurso = (curso.materias || []).filter((m: any) =>
+          !m.esSubmateria &&
+          m.nombre !== 'Práctica' &&
+          m.nombre !== 'Teoría' &&
+          m.nombre !== 'Disciplina' &&
+          !m.profesorId  // ← esta línea es la que faltaba
+        );
+        this.cdr.detectChanges();
+      }
+    });
   }
+}
 
   asignarProfesor() {
     if (!this.asignacion.cursoId || !this.asignacion.materiaId || !this.asignacion.profesorId) {
@@ -168,24 +242,31 @@ export class GestionDocentes implements OnInit {
   }
 
   // SUBMATERIAS
-  onCursoSubChange() {
-    this.asignacionSub.submateriaNombre = '';
-    this.submateriasCurso = [];
-    if (this.asignacionSub.cursoId) {
-      this.cursoService.obtenerCurso(Number(this.asignacionSub.cursoId)).subscribe({
-        next: (curso) => {
-          const vistas = new Set<string>();
-          this.submateriasCurso = (curso.materias || []).filter((m: any) => {
-            if (!m.esSubmateria) return false;
-            if (vistas.has(m.nombre)) return false;
-            vistas.add(m.nombre);
-            return true;
-          });
-          this.cdr.detectChanges();
-        }
-      });
-    }
+onCursoSubChange() {
+  this.asignacionSub.submateriaNombre = '';
+  this.submateriasCurso = [];
+  if (this.asignacionSub.cursoId) {
+    this.cursoService.obtenerCurso(Number(this.asignacionSub.cursoId)).subscribe({
+      next: (curso) => {
+        const todasSubmaterias = (curso.materias || []).filter((m: any) => m.esSubmateria);
+
+        const vistas = new Set<string>();
+        this.submateriasCurso = todasSubmaterias.filter((m: any) => {
+          if (vistas.has(m.nombre)) return false;
+
+          // Verificar que ninguna de las gemelas (mismo nombre) tenga profesor
+          const gemelas = todasSubmaterias.filter((g: any) => g.nombre === m.nombre);
+          const algunaTieneProfesor = gemelas.some((g: any) => g.profesorId);
+          if (algunaTieneProfesor) return false;
+
+          vistas.add(m.nombre);
+          return true;
+        });
+        this.cdr.detectChanges();
+      }
+    });
   }
+}
 
   asignarProfesorSubmateria() {
     if (!this.asignacionSub.cursoId || !this.asignacionSub.submateriaNombre || !this.asignacionSub.profesorId) {

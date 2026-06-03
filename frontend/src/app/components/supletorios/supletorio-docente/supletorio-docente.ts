@@ -148,6 +148,10 @@ export class SupletorioDocente implements OnInit {
     });
   }
 
+  get estudiantesHabilitados(): number {
+  return this.estudiantes.filter(e => e.habilitarSup).length;
+}
+
   volver() {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     if (usuario.rol === 'PROFESOR') {

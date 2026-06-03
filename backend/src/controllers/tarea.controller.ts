@@ -32,7 +32,7 @@ export const getTareasPorMateria = async (req: Request, res: Response) => {
       where,
       include: {
         materia: {
-          include: { curso: true }  // ← agrega curso aquí
+          include: { curso: true }
         },
         notas: {
           include: { matricula: true }
@@ -49,7 +49,6 @@ export const getTareasPorMateria = async (req: Request, res: Response) => {
 // Guardar notas de una tarea masivamente
 export const guardarNotasTarea = async (req: Request, res: Response) => {
   const { notas } = req.body;
-  // notas: [{ matriculaId, tareaId, valor, observacion }]
   try {
     const resultados = await Promise.all(
       notas.map((n: any) =>
@@ -83,7 +82,22 @@ export const guardarNotasTarea = async (req: Request, res: Response) => {
 export const getNotasCursoSemestre = async (req: Request, res: Response) => {
   const { cursoId } = req.params;
   const { semestre } = req.query;
+  const sem = semestre ? Number(semestre) : undefined;
+
   try {
+    // Solo materias principales (no submaterias)
+    const materiasPrincipales = await prisma.materia.findMany({
+      where: { cursoId: Number(cursoId), esSubmateria: false },
+      orderBy: { id: 'asc' }
+    });
+
+    // Todas las materias incluyendo submaterias (para calcular promedios de Práctica/Teoría)
+    const todasMaterias = await prisma.materia.findMany({
+      where: { cursoId: Number(cursoId) },
+      select: { id: true, nombre: true, esSubmateria: true, materiaParent: true }
+    });
+
+    // Matrículas con notas de tareas y disciplina
     const matriculas = await prisma.matricula.findMany({
       where: { cursoId: Number(cursoId) },
       include: {
@@ -93,26 +107,16 @@ export const getNotasCursoSemestre = async (req: Request, res: Response) => {
               include: { materia: true }
             }
           },
-          where: semestre ? {
-            tarea: { semestre: Number(semestre) }
-          } : undefined
+          where: sem ? { tarea: { semestre: sem } } : undefined
+        },
+        notasDisciplina: {
+          where: sem ? { semestre: sem } : undefined
         }
       },
       orderBy: { apellidos: 'asc' }
     });
 
-    const materias = await prisma.materia.findMany({
-      where: { cursoId: Number(cursoId) },
-      include: {
-        tareas: {
-          where: semestre ? { semestre: Number(semestre) } : undefined,
-          orderBy: { fecha: 'asc' }
-        }
-      },
-      orderBy: { id: 'asc' }
-    });
-
-    res.json({ matriculas, materias });
+    res.json({ matriculas, materias: materiasPrincipales, todasMaterias });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener notas' });
   }

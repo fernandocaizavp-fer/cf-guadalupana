@@ -14,9 +14,13 @@ const formatearNombre = (texto: string): string => {
 export const crearAsistencia = async (req: Request, res: Response) => {
   const { fecha, materiaId, detalles } = req.body;
   try {
+    // Parsear como fecha local para evitar desfase UTC
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    const fechaLocal = new Date(anio, mes - 1, dia, 12, 0, 0);
+
     const asistencia = await prisma.asistencia.create({
       data: {
-        fecha: new Date(fecha),
+        fecha: fechaLocal,
         materiaId: Number(materiaId),
         detalles: {
           create: detalles.map((d: any) => ({

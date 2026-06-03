@@ -1,52 +1,79 @@
-<mat-toolbar style="background: linear-gradient(135deg, #1a2a5e, #0d1a3e); color: white;">
-  <button mat-icon-button style="color: white;" (click)="volver()">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <span>{{ materia?.nombre || 'Materia' }} — Semestre {{ semestre }}</span>
-  <span class="spacer"></span>
-  <div class="promedio-chip">
-    <span class="chip-label">Promedio</span>
-    <span class="chip-valor">{{ promedio }}</span>
+<mat-toolbar class="subject-toolbar">
+  <div class="toolbar-content">
+    <div class="nav-group">
+      <button mat-icon-button (click)="volver()" class="back-pill">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-group">
+        <h1>{{ materia?.nombre || 'Materia' }}</h1>
+        <span>Semestre {{ semestre }} • Historial de Calificaciones</span>
+      </div>
+    </div>
+
+    <!-- El spacer empuja todo lo demás a la derecha -->
+    <span class="spacer"></span>
+
+    <!-- Cuadro de promedio corregido -->
+    <div class="promedio-box" [class.danger-zone]="+promedio < 7">
+      <div class="p-info">
+        <span class="p-label">PROMEDIO</span>
+        <span class="p-valor">{{ promedio }}</span>
+      </div>
+      <div class="p-icon">
+        <mat-icon>stars</mat-icon>
+      </div>
+    </div>
   </div>
 </mat-toolbar>
 
 <div class="content">
   @if (loading) {
-    <div class="center"><mat-spinner></mat-spinner></div>
-  }
-
-  @if (!loading && tareas.length === 0) {
-    <div class="center">
-      <mat-icon class="empty-icon">assignment</mat-icon>
-      <p>No hay tareas registradas en el semestre {{ semestre }}</p>
+    <div class="loader-box">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Cargando notas...</p>
     </div>
-  }
+  } @else if (tareas.length === 0) {
+    <div class="empty-state">
+      <mat-icon>assignment_late</mat-icon>
+      <p>No hay tareas registradas en este semestre.</p>
+    </div>
+  } @else {
+    <div class="tareas-wrapper">
+      <div class="tareas-list">
+        @for (tarea of tareas; track tarea.id; let i = $index) {
+          <div class="tarea-card" [style.animation-delay]="i * 0.05 + 's'">
+            <!-- Indicador lateral de color -->
+            <div class="card-status-bar" 
+                 [class.status-high]="+tarea.miNota >= 7"
+                 [class.status-mid]="+tarea.miNota >= 5 && +tarea.miNota < 7"
+                 [class.status-low]="tarea.miNota !== null && +tarea.miNota < 5">
+            </div>
 
-  @if (!loading && tareas.length > 0) {
-    <div class="tareas-list">
-      @for (tarea of tareas; track tarea.id; let i = $index) {
-        <div class="tarea-card">
-          <div class="tarea-num">{{ i + 1 }}</div>
-          <div class="tarea-info">
-            <h3>{{ tarea.nombre }}</h3>
-            @if (tarea.descripcion) {
-              <p class="tarea-desc">{{ tarea.descripcion }}</p>
-            }
-            @if (tarea.miObservacion) {
-              <p class="tarea-obs">
-                <mat-icon>comment</mat-icon>
-                {{ tarea.miObservacion }}
-              </p>
-            }
+            <div class="card-body">
+              <div class="card-index">#{{ i + 1 }}</div>
+              
+              <div class="card-info">
+                <h3>{{ tarea.nombre }}</h3>
+                <p class="desc">{{ tarea.descripcion }}</p>
+                @if (tarea.miObservacion) {
+                  <div class="obs-tag">
+                    <mat-icon>chat_bubble_outline</mat-icon>
+                    {{ tarea.miObservacion }}
+                  </div>
+                }
+              </div>
+
+              <div class="card-score" 
+                   [class.score-high]="+tarea.miNota >= 7"
+                   [class.score-mid]="+tarea.miNota >= 5 && +tarea.miNota < 7"
+                   [class.score-low]="tarea.miNota !== null && +tarea.miNota < 5">
+                <span class="val">{{ tarea.miNota !== null ? tarea.miNota : '-' }}</span>
+                <span class="lbl">NOTA</span>
+              </div>
+            </div>
           </div>
-          <div class="tarea-nota" [class.sin-nota]="tarea.miNota === null"
-            [class.nota-alta]="tarea.miNota >= 7"
-            [class.nota-media]="tarea.miNota >= 5 && tarea.miNota < 7"
-            [class.nota-baja]="tarea.miNota !== null && tarea.miNota < 5">
-            {{ tarea.miNota !== null ? tarea.miNota : '-' }}
-          </div>
-        </div>
-      }
+        }
+      </div>
     </div>
   }
 </div>

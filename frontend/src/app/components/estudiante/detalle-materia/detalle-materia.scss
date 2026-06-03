@@ -1,152 +1,151 @@
-.spacer { flex: 1 1 auto; }
+$navy: #1a2a5e;
+$gold: #c8a84b;
+$danger: #ef4444;
+$success: #10b981;
+$warning: #f59e0b;
 
-.promedio-chip {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: rgba(200,168,75,0.2);
-  border-radius: 10px;
-  padding: 6px 16px;
+.subject-toolbar {
+  background: linear-gradient(135deg, $navy, #0d1a3e);
+  color: white;
+  height: 85px !important;
+  padding: 0 30px;
 
-  .chip-label {
-    font-size: 10px;
-    color: rgba(255,255,255,0.6);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  .toolbar-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between; // Asegura que el promedio se vaya a la derecha
   }
 
-  .chip-valor {
-    font-size: 20px;
-    font-weight: 900;
-    color: #c8a84b;
+  .nav-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    .back-pill {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: white;
+    }
+
+    .title-group {
+      h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+      span { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500; text-transform: uppercase; }
+    }
+  }
+}
+
+.spacer { flex: 1; }
+
+// CAJA DE PROMEDIO CORREGIDA
+.promedio-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba($gold, 0.3);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  padding: 8px 18px;
+  gap: 15px;
+
+  .p-info {
+    display: flex;
+    flex-direction: column;
+    .p-label { font-size: 9px; font-weight: 800; color: $gold; letter-spacing: 1px; }
+    .p-valor { font-size: 24px; font-weight: 900; line-height: 1; }
+  }
+
+  .p-icon {
+    mat-icon { 
+      font-size: 20px !important; 
+      width: 20px !important; 
+      height: 20px !important; 
+      color: $gold; 
+      opacity: 0.6;
+    }
+  }
+
+  &.danger-zone {
+    border-color: rgba($danger, 0.4);
+    background: rgba($danger, 0.1);
+    .p-label, mat-icon { color: $danger; }
   }
 }
 
 .content {
-  padding: 32px 48px;
-  background: #f0f2f8;
-  min-height: calc(100vh - 64px);
+  padding: 30px;
+  background: #f8fafc;
+  min-height: calc(100vh - 85px);
 }
 
-.center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 60px;
-  gap: 12px;
-  color: #aaa;
-
-  .empty-icon {
-    font-size: 64px;
-    width: 64px;
-    height: 64px;
-    color: #ddd;
-  }
+.tareas-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .tareas-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 700px;
 }
 
+// TARJETAS DE TAREA
 .tarea-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
   background: white;
-  border-radius: 14px;
-  padding: 18px 24px;
-  border: 1px solid #e8eaf0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  transition: all 0.2s;
-
-  &:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    transform: translateX(4px);
-  }
-}
-
-.tarea-num {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #f0f2f8;
+  border-radius: 16px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: #1a2a5e;
-  flex-shrink: 0;
-}
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  transition: all 0.3s;
+  animation: slideIn 0.4s ease backwards;
 
-.tarea-info {
-  flex: 1;
+  &:hover { transform: translateX(5px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
 
-  h3 {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1a2a5e;
-    margin: 0 0 4px;
+  .card-status-bar {
+    width: 5px;
+    background: #e2e8f0;
+    &.status-high { background: $success; }
+    &.status-mid { background: $warning; }
+    &.status-low { background: $danger; }
   }
 
-  .tarea-desc {
-    font-size: 12px;
-    color: #999;
-    margin: 0 0 4px;
-  }
-
-  .tarea-obs {
+  .card-body {
+    padding: 20px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: #666;
-    margin: 0;
-    font-style: italic;
-
-    mat-icon {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
-      color: #c8a84b;
-    }
+    width: 100%;
+    gap: 20px;
   }
 }
 
-.tarea-nota {
-  font-size: 22px;
-  font-weight: 900;
-  min-width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: #f0f2f8;
-  color: #ccc;
+.card-index {
+  font-size: 11px; font-weight: 800; color: #94a3b8;
+  background: #f1f5f9; padding: 4px 10px; border-radius: 8px;
+}
 
-  &.nota-alta {
-    background: #e8f5e9;
-    color: #2e7d32;
+.card-info {
+  flex: 1;
+  h3 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: $navy; }
+  .desc { font-size: 13px; color: #64748b; margin: 0; }
+  .obs-tag {
+    margin-top: 10px; display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #b45309; font-style: italic;
+    mat-icon { font-size: 14px; width: 14px; height: 14px; }
   }
+}
 
-  &.nota-media {
-    background: #fff8e1;
-    color: #f57f17;
-  }
+.card-score {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 65px; height: 65px; border-radius: 12px; background: #f8fafc;
+  
+  .val { font-size: 22px; font-weight: 900; color: #cbd5e1; }
+  .lbl { font-size: 8px; font-weight: 800; color: #cbd5e1; }
 
-  &.nota-baja {
-    background: #ffebee;
-    color: #c62828;
-  }
+  &.score-high { background: rgba($success, 0.08); .val, .lbl { color: $success; } }
+  &.score-mid { background: rgba($warning, 0.08); .val, .lbl { color: $warning; } }
+  &.score-low { background: rgba($danger, 0.08); .val, .lbl { color: $danger; } }
+}
 
-  &.sin-nota {
-    background: #f8f8f8;
-    color: #ddd;
-  }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

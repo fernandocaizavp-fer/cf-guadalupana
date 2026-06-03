@@ -31,7 +31,11 @@ export const generarAL9 = async (req: Request, res: Response) => {
       where: { id: Number(cursoId) },
       include: {
         matriculas: {
-          orderBy: { apellidos: 'asc' }
+          orderBy: { apellidos: 'asc' },
+          include: {
+            datosPersonales: true,
+            datosAcademicos: true
+          }
         }
       }
     });
@@ -43,9 +47,11 @@ export const generarAL9 = async (req: Request, res: Response) => {
     const AF2 = `${mesesMay[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
 
     const estudiantes = curso.matriculas.map((m, index) => {
-      const fechaNac = m.fechaNacimiento ? new Date(m.fechaNacimiento) : null;
+      const dp = m.datosPersonales;
+      const da = m.datosAcademicos;
+      const fechaNac = dp?.fechaNacimiento ? new Date(dp.fechaNacimiento) : null;
       const lugarFechaNac = fechaNac
-        ? `${formatearNombre(m.ciudad || m.canton || '')}, ${fechaNac.getDate().toString().padStart(2,'0')}/${(fechaNac.getMonth()+1).toString().padStart(2,'0')}/${fechaNac.getFullYear()}`
+        ? `${formatearNombre(dp?.ciudad || dp?.canton || '')}, ${fechaNac.getDate().toString().padStart(2,'0')}/${(fechaNac.getMonth()+1).toString().padStart(2,'0')}/${fechaNac.getFullYear()}`
         : '';
 
       return {
@@ -58,12 +64,14 @@ export const generarAL9 = async (req: Request, res: Response) => {
         cedula: m.cedula || '',
         edad: calcularEdad(fechaNac),
         sexo: m.sexo || '',
-        provincia: (m.provincia || '').toUpperCase(),
-        canton: (m.canton || '').toUpperCase(),
-        plantel: formatearNombre(m.cursoanterior || m.unidadeducativa || ''),
-        anioEstudio: formatearNombre(m.nivelEstudio === 'a1' ? 'Primaria' :
+        provincia: (dp?.provincia || '').toUpperCase(),
+        canton: (dp?.canton || '').toUpperCase(),
+        plantel: formatearNombre(da?.cursoanterior || da?.unidadeducativa || ''),
+        anioEstudio: formatearNombre(
+          m.nivelEstudio === 'a1' ? 'Primaria' :
           m.nivelEstudio === 'a2' ? 'Ciclo Básico' :
-          m.nivelEstudio === 'a4' ? (m.tipoBachiller || 'Bachiller') : '')
+          m.nivelEstudio === 'a4' ? (da?.tipoBachiller || 'Bachiller') : ''
+        )
       };
     });
 
@@ -80,8 +88,7 @@ export const generarAL9 = async (req: Request, res: Response) => {
       ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
       jornada: (jornada || 'MATUTINA').toString().toUpperCase(),
       regimen: (regimen || 'SIERRA').toString().toUpperCase(),
-      AF1,
-      AF2,
+      AF1, AF2,
       lugarFecha: lugarFecha || '',
       estudiantes
     });

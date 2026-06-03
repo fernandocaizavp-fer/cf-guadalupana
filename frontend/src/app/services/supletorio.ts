@@ -29,4 +29,11 @@ export class SuplетorioService {
       { headers: this.getHeaders(), responseType: 'blob' }
     );
   }
+
+  generarAL19(cursoId: number, lugarFecha: string, jornada: string): Observable<Blob> {
+  return this.http.get(
+    `${this.apiUrl}/supletorios/al19/${cursoId}?lugarFecha=${encodeURIComponent(lugarFecha)}&jornada=${encodeURIComponent(jornada)}`,
+    { headers: this.getHeaders(), responseType: 'blob' }
+  );
+}
 }

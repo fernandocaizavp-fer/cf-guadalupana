@@ -1,95 +1,112 @@
-.spacer { flex: 1 1 auto; }
+$navy: #1a2a5e;
+$gold: #c8a84b;
+$bg-body: #f4f7fa;
+$border: #e2e8f0;
+$white: #ffffff;
+
+// ── TOOLBAR ──────────────────────────────────────────
+.tareas-toolbar {
+  background: linear-gradient(135deg, $navy, #0d1a3e) !important;
+  color: white !important;
+  height: 85px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+
+  .toolbar-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0 30px;
+  }
+
+  .nav-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .back-pill {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      transition: all 0.3s ease;
+      &:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateX(-3px);
+      }
+    }
+
+    .title-meta {
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      span {
+        font-size: 12px;
+        opacity: 0.6;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+    }
+  }
+}
+
+.flex-spacer { flex: 1 1 auto; }
 
 .semestre-tabs {
   display: flex;
-  gap: 8px;
-}
+  gap: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 5px;
 
-.tab-btn {
-  padding: 6px 16px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: 20px;
-  background: transparent;
-  color: rgba(255,255,255,0.7);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.2s;
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    border: none;
+    border-radius: 20px;
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.25s;
 
-  &.active {
-    background: #c8a84b;
-    border-color: #c8a84b;
-    color: #1a2a5e;
-  }
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
 
-  &:hover:not(.active) {
-    border-color: white;
-    color: white;
-  }
-}
+    &.active {
+      background: $gold;
+      color: $navy;
+    }
 
-.content {
-  padding: 32px 48px;
-  background: #f0f2f8;
-  min-height: calc(100vh - 64px);
-}
-
-.crear-card {
-  border-radius: 16px !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
-  border: 1px solid #e8eaf0;
-  overflow: hidden;
-  margin-bottom: 32px;
-
-  ::ng-deep mat-card-header {
-    background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
-    padding: 16px 24px !important;
-    mat-card-title {
-      color: white !important;
-      font-size: 15px !important;
-      font-weight: 700 !important;
-      margin: 0 !important;
+    &:hover:not(.active) {
+      background: rgba(255,255,255,0.12);
+      color: white;
     }
   }
-
-  ::ng-deep mat-card-content { padding: 20px 24px !important; }
-  ::ng-deep mat-card-actions { padding: 12px 24px 20px !important; }
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 2fr;
-  gap: 16px;
-  mat-form-field { width: 100%; }
-}
-
-.section-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #1a2a5e;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  &::before {
-    content: '';
-    width: 4px;
-    height: 16px;
-    background: linear-gradient(135deg, #c8a84b, #e0c060);
-    border-radius: 2px;
-  }
+// ── CONTENIDO ────────────────────────────────────────
+.page-wrapper {
+  padding: 30px 48px;
+  background: $bg-body;
+  min-height: calc(100vh - 85px);
 }
 
 .center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px;
   gap: 12px;
+  padding: 60px;
   color: #aaa;
 
   .empty-icon {
@@ -98,31 +115,189 @@
     height: 64px;
     color: #ddd;
   }
+
+  p { font-size: 14px; }
 }
 
+// ── CREAR CARD ────────────────────────────────────────
+.crear-card {
+  background: $white;
+  border-radius: 20px;
+  border: 1px solid $border;
+  box-shadow: 0 4px 20px rgba($navy, 0.06);
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 28px;
+  background: linear-gradient(135deg, $navy, #2a4f9f);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+      color: $gold;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  h2 {
+    margin: 0 0 2px;
+    font-size: 16px;
+    font-weight: 800;
+    color: white;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 24px 28px;
+
+  mat-form-field { width: 100%; }
+
+  .col-span-2 { grid-column: span 2; }
+}
+
+.card-footer {
+  padding: 16px 28px 24px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #f1f5f9;
+
+  .crear-btn {
+    background: linear-gradient(135deg, $navy, #2a4f9f) !important;
+    color: white !important;
+    border-radius: 50px;
+    padding: 0 28px;
+    height: 44px;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.3s;
+
+    mat-icon { margin-right: 6px; }
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba($navy, 0.3);
+    }
+  }
+}
+
+// ── SECTION HEADER ────────────────────────────────────
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: $navy;
+
+    &::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(135deg, $gold, #e0c060);
+      border-radius: 2px;
+    }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: $gold;
+    }
+  }
+
+  .section-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .section-count {
+      background: $white;
+      border: 1px solid $border;
+      border-radius: 8px;
+      padding: 5px 14px;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .al14-btn {
+      background: rgba($navy, 0.08) !important;
+      color: $navy !important;
+      border-radius: 50px;
+      height: 36px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.2s;
+
+      mat-icon { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
+
+      &:hover {
+        background: $navy !important;
+        color: white !important;
+      }
+    }
+  }
+}
+
+// ── GRID DE TAREAS ────────────────────────────────────
 .tareas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
 }
 
 .tarea-card {
-  background: white;
-  border-radius: 14px;
-  border: 1px solid #e8eaf0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  background: $white;
+  border-radius: 18px;
+  border: 1px solid $border;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   overflow: hidden;
   transition: all 0.25s;
 
   &:hover {
-    border-color: #c8a84b;
-    box-shadow: 0 8px 24px rgba(200,168,75,0.15);
-    transform: translateY(-3px);
+    border-color: rgba($gold, 0.5);
+    box-shadow: 0 10px 30px rgba($gold, 0.12);
+    transform: translateY(-4px);
   }
 }
 
 .tarea-card-top {
-  padding: 20px;
+  padding: 20px 22px;
   display: flex;
   gap: 16px;
   align-items: flex-start;
@@ -133,75 +308,114 @@
 
   h3 {
     font-size: 15px;
-    font-weight: 700;
-    color: #1a2a5e;
-    margin: 0 0 6px;
+    font-weight: 800;
+    color: $navy;
+    margin: 0 0 8px;
   }
 
   .tarea-fecha {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     font-size: 12px;
-    color: #c8a84b;
+    color: $gold;
     font-weight: 600;
-    margin: 0 0 4px;
+    margin: 0 0 5px;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
   }
 
   .tarea-desc {
     font-size: 12px;
-    color: #888;
+    color: #94a3b8;
     margin: 0;
+    line-height: 1.5;
   }
 }
 
 .tarea-promedio {
   text-align: center;
-  background: linear-gradient(135deg, #1a2a5e, #2a4f9f);
-  border-radius: 10px;
-  padding: 10px 16px;
+  background: linear-gradient(135deg, $navy, #2a4f9f);
+  border-radius: 14px;
+  padding: 12px 18px;
   flex-shrink: 0;
+  min-width: 72px;
 
   .promedio-label {
     display: block;
-    font-size: 10px;
-    color: rgba(255,255,255,0.6);
+    font-size: 9px;
+    color: rgba(255,255,255,0.5);
     text-transform: uppercase;
     letter-spacing: 1px;
+    margin-bottom: 2px;
   }
 
   .promedio-valor {
     display: block;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 900;
-    color: #c8a84b;
+    color: $gold;
+    line-height: 1;
   }
 }
 
 .tarea-footer {
-  padding: 12px 20px;
-  border-top: 1px solid #f0f2f8;
+  padding: 12px 22px;
+  border-top: 1px solid #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.tareas-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  background: #fafbfc;
 }
 
 .estudiantes-count {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: 12px;
-  color: #aaa;
+  color: #94a3b8;
+  font-weight: 600;
 
-  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .tarea-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+
+  .calificar-btn {
+    background: rgba($gold, 0.12) !important;
+    color: darken($gold, 15%) !important;
+    border-radius: 50px;
+    height: 34px;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.2s;
+
+    mat-icon { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
+
+    &:hover {
+      background: $gold !important;
+      color: white !important;
+    }
+  }
+
+  .delete-btn {
+    color: #cbd5e1 !important;
+    transition: all 0.2s;
+
+    &:hover {
+      color: #dc2626 !important;
+      background: #fff1f2 !important;
+    }
+  }
 }

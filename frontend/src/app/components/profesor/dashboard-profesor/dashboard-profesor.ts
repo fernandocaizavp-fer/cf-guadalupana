@@ -110,6 +110,10 @@ export class DashboardProfesor implements OnInit {
     this.router.navigate(['/supletorios/materia', materiaId]);
   }
 
+  irAExamenGrado(materiaId: number) {
+    this.router.navigate(['/examen-grado', materiaId]);
+  }
+
   irADisciplina(materiaId: number) {
     this.router.navigate(['/disciplina/materia', materiaId]);
   }

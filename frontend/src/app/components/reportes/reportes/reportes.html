@@ -1,3 +1,4 @@
+
 <mat-toolbar class="admin-toolbar">
   <div class="toolbar-content">
     <div class="nav-group">
@@ -60,9 +61,30 @@
         </div>
         <mat-icon class="arrow">chevron_right</mat-icon>
       </div>
+
+      <div class="reporte-card-modern" (click)="abrirSeccion('examenGrado')">
+        <div class="card-accent examen"></div>
+        <div class="icon-box examen"><mat-icon>assignment_turned_in</mat-icon></div>
+        <div class="info">
+          <h3>Examen Escrito de Grado</h3>
+          <p>Cuadro de exámenes escritos de grado. Documento oficial <strong>AL23</strong></p>
+        </div>
+        <mat-icon class="arrow">chevron_right</mat-icon>
+      </div>
+
+      <div class="reporte-card-modern" (click)="abrirSeccion('proyectos')">
+        <div class="card-accent proyectos"></div>
+        <div class="icon-box proyectos"><mat-icon>science</mat-icon></div>
+        <div class="info">
+          <h3>Notas Proyectos Productivos</h3>
+          <p>Cuadro de notas de proyectos productivos. Documento oficial <strong>AL19</strong></p>
+        </div>
+        <mat-icon class="arrow">chevron_right</mat-icon>
+      </div>
     </div>
   }
 
+  <!-- ── ASISTENCIA ─────────────────────────────────── -->
   @if (seccionActiva === 'asistencia') {
     <div class="seccion-header-detail">
       <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
@@ -90,66 +112,88 @@
         </mat-form-field>
         <mat-form-field appearance="outline" class="span-2">
           <mat-label>Lugar y Fecha</mat-label>
-          <input matInput [(ngModel)]="lugarFecha">
+          <input matInput [(ngModel)]="lugarFecha" placeholder="Riobamba, 24 de abril del 2026">
         </mat-form-field>
         <div class="action-btn">
           @if (cursoSeleccionado) {
             <button mat-flat-button class="btn-download navy" (click)="descargarAL18()">
-              <mat-icon>download</mat-icon> DESCARGAR AL18
+              <mat-icon>download</mat-icon> AL18
             </button>
           }
         </div>
       </div>
     </div>
 
-    @if (loading) { <div class="center-box"><mat-spinner diameter="40"></mat-spinner></div> }
+    @if (loading) {
+      <div class="center-box"><mat-spinner diameter="40"></mat-spinner></div>
+    }
     @if (!loading && cursoSeleccionado && resumen.length === 0) {
-      <div class="empty-box"><mat-icon>event_busy</mat-icon><p>Sin registros encontrados</p></div>
+      <div class="empty-box">
+        <mat-icon>event_busy</mat-icon>
+        <p>Sin registros de asistencia</p>
+      </div>
     }
     @if (!loading && resumen.length > 0) {
       <div class="table-container-modern">
         <div class="table-info-bar">
-          <span>Clases registradas: <strong>{{ totalClases }}</strong></span>
-          <span><strong>{{ resumen.length }}</strong> Estudiantes</span>
+          <div class="info-item">
+            <mat-icon>calendar_today</mat-icon>
+            <span>Clases registradas: <strong>{{ totalClases }}</strong></span>
+          </div>
+          <div class="info-item">
+            <mat-icon>people</mat-icon>
+            <span><strong>{{ resumen.length }}</strong> estudiantes</span>
+          </div>
         </div>
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th class="w-50">No.</th>
-              <th class="text-left">Apellidos y Nombres</th>
-              <th>Cédula</th>
-              <th>Presentes</th>
-              <th>Faltas</th>
-              <th>% Asist.</th>
-              <th>Observación</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (est of resumen; track est.id; let i = $index) {
+        <div class="table-scroll">
+          <table class="modern-table">
+            <thead>
               <tr>
-                <td class="text-center">{{ i + 1 }}</td>
-                <td class="text-left font-bold">{{ est.apellidos }} {{ est.nombres }}</td>
-                <td class="text-center"><code>{{ est.cedula }}</code></td>
-                <td class="text-center">{{ est.totalPresente }}</td>
-                <td class="text-center">{{ est.totalFaltas }}</td>
-                <td class="text-center">
-                  <span class="chip" [style.color]="getColorPorcentaje(est.porcentaje)" [style.background]="getColorPorcentaje(est.porcentaje) + '15'">
-                    {{ est.porcentaje }}%
-                  </span>
-                </td>
-                <td><input type="text" class="table-input" [(ngModel)]="observaciones[est.id]"></td>
-                <td class="text-center">
-                  <button mat-icon-button class="save-btn" (click)="guardarObservacion(est.id)"><mat-icon>save</mat-icon></button>
-                </td>
+                <th>No.</th>
+                <th class="text-left">Apellidos y Nombres</th>
+                <th>Cédula</th>
+                <th>Presentes</th>
+                <th>Faltas</th>
+                <th>% Asist.</th>
+                <th>Observación</th>
+                <th></th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (est of resumen; track est.id; let i = $index) {
+                <tr>
+                  <td class="text-center">{{ i + 1 }}</td>
+                  <td class="text-left font-bold">{{ est.apellidos }} {{ est.nombres }}</td>
+                  <td class="text-center"><code>{{ est.cedula }}</code></td>
+                  <td class="text-center">{{ est.totalPresente }}</td>
+                  <td class="text-center">{{ est.totalFaltas }}</td>
+                  <td class="text-center">
+                    <span class="chip"
+                      [style.color]="getColorPorcentaje(est.porcentaje)"
+                      [style.background]="getColorPorcentaje(est.porcentaje) + '15'">
+                      {{ est.porcentaje }}%
+                    </span>
+                  </td>
+                  <td>
+                    <input type="text" class="table-input"
+                      [(ngModel)]="observaciones[est.id]"
+                      placeholder="Ingrese observación...">
+                  </td>
+                  <td class="text-center">
+                    <button mat-icon-button class="save-btn" (click)="guardarObservacion(est.id)">
+                      <mat-icon>save</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     }
   }
 
+  <!-- ── CALIFICACIONES AL14 ────────────────────────── -->
   @if (seccionActiva === 'calificaciones') {
     <div class="seccion-header-detail">
       <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
@@ -173,14 +217,14 @@
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Semestre</mat-label>
-          <mat-select [(ngModel)]="semestreCalificaciones">
+          <mat-select [(ngModel)]="semestreCalificaciones" (ngModelChange)="seleccionarCursoCalificaciones()">
             <mat-option [value]="1">1er Semestre</mat-option>
             <mat-option [value]="2">2do Semestre</mat-option>
           </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
-          <input matInput [(ngModel)]="lugarFechaCalificaciones">
+          <input matInput [(ngModel)]="lugarFechaCalificaciones" placeholder="Riobamba, 24 de abril del 2026">
         </mat-form-field>
         <div class="action-btn">
           @if (cursoCalificaciones) {
@@ -192,37 +236,64 @@
       </div>
     </div>
 
-    @if (loadingCalificaciones) { <div class="center-box"><mat-spinner diameter="40"></mat-spinner></div> }
+    @if (loadingCalificaciones) {
+      <div class="center-box"><mat-spinner diameter="40"></mat-spinner></div>
+    }
     @if (!loadingCalificaciones && resumenCalificaciones.length > 0) {
       <div class="table-container-modern">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th class="w-50">No.</th>
-              <th class="text-left">Apellidos y Nombres</th>
-              @for (materia of materiasCalificaciones; track materia.id) {
-                <th class="v-text">{{ materia.nombre }}</th>
-              }
-              <th>Promedio</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (est of resumenCalificaciones; track est.id; let i = $index) {
+        <div class="table-scroll">
+          <table class="modern-table">
+            <thead>
               <tr>
-                <td class="text-center">{{ i + 1 }}</td>
-                <td class="text-left font-bold">{{ est.apellidos }} {{ est.nombres }}</td>
+                <th class="th-fixed">No.</th>
+                <th class="text-left th-nombre-fixed">Apellidos y Nombres</th>
                 @for (materia of materiasCalificaciones; track materia.id) {
-                  <td class="text-center">{{ getPromedioMateria(est, materia.id) }}</td>
+                  <th class="v-text-column">
+                    <div class="v-text-wrapper"><span>{{ materia.nombre }}</span></div>
+                  </th>
                 }
-                <td class="text-center highlight-cell">{{ getPromedioGeneral(est) }}</td>
+                @if (!tieneMateriaDiscipilna) {
+                  <th class="v-text-column">
+                    <div class="v-text-wrapper"><span>Disciplina</span></div>
+                  </th>
+                }
+                <th class="th-fixed">Promedio</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (est of resumenCalificaciones; track est.id; let i = $index) {
+                <tr>
+                  <td class="text-center">{{ i + 1 }}</td>
+                  <td class="text-left font-bold">{{ est.apellidos }} {{ est.nombres }}</td>
+                  @for (materia of materiasCalificaciones; track materia.id) {
+                    <td class="text-center">
+                      @if (materia.nombre.toLowerCase().includes('disciplina')) {
+                        {{ getNotaDisciplina(est) }}
+                      } @else {
+                        {{ getPromedioMateria(est, materia.id) }}
+                      }
+                    </td>
+                  }
+                  @if (!tieneMateriaDiscipilna) {
+                    <td class="text-center">{{ getNotaDisciplina(est) }}</td>
+                  }
+                  <td class="text-center highlight-cell">{{ getPromedioGeneral(est) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+    @if (!loadingCalificaciones && cursoCalificaciones && resumenCalificaciones.length === 0) {
+      <div class="empty-box">
+        <mat-icon>grade</mat-icon>
+        <p>Sin calificaciones registradas para este semestre</p>
       </div>
     }
   }
 
+  <!-- ── CUADRO FINAL AL15 ──────────────────────────── -->
   @if (seccionActiva === 'cuadrofinal') {
     <div class="seccion-header-detail">
       <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
@@ -250,7 +321,7 @@
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
-          <input matInput [(ngModel)]="lugarFechaAL15">
+          <input matInput [(ngModel)]="lugarFechaAL15" placeholder="Riobamba, 24 de abril del 2026">
         </mat-form-field>
         <div class="action-btn">
           @if (cursoAL15) {
@@ -268,6 +339,7 @@
     </div>
   }
 
+  <!-- ── NÓMINA AL9 ─────────────────────────────────── -->
   @if (seccionActiva === 'nomina') {
     <div class="seccion-header-detail">
       <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
@@ -300,6 +372,10 @@
           <mat-label>Jornada</mat-label>
           <input matInput [(ngModel)]="jornadaAL9">
         </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Lugar y Fecha</mat-label>
+          <input matInput [(ngModel)]="lugarFechaAL9" placeholder="Riobamba, 24 de abril del 2026">
+        </mat-form-field>
         <div class="action-btn">
           @if (cursoAL9) {
             <button mat-flat-button class="btn-download orange" (click)="descargarAL9()">
@@ -308,6 +384,140 @@
           }
         </div>
       </div>
+    </div>
+
+    <div class="info-note-box orange">
+      <mat-icon>info</mat-icon>
+      <span>El AL9 incluye todos los estudiantes matriculados con sus datos personales y académicos.</span>
+    </div>
+  }
+
+  <!-- ── EXAMEN GRADO AL23 ──────────────────────────── -->
+  @if (seccionActiva === 'examenGrado') {
+    <div class="seccion-header-detail">
+      <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h2>Examen Escrito de Grado</h2>
+        <span class="badge examen">OFICIAL AL23</span>
+      </div>
+    </div>
+
+    <div class="card-panel filter-panel">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Curso</mat-label>
+          <mat-select [(ngModel)]="cursoAL23" (ngModelChange)="seleccionarCursoAL23()">
+            @for (curso of cursos; track curso.id) {
+              <mat-option [value]="curso.id">{{ curso.ramaArtesanal }} — {{ curso.anioFormativo }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Jornada</mat-label>
+          <input matInput [(ngModel)]="jornadaAL23">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Lugar y Fecha</mat-label>
+          <input matInput [(ngModel)]="lugarFechaAL23" placeholder="Riobamba, 24 de abril del 2026">
+        </mat-form-field>
+        <div class="action-btn">
+          @if (cursoAL23) {
+            <button mat-flat-button class="btn-download examen" (click)="descargarAL23()">
+              <mat-icon>download</mat-icon> AL23
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (loadingAL23) {
+      <div class="center-box"><mat-spinner diameter="40"></mat-spinner></div>
+    }
+    @if (!loadingAL23 && resumenAL23.length > 0) {
+      <div class="table-container-modern">
+        <div class="table-scroll">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th class="th-fixed">No.</th>
+                <th class="text-left th-nombre-fixed">Apellidos y Nombres</th>
+                @for (materia of materiasAL23; track materia.id) {
+                  <th class="v-text-column">
+                    <div class="v-text-wrapper"><span>{{ materia.nombre }}</span></div>
+                  </th>
+                }
+                <th class="th-fixed">Promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (est of resumenAL23; track est.id; let i = $index) {
+                <tr>
+                  <td class="text-center">{{ i + 1 }}</td>
+                  <td class="text-left font-bold">{{ est.apellidos }} {{ est.nombres }}</td>
+                  @for (materia of materiasAL23; track materia.id) {
+                    <td class="text-center">{{ getExamenMateria(est, materia.id) }}</td>
+                  }
+                  <td class="text-center highlight-cell">{{ getPromedioExamen(est) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+    @if (!loadingAL23 && cursoAL23 && resumenAL23.length === 0) {
+      <div class="empty-box">
+        <mat-icon>assignment_turned_in</mat-icon>
+        <p>Sin exámenes registrados para este curso</p>
+      </div>
+    }
+  }
+
+  <!-- ── PROYECTOS PRODUCTIVOS AL19 ─────────────────── -->
+  @if (seccionActiva === 'proyectos') {
+    <div class="seccion-header-detail">
+      <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h2>Notas Proyectos Productivos</h2>
+        <span class="badge proyectos">OFICIAL AL19</span>
+      </div>
+    </div>
+
+    <div class="card-panel filter-panel">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Curso</mat-label>
+          <mat-select [(ngModel)]="cursoAL19">
+            @for (curso of cursos; track curso.id) {
+              <mat-option [value]="curso.id">{{ curso.ramaArtesanal }} — {{ curso.anioFormativo }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Jornada</mat-label>
+          <input matInput [(ngModel)]="jornadaAL19">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Lugar y Fecha</mat-label>
+          <input matInput [(ngModel)]="lugarFechaAL19" placeholder="Riobamba, 24 de abril del 2026">
+        </mat-form-field>
+        <div class="action-btn">
+          @if (cursoAL19) {
+            <button mat-flat-button class="btn-download proyectos" (click)="descargarAL19()">
+              <mat-icon>download</mat-icon> AL19
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="info-note-box proyectos">
+      <mat-icon>info</mat-icon>
+      <span>El AL19 incluye la nota final de Elaboración de Proyectos Productivos de ambos semestres.</span>
     </div>
   }
 

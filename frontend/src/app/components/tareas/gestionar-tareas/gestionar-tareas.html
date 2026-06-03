@@ -1,61 +1,84 @@
-<mat-toolbar style="background: linear-gradient(135deg, #1a2a5e, #0d1a3e); color: white;">
-  <button mat-icon-button style="color: white;" (click)="volver()">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <span>Tareas — {{ materia?.nombre || 'Materia' }}</span>
-  <span class="spacer"></span>
-  <div class="semestre-tabs">
-    <button class="tab-btn" [class.active]="semestreSeleccionado === 1" (click)="cambiarSemestre(1)">
-      1er Semestre
-    </button>
-    <button class="tab-btn" [class.active]="semestreSeleccionado === 2" (click)="cambiarSemestre(2)">
-      2do Semestre
-    </button>
+<mat-toolbar class="tareas-toolbar">
+  <div class="toolbar-content">
+    <div class="nav-group">
+      <button mat-icon-button (click)="volver()" class="back-pill">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-meta">
+        <h1>{{ materia?.nombre || 'Materia' }}</h1>
+        <span>Gestión de tareas y calificaciones</span>
+      </div>
+    </div>
+    <span class="flex-spacer"></span>
+    <div class="semestre-tabs">
+      <button class="tab-btn" [class.active]="semestreSeleccionado === 1" (click)="cambiarSemestre(1)">
+        <mat-icon>looks_one</mat-icon> 1er Semestre
+      </button>
+      <button class="tab-btn" [class.active]="semestreSeleccionado === 2" (click)="cambiarSemestre(2)">
+        <mat-icon>looks_two</mat-icon> 2do Semestre
+      </button>
+    </div>
   </div>
 </mat-toolbar>
 
-<div class="content">
+<div class="page-wrapper">
 
   <!-- CREAR TAREA -->
-  <mat-card class="crear-card">
-    <mat-card-header>
-      <mat-card-title>Nueva Tarea — Semestre {{ semestreSeleccionado }}</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="row">
-        <mat-form-field appearance="outline">
-          <mat-label>Nombre de la tarea</mat-label>
-          <input matInput [(ngModel)]="nuevaTarea.nombre" placeholder="Ej: Speaking - Saludos">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Fecha</mat-label>
-          <input matInput type="date" [(ngModel)]="nuevaTarea.fecha">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="col-2">
-          <mat-label>Descripción / Observación</mat-label>
-          <input matInput [(ngModel)]="nuevaTarea.descripcion" placeholder="Opcional">
-        </mat-form-field>
+  <div class="crear-card">
+    <div class="card-header">
+      <div class="card-icon">
+        <mat-icon>add_task</mat-icon>
       </div>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-raised-button style="background: linear-gradient(135deg, #1a2a5e, #2a4f9f); color: white;"
-        (click)="crearTarea()" [disabled]="guardando">
-        <mat-icon>add_task</mat-icon> CREAR TAREA
-      </button>
-    </mat-card-actions>
-  </mat-card>
+      <div>
+        <h2>Nueva Tarea</h2>
+        <p>Semestre {{ semestreSeleccionado }}</p>
+      </div>
+    </div>
 
-  <!-- LISTA DE TAREAS -->
-  <div class="tareas-header">
-    <h2 class="section-title">Tareas del Semestre {{ semestreSeleccionado }} ({{ tareas.length }})</h2>
-    <button mat-raised-button style="background: linear-gradient(135deg, #1a2a5e, #2a4f9f); color: white;"
-      (click)="descargarAL14()">
-      <mat-icon>download</mat-icon> Descargar AL14
-    </button>
+    <div class="form-grid">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Nombre de la tarea</mat-label>
+        <input matInput [(ngModel)]="nuevaTarea.nombre" placeholder="Ej: Speaking — Saludos">
+        <mat-icon matPrefix>assignment</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Fecha</mat-label>
+        <input matInput type="date" [(ngModel)]="nuevaTarea.fecha">
+        <mat-icon matPrefix>event</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-span-2">
+        <mat-label>Descripción / Observación</mat-label>
+        <input matInput [(ngModel)]="nuevaTarea.descripcion" placeholder="Opcional">
+        <mat-icon matPrefix>notes</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <div class="card-footer">
+      <button mat-flat-button class="crear-btn" (click)="crearTarea()" [disabled]="guardando">
+        <mat-icon>add_task</mat-icon>
+        {{ guardando ? 'Creando...' : 'Crear Tarea' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- CABECERA LISTA -->
+  <div class="section-header">
+    <div class="section-title">
+      <mat-icon>list_alt</mat-icon>
+      Tareas del Semestre {{ semestreSeleccionado }}
+    </div>
+    <div class="section-actions">
+      <span class="section-count">{{ tareas.length }} tarea{{ tareas.length !== 1 ? 's' : '' }}</span>
+      <button mat-flat-button class="al14-btn" (click)="descargarAL14()">
+        <mat-icon>download</mat-icon> AL14
+      </button>
+    </div>
   </div>
 
   @if (loading) {
-    <div class="center"><mat-spinner diameter="40"></mat-spinner></div>
+    <div class="center"><mat-spinner diameter="48"></mat-spinner></div>
   }
 
   @if (!loading && tareas.length === 0) {
@@ -69,10 +92,14 @@
     <div class="tareas-grid">
       @for (tarea of tareas; track tarea.id) {
         <div class="tarea-card">
+
           <div class="tarea-card-top">
             <div class="tarea-info">
               <h3>{{ tarea.nombre }}</h3>
-              <p class="tarea-fecha">{{ tarea.fecha | date:'dd/MM/yyyy' }}</p>
+              <p class="tarea-fecha">
+                <mat-icon>event</mat-icon>
+                {{ tarea.fecha | date:'dd/MM/yyyy' }}
+              </p>
               @if (tarea.descripcion) {
                 <p class="tarea-desc">{{ tarea.descripcion }}</p>
               }
@@ -82,21 +109,22 @@
               <span class="promedio-valor">{{ calcularPromedioTarea(tarea) }}</span>
             </div>
           </div>
+
           <div class="tarea-footer">
             <span class="estudiantes-count">
               <mat-icon>people</mat-icon>
               {{ tarea.notas?.length || 0 }} calificados
             </span>
             <div class="tarea-actions">
-              <button mat-raised-button style="background: #c8a84b; color: #1a2a5e; font-weight: 600;"
-                (click)="irANotas(tarea.id)">
+              <button mat-flat-button class="calificar-btn" (click)="irANotas(tarea.id)">
                 <mat-icon>grade</mat-icon> Calificar
               </button>
-              <button mat-icon-button color="warn" (click)="eliminarTarea(tarea.id)">
-                <mat-icon>delete</mat-icon>
+              <button mat-icon-button class="delete-btn" (click)="eliminarTarea(tarea.id)">
+                <mat-icon>delete_outline</mat-icon>
               </button>
             </div>
           </div>
+
         </div>
       }
     </div>

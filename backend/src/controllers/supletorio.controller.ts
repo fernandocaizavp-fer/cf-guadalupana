@@ -25,11 +25,15 @@ const calcularSuma = (n1: number | null, n2: number | null): string => {
   return fmt(suma);
 };
 
-const calcularPf = (n1: number | null, n2: number | null, sup: number | null): string => {
-  if (n1 === null || n2 === null) return '';
+const calcularPfNum = (n1: number | null, n2: number | null, sup: number | null): number | null => {
+  if (n1 === null || n2 === null) return null;
   const suma = (n1 + n2) / 2;
-  if (sup !== null) return fmt((suma + sup) / 2);
-  return fmt(suma);
+  if (sup !== null) return (suma + sup) / 2;
+  return suma;
+};
+
+const calcularPf = (n1: number | null, n2: number | null, sup: number | null): string => {
+  return fmt(calcularPfNum(n1, n2, sup));
 };
 
 export const guardarSupletorio = async (req: Request, res: Response) => {
@@ -90,13 +94,20 @@ export const generarAL15 = async (req: Request, res: Response) => {
     const curso = await prisma.curso.findUnique({
       where: { id: Number(cursoId) },
       include: {
-        materias: { orderBy: { id: 'asc' } },
+        materias: {
+          include: {
+            profesor: { select: { cedula: true, nombre: true, apellido: true } },
+            profesorPrincipal: { select: { cedula: true, nombre: true, apellido: true } }
+          },
+          orderBy: { id: 'asc' }
+        },
         matriculas: {
           include: {
             notasTarea: {
               include: { tarea: { include: { materia: true } } }
             },
-            supletorios: { include: { materia: true } }
+            supletorios: { include: { materia: true } },
+            notasDisciplina: true
           },
           orderBy: { apellidos: 'asc' }
         }
@@ -105,23 +116,17 @@ export const generarAL15 = async (req: Request, res: Response) => {
 
     if (!curso) return res.status(404).json({ error: 'Curso no encontrado' });
 
-    const getN1 = (matricula: any, nombreMateria: string): number | null => {
+    const getN = (matricula: any, nombreMateria: string, semestre: number): number | null => {
       const notas = matricula.notasTarea.filter((n: any) =>
         n.tarea.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase()) &&
-        n.tarea.semestre === 1 && n.valor !== null
+        n.tarea.semestre === semestre && n.valor !== null
       );
       if (notas.length === 0) return null;
       return notas.reduce((a: number, b: any) => a + b.valor, 0) / notas.length;
     };
 
-    const getN2 = (matricula: any, nombreMateria: string): number | null => {
-      const notas = matricula.notasTarea.filter((n: any) =>
-        n.tarea.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase()) &&
-        n.tarea.semestre === 2 && n.valor !== null
-      );
-      if (notas.length === 0) return null;
-      return notas.reduce((a: number, b: any) => a + b.valor, 0) / notas.length;
-    };
+    const getN1 = (m: any, nombre: string) => getN(m, nombre, 1);
+    const getN2 = (m: any, nombre: string) => getN(m, nombre, 2);
 
     const getSup = (matricula: any, nombreMateria: string): number | null => {
       const sup = matricula.supletorios.find((s: any) =>
@@ -130,7 +135,20 @@ export const generarAL15 = async (req: Request, res: Response) => {
       return sup?.valor ?? null;
     };
 
-    const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+    const getCedula = (nombreMateria: string): string => {
+      const materia = curso.materias.find(m =>
+        m.nombre.toLowerCase().includes(nombreMateria.toLowerCase()) && !m.esSubmateria
+      );
+      return materia?.profesor?.cedula || '';
+    };
+
+    const materiaPrincipal = curso.materias.find(
+      m => (m.nombre === 'Práctica' || m.nombre === 'Teoría') && !m.esSubmateria
+    );
+    const cc_tp = materiaPrincipal?.profesorPrincipal?.cedula || '';
+
+    const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO',
+                   'JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
     const anio1 = `${meses[curso.fechaInicio.getMonth()]} ${curso.fechaInicio.getFullYear()}`;
     const anio2 = `${meses[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
 
@@ -167,23 +185,41 @@ export const generarAL15 = async (req: Request, res: Response) => {
       const legislacion_n2 = getN2(m, 'Legislación');
       const legislacion_sup = getSup(m, 'Legislación');
 
-      const disciplina_n1 = getN1(m, 'Disciplina');
-      const disciplina_n2 = getN2(m, 'Disciplina');
+      const proy_n1 = getN1(m, 'Elaboración');
+      const proy_n2 = getN2(m, 'Elaboración');
+      const proy_sup = getSup(m, 'Elaboración');
 
-      const todasNotas = [
-        teoria_n1, teoria_n2, practica_n1, practica_n2,
-        adm_n1, adm_n2, cont_n1, cont_n2, tics_n1, tics_n2,
-        ingles_n1, ingles_n2, desarrollo_n1, desarrollo_n2,
-        legislacion_n1, legislacion_n2
+      const notasDisc = m.notasDisciplina || [];
+      const disciplinaVal = notasDisc.length > 0
+        ? notasDisc.reduce((a: number, b: any) => a + b.valor, 0) / notasDisc.length
+        : null;
+
+      const promediosPf = [
+        calcularPfNum(teoria_n1, teoria_n2, teoria_sup),
+        calcularPfNum(practica_n1, practica_n2, practica_sup),
+        calcularPfNum(adm_n1, adm_n2, adm_sup),
+        calcularPfNum(cont_n1, cont_n2, cont_sup),
+        calcularPfNum(tics_n1, tics_n2, tics_sup),
+        calcularPfNum(ingles_n1, ingles_n2, ingles_sup),
+        calcularPfNum(desarrollo_n1, desarrollo_n2, desarrollo_sup),
+        calcularPfNum(legislacion_n1, legislacion_n2, legislacion_sup),
+        calcularPfNum(proy_n1, proy_n2, proy_sup),
+        disciplinaVal
       ].filter(n => n !== null) as number[];
 
-      const promedio = todasNotas.length > 0
-        ? fmt(todasNotas.reduce((a, b) => a + b, 0) / todasNotas.length)
+      const promedioNum = promediosPf.length > 0
+        ? promediosPf.reduce((a, b) => a + b, 0) / promediosPf.length
+        : null;
+
+      const promedio = fmt(promedioNum);
+      const nomenclatura = promedioNum !== null && promedioNum > 9
+        ? 'Supera el Aprendizaje'
         : '';
 
       return {
         num: String(index + 1),
         nombres: `${formatearNombre(m.apellidos)} ${formatearNombre(m.nombres)}`,
+
         teoria_n1: fmt(teoria_n1), teoria_n2: fmt(teoria_n2),
         teoria_suma: calcularSuma(teoria_n1, teoria_n2),
         teoria_sup: fmt(teoria_sup),
@@ -224,9 +260,14 @@ export const generarAL15 = async (req: Request, res: Response) => {
         legislacion_sup: fmt(legislacion_sup),
         legislacion_pf: calcularPf(legislacion_n1, legislacion_n2, legislacion_sup),
 
-        disciplina: fmt(disciplina_n1),
+        proy_n1: fmt(proy_n1), proy_n2: fmt(proy_n2),
+        proy_suma: calcularSuma(proy_n1, proy_n2),
+        proy_sup: fmt(proy_sup),
+        proy_pf: calcularPf(proy_n1, proy_n2, proy_sup),
+
+        disciplina: fmt(disciplinaVal),
         promedio,
-        nomenclatura: ''
+        nomenclatura
       };
     });
 
@@ -243,8 +284,15 @@ export const generarAL15 = async (req: Request, res: Response) => {
       ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
       anio1,
       anio2,
-      jornada: jornada || 'MATUTINA',
+      jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
       lugarFecha: lugarFecha || '',
+      cc_tp,
+      cc_adm: getCedula('Administración'),
+      cc_cont: getCedula('Contabilidad'),
+      cc_tics: getCedula('TICs'),
+      cc_ingles: getCedula('Inglés'),
+      cc_desarollo: getCedula('Desarrollo'),
+      cc_legislacion: getCedula('Legislación'),
       estudiantes,
       estudiantes2: estudiantes
     });
@@ -256,5 +304,93 @@ export const generarAL15 = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al generar AL15' });
+  }
+};
+
+export const generarAL19 = async (req: Request, res: Response) => {
+  const { cursoId } = req.params;
+  const { lugarFecha, jornada } = req.query;
+
+  try {
+    const curso = await prisma.curso.findUnique({
+      where: { id: Number(cursoId) },
+      include: {
+        matriculas: {
+          include: {
+            notasTarea: {
+              include: { tarea: { include: { materia: true } } }
+            },
+            supletorios: { include: { materia: true } }
+          },
+          orderBy: { apellidos: 'asc' }
+        }
+      }
+    });
+
+    if (!curso) return res.status(404).json({ error: 'Curso no encontrado' });
+
+    const getN = (matricula: any, semestre: number): number | null => {
+      const notas = matricula.notasTarea.filter((n: any) =>
+        n.tarea.materia.nombre.toLowerCase().includes('elaboración') &&
+        n.tarea.semestre === semestre && n.valor !== null
+      );
+      if (notas.length === 0) return null;
+      return notas.reduce((a: number, b: any) => a + b.valor, 0) / notas.length;
+    };
+
+    const getSup = (matricula: any): number | null => {
+      const sup = matricula.supletorios.find((s: any) =>
+        s.materia.nombre.toLowerCase().includes('elaboración')
+      );
+      return sup?.valor ?? null;
+    };
+
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const anio1 = `${meses[curso.fechaInicio.getMonth()]} ${curso.fechaInicio.getFullYear()}`;
+    const anio2 = `${meses[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
+
+    const estudiantes = curso.matriculas.map((m, index) => {
+      const n1 = getN(m, 1);
+      const n2 = getN(m, 2);
+      const sup = getSup(m);
+      const notaNum = calcularPfNum(n1, n2, sup);
+      const nota = fmt(notaNum);
+      const observacion = notaNum === null ? '' : notaNum >= 7 ? 'Aprobado' : 'Desaprobado';
+
+      return {
+        num: String(index + 1),
+        nombres: `${formatearNombre(m.apellidos)} ${formatearNombre(m.nombres)}`,
+        cedula: m.cedula || '',
+        nota,
+        observacion
+      };
+    });
+
+    const templatePath = path.join(process.cwd(), 'templates', 'AL19NOTASPROYECTOS.docx');
+    const content = fs.readFileSync(templatePath, 'binary');
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: '{', end: '}' }
+    });
+
+    doc.render({
+      ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
+      jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
+      anio1,
+      anio2,
+      lugarFecha: lugarFecha || '',
+      estudiantes
+    });
+
+    const buffer = doc.getZip().generate({ type: 'nodebuffer' });
+    res.setHeader('Content-Disposition', `attachment; filename=AL19_${curso.ramaArtesanal}.docx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.send(buffer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al generar AL19' });
   }
 };

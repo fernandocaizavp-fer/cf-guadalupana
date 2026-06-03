@@ -2,20 +2,22 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 
 export const guardarNotaDisciplina = async (req: Request, res: Response) => {
-  const { matriculaId, materiaId, valor } = req.body;
+  const { matriculaId, materiaId, valor, semestre } = req.body;
   try {
     const nota = await prisma.notaDisciplina.upsert({
       where: {
-        matriculaId_materiaId: {
+        matriculaId_materiaId_semestre: {
           matriculaId: Number(matriculaId),
-          materiaId: Number(materiaId)
+          materiaId: Number(materiaId),
+          semestre: Number(semestre || 1)
         }
       },
       update: { valor: Number(valor) },
       create: {
         matriculaId: Number(matriculaId),
         materiaId: Number(materiaId),
-        valor: Number(valor)
+        valor: Number(valor),
+        semestre: Number(semestre || 1)
       }
     });
     res.json({ message: 'Nota de disciplina guardada', nota });
@@ -25,22 +27,24 @@ export const guardarNotaDisciplina = async (req: Request, res: Response) => {
 };
 
 export const guardarNotasDisciplinaMasivo = async (req: Request, res: Response) => {
-  const { notas } = req.body;
+  const { notas, semestre } = req.body;
   try {
     const resultados = await Promise.all(
       notas.map((n: any) =>
         prisma.notaDisciplina.upsert({
           where: {
-            matriculaId_materiaId: {
+            matriculaId_materiaId_semestre: {
               matriculaId: Number(n.matriculaId),
-              materiaId: Number(n.materiaId)
+              materiaId: Number(n.materiaId),
+              semestre: Number(n.semestre || semestre || 1)
             }
           },
           update: { valor: Number(n.valor) },
           create: {
             matriculaId: Number(n.matriculaId),
             materiaId: Number(n.materiaId),
-            valor: Number(n.valor)
+            valor: Number(n.valor),
+            semestre: Number(n.semestre || semestre || 1)
           }
         })
       )
@@ -53,9 +57,13 @@ export const guardarNotasDisciplinaMasivo = async (req: Request, res: Response) 
 
 export const getNotasDisciplinaPorMateria = async (req: Request, res: Response) => {
   const { materiaId } = req.params;
+  const { semestre } = req.query;
   try {
     const notas = await prisma.notaDisciplina.findMany({
-      where: { materiaId: Number(materiaId) },
+      where: {
+        materiaId: Number(materiaId),
+        ...(semestre ? { semestre: Number(semestre) } : {})
+      },
       include: {
         matricula: {
           select: { id: true, nombres: true, apellidos: true, cedula: true }
@@ -71,10 +79,15 @@ export const getNotasDisciplinaPorMateria = async (req: Request, res: Response) 
 
 export const getNotasDisciplinaPorCurso = async (req: Request, res: Response) => {
   const { cursoId } = req.params;
+  const { semestre } = req.query;
   try {
     const matriculas = await prisma.matricula.findMany({
       where: { cursoId: Number(cursoId) },
-      include: { notasDisciplina: true },
+      include: {
+        notasDisciplina: {
+          where: semestre ? { semestre: Number(semestre) } : undefined
+        }
+      },
       orderBy: { apellidos: 'asc' }
     });
 
