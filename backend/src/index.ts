@@ -14,6 +14,8 @@ import asistenciaRoutes from './routes/asistencia.routes';
 import anuncioRoutes from './routes/anuncio.routes';
 import disciplinaRoutes from './routes/disciplina.routes';
 import reporteRoutes from './routes/reporte.routes';
+import examenGradoRoutes from './routes/examen-grado.routes';
+import { defensaDoS } from './middlewares/defensa.middleware';
 
 
 
@@ -23,6 +25,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(defensaDoS);
 
 // Servir imágenes estáticas
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
@@ -39,6 +42,7 @@ app.use('/api/asistencias', asistenciaRoutes);
 app.use('/api/anuncios', anuncioRoutes);
 app.use('/api/disciplina', disciplinaRoutes);
 app.use('/api/reportes', reporteRoutes);
+app.use('/api/examen-grado', examenGradoRoutes);
 
 
 
