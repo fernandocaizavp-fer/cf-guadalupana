@@ -23,14 +23,25 @@ export class Login {
   constructor(private authService: AuthService, private router: Router) {}
 
   login() {
+    if (this.loading) return;
     this.loading = true;
     this.error = '';
     this.authService.login(this.correo, this.password).subscribe({
-      next: () => this.router.navigate([this.authService.getRutaPorRol()]),
-      error: () => {
-        this.error = 'Correo o contraseña incorrectos';
+      next: () => {
+        if (this.authService.debeCambiarPassword()) {
+          this.router.navigate(['/cambiar-password']);
+        } else {
+          this.router.navigate([this.authService.getRutaPorRol()]);
+        }
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'Correo o contraseña incorrectos';
         this.loading = false;
       }
     });
+  }
+
+  irARecuperar() {
+    this.router.navigate(['/recuperar-password']);
   }
 }

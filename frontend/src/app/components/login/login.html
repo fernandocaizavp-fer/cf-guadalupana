@@ -6,7 +6,6 @@
     </div>
   </div>
 
-
   <div class="login-right">
     <div class="login-form-container">
       <div class="login-header">
@@ -14,25 +13,29 @@
         <p>Ingrese sus credenciales para continuar</p>
       </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Correo electrónico</mat-label>
-        <input matInput type="email" [(ngModel)]="correo" placeholder="correo@ejemplo.com">
-        <mat-icon matSuffix>email</mat-icon>
-      </mat-form-field>
+      <form (ngSubmit)="login()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Correo electrónico</mat-label>
+          <input matInput type="email" [(ngModel)]="correo" name="correo" placeholder="correo@ejemplo.com">
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Contraseña</mat-label>
-        <input matInput type="password" [(ngModel)]="password">
-        <mat-icon matSuffix>lock</mat-icon>
-      </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <input matInput type="password" [(ngModel)]="password" name="password">
+          <mat-icon matSuffix>lock</mat-icon>
+        </mat-form-field>
 
-      @if (error) {
-        <p class="error-msg">{{ error }}</p>
-      }
+        @if (error) {
+          <p class="error-msg">{{ error }}</p>
+        }
 
-      <button class="login-btn" (click)="login()" [disabled]="loading">
-        {{ loading ? 'Ingresando...' : 'INGRESAR' }}
-      </button>
+        <button type="submit" class="login-btn" [disabled]="loading">
+          {{ loading ? 'Ingresando...' : 'INGRESAR' }}
+        </button>
+      </form>
+
+      <p class="olvido-link" (click)="irARecuperar()">¿Olvidó su contraseña?</p>
 
       <p class="footer-text">Centro de Formación Artesanal Guadalupana © 2026</p>
     </div>

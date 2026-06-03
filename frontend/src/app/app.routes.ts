@@ -22,10 +22,9 @@ import { GestionarAnuncios } from './components/anuncios/gestionar-anuncios/gest
 import { SubmateriasMateria } from './components/estudiante/submaterias-materia/submaterias-materia';
 import { IngresarDisciplina } from './components/disciplina/ingresar-disciplina/ingresar-disciplina';
 import { Documentos } from './components/documentos/documentos/documentos';
-
-
-
-
+import { IngresarExamenGrado } from './components/examen-grado/ingresar-examen-grado/ingresar-examen-grado';
+import { CambiarPassword } from './components/cambiar-password/cambiar-password';
+import { RecuperarPassword } from './components/recuperar-password/recuperar-password';
 
 
 
@@ -52,6 +51,8 @@ export const routes: Routes = [
   { path: 'estudiante/submaterias/:materiaId/:semestre', component: SubmateriasMateria, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
   { path: 'disciplina/materia/:materiaId', component: IngresarDisciplina, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
   { path: 'documentos', component: Documentos, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
-
-
+  { path: 'examen-grado/:materiaId', component: IngresarExamenGrado, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
+  { path: 'cambiar-password', component: CambiarPassword, canActivate: [AuthGuard] },
+  { path: 'recuperar-password', component: RecuperarPassword },
+  
 ];
