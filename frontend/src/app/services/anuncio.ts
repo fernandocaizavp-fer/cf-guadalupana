@@ -7,7 +7,7 @@ import { AuthService } from './auth';
   providedIn: 'root'
 })
 export class AnuncioService {
-  private apiUrl = 'http://localhost:3001/api';
+  private apiUrl = 'https://cf-guadalupana-production.up.railway.app/api';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

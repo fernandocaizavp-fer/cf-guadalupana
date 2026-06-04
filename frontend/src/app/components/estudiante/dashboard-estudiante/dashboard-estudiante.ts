@@ -43,7 +43,7 @@ export class DashboardEstudiante implements OnInit {
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
 
-    this.http.get(`http://localhost:3001/api/usuarios/perfil-estudiante/${this.usuario.id}`, { headers }).subscribe({
+    this.http.get(`https://cf-guadalupana-production.up.railway.app/api/usuarios/perfil-estudiante/${this.usuario.id}`, { headers }).subscribe({
       next: (matricula: any) => {
         this.matricula = matricula;
         this.cargarNotasSemestre();
@@ -55,7 +55,7 @@ export class DashboardEstudiante implements OnInit {
       }
     });
 
-    this.http.get<any[]>('http://localhost:3001/api/anuncios', { headers }).subscribe({
+    this.http.get<any[]>('https://cf-guadalupana-production.up.railway.app/api/anuncios', { headers }).subscribe({
       next: (anuncios) => {
         this.anuncios = anuncios;
         this.cdr.detectChanges();
@@ -70,7 +70,7 @@ cargarNotasSemestre() {
   });
 
   this.http.get<any>(
-    `http://localhost:3001/api/tareas/curso/${this.matricula.cursoId}?semestre=${this.semestreSeleccionado}`,
+    `https://cf-guadalupana-production.up.railway.app/api/tareas/curso/${this.matricula.cursoId}?semestre=${this.semestreSeleccionado}`,
     { headers }
   ).subscribe({
     next: (data) => {

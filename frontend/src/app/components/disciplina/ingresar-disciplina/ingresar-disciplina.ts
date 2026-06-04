@@ -43,7 +43,7 @@ export class IngresarDisciplina implements OnInit {
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
 
-    this.http.get<any>(`http://localhost:3001/api/disciplina/estudiantes/${this.materiaId}`, { headers }).subscribe({
+    this.http.get<any>(`https://cf-guadalupana-production.up.railway.app/api/disciplina/estudiantes/${this.materiaId}`, { headers }).subscribe({
       next: (data) => {
         this.materia = data.materia;
         this.matriculas = data.matriculas;
@@ -52,7 +52,7 @@ export class IngresarDisciplina implements OnInit {
 
         // Cargar notas existentes — buscar por Práctica o Teoría
         const idBusqueda = this.materiaPracticaId || this.materiaTeoriaId || this.materiaId;
-        this.http.get<any[]>(`http://localhost:3001/api/disciplina/materia/${idBusqueda}`, { headers }).subscribe({
+        this.http.get<any[]>(`https://cf-guadalupana-production.up.railway.app/api/disciplina/materia/${idBusqueda}`, { headers }).subscribe({
           next: (notasExistentes) => {
             notasExistentes.forEach(n => {
               this.notas[n.matriculaId] = String(n.valor);
@@ -103,7 +103,7 @@ export class IngresarDisciplina implements OnInit {
     this.guardando = true;
     this.cdr.detectChanges();
 
-    this.http.post(`http://localhost:3001/api/disciplina/masivo`, { notas: notasArray }, { headers }).subscribe({
+    this.http.post(`https://cf-guadalupana-production.up.railway.app/api/disciplina/masivo`, { notas: notasArray }, { headers }).subscribe({
       next: () => {
         this.guardando = false;
         this.snackBar.open('Notas de disciplina guardadas', 'OK', { duration: 3000 });

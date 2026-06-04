@@ -41,7 +41,7 @@ export class DashboardProfesor implements OnInit {
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
 
-    this.http.get<any[]>(`http://localhost:3001/api/usuarios/mis-materias/${this.usuario.id}`, { headers }).subscribe({
+    this.http.get<any[]>(`https://cf-guadalupana-production.up.railway.app/api/usuarios/mis-materias/${this.usuario.id}`, { headers }).subscribe({
       next: (materias) => {
         const mapa: { [key: number]: any } = {};
 
@@ -86,7 +86,7 @@ export class DashboardProfesor implements OnInit {
       }
     });
 
-    this.http.get<any[]>('http://localhost:3001/api/anuncios', { headers }).subscribe({
+    this.http.get<any[]>('https://cf-guadalupana-production.up.railway.app/api/anuncios', { headers }).subscribe({
       next: (anuncios) => {
         this.anuncios = anuncios;
         this.cdr.detectChanges();

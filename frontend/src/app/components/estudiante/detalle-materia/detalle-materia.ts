@@ -45,7 +45,7 @@ export class DetalleMateria implements OnInit {
 
     // Obtener perfil del estudiante para tener el matriculaId
     this.http.get<any>(
-      `http://localhost:3001/api/usuarios/perfil-estudiante/${this.usuario.id}`,
+      `https://cf-guadalupana-production.up.railway.app/api/usuarios/perfil-estudiante/${this.usuario.id}`,
       { headers }
     ).subscribe({
       next: (matricula) => {

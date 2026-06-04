@@ -4,7 +4,7 @@ import { AuthService } from './auth';
 
 @Injectable({ providedIn: 'root' })
 export class ExamenGradoService {
-  private api = 'http://localhost:3001/api/examen-grado';
+  private api = 'https://cf-guadalupana-production.up.railway.app/api/examen-grado';
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 

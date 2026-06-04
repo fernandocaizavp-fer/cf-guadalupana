@@ -114,7 +114,7 @@ export class GestionarAnuncios implements OnInit {
       contenido: anuncio.contenido,
       activo: anuncio.activo
     };
-    this.imagenPreview = anuncio.imagen ? `http://localhost:3001${anuncio.imagen}` : null;
+    this.imagenPreview = anuncio.imagen ? `https://cf-guadalupana-production.up.railway.app${anuncio.imagen}` : null;
     this.cdr.detectChanges();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -140,7 +140,7 @@ export class GestionarAnuncios implements OnInit {
   }
 
   getImagenUrl(imagen: string): string {
-    return `http://localhost:3001${imagen}`;
+    return `https://cf-guadalupana-production.up.railway.app${imagen}`;
   }
 
   volver() {

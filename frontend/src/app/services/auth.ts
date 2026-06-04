@@ -7,7 +7,7 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3001/api';
+  private apiUrl = 'https://cf-guadalupana-production.up.railway.app/api';
 
   constructor(private http: HttpClient) {}
 
