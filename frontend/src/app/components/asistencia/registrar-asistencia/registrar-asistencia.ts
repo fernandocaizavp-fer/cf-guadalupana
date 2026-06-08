@@ -10,6 +10,7 @@ import { DatePipe } from '@angular/common';
 import { AsistenciaService } from '../../../services/asistencia';
 import { TareaService } from '../../../services/tarea';
 import { CursoService } from '../../../services/curso';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-registrar-asistencia',
@@ -37,10 +38,12 @@ export class RegistrarAsistencia implements OnInit {
     private tareaService: TareaService,
     private cursoService: CursoService,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private titleService: Title
   ) {}
 
   ngOnInit() {
+    this.titleService.setTitle('Asistencia');
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
     this.cargarDatos();
   }

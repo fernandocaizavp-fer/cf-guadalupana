@@ -12,6 +12,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatriculaService } from '../../../services/matricula';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-nueva-matricula',
@@ -50,10 +51,12 @@ export class NuevaMatricula implements OnInit {
     private matriculaService: MatriculaService,
     private router: Router,
     private route: ActivatedRoute,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private titleService: Title
   ) {}
 
   ngOnInit() {
+    this.titleService.setTitle('Matrícula');
     this.matriculaService.getCursos().subscribe({
       next: (cursos) => {
         this.cursos = cursos;
