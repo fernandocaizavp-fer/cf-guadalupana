@@ -27,6 +27,7 @@ import { Title } from '@angular/platform-browser';
 export class NuevaMatricula implements OnInit {
   loading = false;
   consultandoCedula = false;
+  ultimaCedulaConsultada = '';
   cursos: any[] = [];
 
   datos: any = {
@@ -99,7 +100,11 @@ export class NuevaMatricula implements OnInit {
 
   buscarPorCedula() {
     if (!this.datos.cedula || this.datos.cedula.length !== 10) return;
+    // Evita consultar la misma cédula varias veces o mientras ya está consultando
+    if (this.datos.cedula === this.ultimaCedulaConsultada) return;
+    if (this.consultandoCedula) return;
 
+    this.ultimaCedulaConsultada = this.datos.cedula;
     this.consultandoCedula = true;
     this.matriculaService.consultarCedula(this.datos.cedula).subscribe({
       next: (d: any) => {
@@ -124,6 +129,7 @@ export class NuevaMatricula implements OnInit {
       },
       error: (err: any) => {
         this.consultandoCedula = false;
+        this.ultimaCedulaConsultada = '';
         this.snackBar.open(err.error?.error || 'No se pudieron cargar los datos', 'OK', { duration: 3000 });
       }
     });
