@@ -26,6 +26,7 @@ import { Title } from '@angular/platform-browser';
 })
 export class NuevaMatricula implements OnInit {
   loading = false;
+  consultandoCedula = false;
   cursos: any[] = [];
 
   datos: any = {
@@ -92,6 +93,38 @@ export class NuevaMatricula implements OnInit {
       error: (err) => {
         this.loading = false;
         this.snackBar.open(err.error?.error || 'Error al crear matrícula', 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  buscarPorCedula() {
+    if (!this.datos.cedula || this.datos.cedula.length !== 10) return;
+
+    this.consultandoCedula = true;
+    this.matriculaService.consultarCedula(this.datos.cedula).subscribe({
+      next: (d: any) => {
+        this.datos.apellidos = d.apellidos || this.datos.apellidos;
+        this.datos.nombres = d.nombres || this.datos.nombres;
+        this.datos.sexo = d.sexo || this.datos.sexo;
+        this.datos.fechaNacimiento = d.fechaNacimiento || this.datos.fechaNacimiento;
+        this.datos.nacionalidad = d.nacionalidad || this.datos.nacionalidad;
+        this.datos.pais = d.pais || this.datos.pais;
+        this.datos.provincia = d.provincia || this.datos.provincia;
+        this.datos.canton = d.canton || this.datos.canton;
+        this.datos.parroquia = d.parroquia || this.datos.parroquia;
+        this.datos.calle = d.calle || this.datos.calle;
+        this.datos.num = d.num || this.datos.num;
+        this.datos.telefono = d.telefono || this.datos.telefono;
+        this.datos.correoestudiante = d.correo || this.datos.correoestudiante;
+        this.datos.nivelEstudio = d.nivelEstudio || this.datos.nivelEstudio;
+        this.datos.nombrepapa = d.nombrepapa || this.datos.nombrepapa;
+        this.datos.nombremama = d.nombremama || this.datos.nombremama;
+        this.consultandoCedula = false;
+        this.snackBar.open('Datos cargados desde el Registro Civil', 'OK', { duration: 3000 });
+      },
+      error: (err: any) => {
+        this.consultandoCedula = false;
+        this.snackBar.open(err.error?.error || 'No se pudieron cargar los datos', 'OK', { duration: 3000 });
       }
     });
   }

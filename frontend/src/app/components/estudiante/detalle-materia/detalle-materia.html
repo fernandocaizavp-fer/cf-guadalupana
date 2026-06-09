@@ -10,10 +10,8 @@
       </div>
     </div>
 
-    <!-- El spacer empuja todo lo demás a la derecha -->
     <span class="spacer"></span>
 
-    <!-- Cuadro de promedio corregido -->
     <div class="promedio-box" [class.danger-zone]="+promedio < 7">
       <div class="p-info">
         <span class="p-label">PROMEDIO</span>
@@ -42,7 +40,6 @@
       <div class="tareas-list">
         @for (tarea of tareas; track tarea.id; let i = $index) {
           <div class="tarea-card" [style.animation-delay]="i * 0.05 + 's'">
-            <!-- Indicador lateral de color -->
             <div class="card-status-bar" 
                  [class.status-high]="+tarea.miNota >= 7"
                  [class.status-mid]="+tarea.miNota >= 5 && +tarea.miNota < 7"

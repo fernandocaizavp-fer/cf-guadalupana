@@ -68,7 +68,12 @@
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Cédula / Pasaporte</mat-label>
-            <input matInput [(ngModel)]="datos.cedula">
+            <input matInput [(ngModel)]="datos.cedula" (blur)="buscarPorCedula()" maxlength="10">
+            @if (consultandoCedula) {
+              <mat-spinner matSuffix diameter="20"></mat-spinner>
+            } @else {
+              <mat-icon matSuffix>badge</mat-icon>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Sexo</mat-label>

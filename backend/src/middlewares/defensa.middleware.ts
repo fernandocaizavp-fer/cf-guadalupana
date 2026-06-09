@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 
-// ─── CONFIGURACIÓN ───────────────────────────────────────────
 const CONFIG = {
   VENTANA_MS: 60_000,
   MAX_PETICIONES: 50,
@@ -8,7 +7,6 @@ const CONFIG = {
   DURACION_BLOQUEO_MS: 300_000
 };
 
-// ─── TIPOS ───────────────────────────────────────────────────
 interface EntradaBlacklist {
   bloqueadoHasta: number;
   razon: string;
@@ -20,11 +18,9 @@ interface RegistroIP {
   infracciones: number;
 }
 
-// ─── ALMACENAMIENTO EN MEMORIA ───────────────────────────────
 const requestStore = new Map<string, RegistroIP>();
 const blacklist = new Map<string, EntradaBlacklist>();
 
-// ─── FUNCIÓN: OBTENER ESTADO (para monitoreo) ─────────────────
 export const obtenerEstado = () => {
   const ahora = Date.now();
 
@@ -66,12 +62,10 @@ export const obtenerEstado = () => {
   };
 };
 
-// ─── MIDDLEWARE PRINCIPAL ─────────────────────────────────────
 export const defensaDoS = (req: Request, res: Response, next: NextFunction) => {
   const ip = req.ip || req.socket.remoteAddress || 'desconocida';
   const ahora = Date.now();
 
-  // 1. Verificar si la IP está bloqueada
   if (blacklist.has(ip)) {
     const entrada = blacklist.get(ip)!;
     if (ahora < entrada.bloqueadoHasta) {
@@ -96,19 +90,16 @@ export const defensaDoS = (req: Request, res: Response, next: NextFunction) => {
     }
   }
 
-  // 2. Inicializar registro si no existe
   if (!requestStore.has(ip)) {
     requestStore.set(ip, { timestamps: [], infracciones: 0 });
   }
   const registro = requestStore.get(ip)!;
 
-  // 3. Filtrar solo peticiones dentro de la ventana
   registro.timestamps = registro.timestamps.filter(t => ahora - t < CONFIG.VENTANA_MS);
 
   const restantes = Math.max(0, CONFIG.MAX_PETICIONES - registro.timestamps.length - 1);
   const resetTime = new Date(ahora + CONFIG.VENTANA_MS).toISOString();
 
-  // 4. Verificar si excede el límite
   if (registro.timestamps.length >= CONFIG.MAX_PETICIONES) {
     registro.infracciones += 1;
 
@@ -145,7 +136,6 @@ export const defensaDoS = (req: Request, res: Response, next: NextFunction) => {
     });
   }
 
-  // 5. Headers informativos y registrar petición
   res.setHeader('X-RateLimit-Limit', CONFIG.MAX_PETICIONES);
   res.setHeader('X-RateLimit-Remaining', restantes);
   res.setHeader('X-RateLimit-Reset', resetTime);

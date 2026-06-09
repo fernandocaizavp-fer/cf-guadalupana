@@ -54,4 +54,10 @@ export class MatriculaService {
       headers: this.getHeaders()
     });
   }
+
+  consultarCedula(cedula: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/cedula/${cedula}`, {
+      headers: this.getHeaders()
+    });
+  }
 }
