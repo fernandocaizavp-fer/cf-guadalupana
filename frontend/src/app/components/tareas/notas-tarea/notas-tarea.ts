@@ -10,6 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CursoService } from '../../../services/curso';
 import { TareaService } from '../../../services/tarea';
+import { Title } from '@angular/platform-browser';
+
 
 @Component({
   selector: 'app-notas-tarea',
@@ -35,10 +37,12 @@ export class NotasTarea implements OnInit {
     private tareaService: TareaService,
     private cursoService: CursoService,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private titleService: Title
   ) {}
 
   ngOnInit() {
+    this.titleService.setTitle('Calificaciones');
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
     this.tareaId = Number(this.route.snapshot.paramMap.get('tareaId'));
     this.cargarDatos();
