@@ -17,7 +17,6 @@ import { CursoService } from '../../../services/curso';
 import { NotaService } from '../../../services/nota';
 import { Title } from '@angular/platform-browser';
 
-
 @Component({
   selector: 'app-gestionar-tareas',
   imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
@@ -48,13 +47,11 @@ export class GestionarTareas implements OnInit {
     private cursoService: CursoService,
     private snackBar: MatSnackBar,
     private notaService: NotaService,
-    private cdr: ChangeDetectorRef,
-    private titleService: Title
+    private cdr: ChangeDetectorRef
     
   ) {}
 
   ngOnInit() {
-    this.titleService.setTitle('Calificaciones');
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
     this.cargarTareas();
   }
