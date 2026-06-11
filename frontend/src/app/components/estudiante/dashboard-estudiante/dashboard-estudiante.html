@@ -66,19 +66,23 @@
         @if (materiasConTareas.length > 0) {
           <div class="materias-list">
             @for (materia of materiasConTareas; track materia.id) {
-              <div class="materia-row" (click)="irAMateria(materia)">
+              <div class="materia-row" [class.fila-disciplina]="materia.esDisciplina" (click)="irAMateria(materia)">
                 <div class="materia-icon">
-                  <mat-icon>menu_book</mat-icon>
+                  <mat-icon>{{ materia.esDisciplina ? 'star' : 'menu_book' }}</mat-icon>
                 </div>
                 <div class="materia-info">
                   <h3>{{ materia.nombre }}</h3>
-                  <span class="tareas-count">{{ materia.tareas.length }} tareas registradas</span>
+                  @if (!materia.esDisciplina) {
+                    <span class="tareas-count">{{ materia.tareas.length }} tareas registradas</span>
+                  }
                 </div>
                 <div class="materia-promedio">
                   <span class="prom-label">Promedio</span>
                   <span class="prom-valor">{{ materia.promedio }}</span>
                 </div>
-                <mat-icon class="arrow">chevron_right</mat-icon>
+                @if (!materia.esDisciplina) {
+                  <mat-icon class="arrow">chevron_right</mat-icon>
+                }
               </div>
             }
           </div>

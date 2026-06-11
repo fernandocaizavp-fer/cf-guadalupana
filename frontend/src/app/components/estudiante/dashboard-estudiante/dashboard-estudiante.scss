@@ -215,6 +215,15 @@
 
     .arrow { color: #c8a84b; }
   }
+
+  // Fila de disciplina: no es clickeable y el título va centrado (sin subtítulo)
+  &.fila-disciplina {
+    cursor: default;
+
+    &:hover { transform: none; }
+
+    .materia-info h3 { margin: 0; }
+  }
 }
 
 .materia-icon {
