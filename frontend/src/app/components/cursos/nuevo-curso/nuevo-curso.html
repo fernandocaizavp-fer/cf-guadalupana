@@ -1,8 +1,16 @@
-<mat-toolbar color="primary">
-  <button mat-icon-button (click)="volver()">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <span>Nuevo Curso</span>
+<mat-toolbar class="page-toolbar">
+  <div class="toolbar-content">
+    <div class="nav-group">
+      <button mat-icon-button (click)="volver()" class="back-pill">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-meta">
+        <h1>Nuevo Curso</h1>
+        <span>Registro de curso</span>
+      </div>
+    </div>
+    <span class="flex-spacer"></span>
+  </div>
 </mat-toolbar>
 
 <div class="content">

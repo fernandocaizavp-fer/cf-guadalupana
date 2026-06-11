@@ -10,9 +10,16 @@
 }
 
 .btn-back {
-  color: rgba(255,255,255,0.7) !important;
-  transition: color 0.2s !important;
-  &:hover { color: white !important; }
+  background: rgba(255,255,255,0.1) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  width: 44px !important;
+  height: 44px !important;
+  transition: all 0.3s ease !important;
+  &:hover {
+    background: rgba(255,255,255,0.2) !important;
+    transform: translateX(-3px);
+  }
 }
 
 .toolbar-title {
