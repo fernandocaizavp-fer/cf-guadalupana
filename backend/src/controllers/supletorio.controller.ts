@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { calcularDisciplinaAnual } from '../lib/disciplina';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -107,7 +108,9 @@ export const generarAL15 = async (req: Request, res: Response) => {
               include: { tarea: { include: { materia: true } } }
             },
             supletorios: { include: { materia: true } },
-            notasDisciplina: true
+            notasDisciplina: {
+              include: { materia: { select: { nombre: true, esSubmateria: true, materiaParent: true } } }
+            }
           },
           orderBy: { apellidos: 'asc' }
         }
@@ -189,10 +192,8 @@ export const generarAL15 = async (req: Request, res: Response) => {
       const proy_n2 = getN2(m, 'Elaboración');
       const proy_sup = getSup(m, 'Elaboración');
 
-      const notasDisc = m.notasDisciplina || [];
-      const disciplinaVal = notasDisc.length > 0
-        ? notasDisc.reduce((a: number, b: any) => a + b.valor, 0) / notasDisc.length
-        : null;
+      // Disciplina anual: doble ponderación por semestre y promedio de ambos
+      const disciplinaVal = calcularDisciplinaAnual(m.notasDisciplina || []);
 
       const promediosPf = [
         calcularPfNum(teoria_n1, teoria_n2, teoria_sup),

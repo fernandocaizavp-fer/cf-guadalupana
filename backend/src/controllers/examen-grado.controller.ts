@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { calcularDisciplinaAnual } from '../lib/disciplina';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -137,7 +138,9 @@ export const generarAL23 = async (req: Request, res: Response) => {
       where: { cursoId: Number(cursoId) },
       include: {
         examenesGrado: true,
-        notasDisciplina: true
+        notasDisciplina: {
+          include: { materia: { select: { nombre: true, esSubmateria: true, materiaParent: true } } }
+        }
       },
       orderBy: { apellidos: 'asc' }
     });
@@ -162,12 +165,10 @@ export const generarAL23 = async (req: Request, res: Response) => {
       return prom % 1 === 0 ? String(prom) : prom.toFixed(1);
     };
 
-    // Helper disciplina
+    // Helper disciplina — anual con doble ponderación
     const getDisciplina = (matricula: any): string => {
-      const notas = matricula.notasDisciplina || [];
-      if (notas.length === 0) return '-';
-      const suma = notas.reduce((a: number, b: any) => a + b.valor, 0);
-      const prom = suma / notas.length;
+      const prom = calcularDisciplinaAnual(matricula.notasDisciplina || []);
+      if (prom === null) return '-';
       return prom % 1 === 0 ? String(prom) : prom.toFixed(1);
     };
 

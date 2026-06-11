@@ -23,8 +23,8 @@ export class IngresarDisciplina implements OnInit {
   materia: any = null;
   matriculas: any[] = [];
   notas: { [key: number]: string } = {};
-  materiaPracticaId: number = 0;
-  materiaTeoriaId: number = 0;
+  materiaGemelaId: number | null = null;
+  semestreSeleccionado = 1;
   loading = true;
   guardando = false;
 
@@ -47,30 +47,42 @@ export class IngresarDisciplina implements OnInit {
       next: (data) => {
         this.materia = data.materia;
         this.matriculas = data.matriculas;
-        this.materiaPracticaId = data.materiaPracticaId || 0;
-        this.materiaTeoriaId = data.materiaTeoriaId || 0;
-
-        // Cargar notas existentes — buscar por Práctica o Teoría
-        const idBusqueda = this.materiaPracticaId || this.materiaTeoriaId || this.materiaId;
-        this.http.get<any[]>(`https://cf-guadalupana-production.up.railway.app/api/disciplina/materia/${idBusqueda}`, { headers }).subscribe({
-          next: (notasExistentes) => {
-            notasExistentes.forEach(n => {
-              this.notas[n.matriculaId] = String(n.valor);
-            });
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-          error: () => {
-            this.loading = false;
-            this.cdr.detectChanges();
-          }
-        });
+        this.materiaGemelaId = data.materiaGemelaId || null;
+        this.cargarNotas();
       },
       error: () => {
         this.loading = false;
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // Cargar las notas de la materia propia del profesor para el semestre activo
+  cargarNotas() {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    });
+    this.loading = true;
+    this.notas = {};
+    this.http.get<any[]>(`https://cf-guadalupana-production.up.railway.app/api/disciplina/materia/${this.materiaId}?semestre=${this.semestreSeleccionado}`, { headers }).subscribe({
+      next: (notasExistentes) => {
+        notasExistentes.forEach(n => {
+          this.notas[n.matriculaId] = String(n.valor);
+        });
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  cambiarSemestre(semestre: number) {
+    if (this.semestreSeleccionado === semestre) return;
+    this.semestreSeleccionado = semestre;
+    this.cargarNotas();
   }
 
   guardar() {
@@ -80,14 +92,11 @@ export class IngresarDisciplina implements OnInit {
       .filter(m => this.notas[m.id] !== undefined && this.notas[m.id] !== '')
       .forEach(m => {
         const valor = Number(this.notas[m.id]);
-        if (this.materiaPracticaId) {
-          notasArray.push({ matriculaId: m.id, materiaId: this.materiaPracticaId, valor });
-        }
-        if (this.materiaTeoriaId) {
-          notasArray.push({ matriculaId: m.id, materiaId: this.materiaTeoriaId, valor });
-        }
-        if (!this.materiaPracticaId && !this.materiaTeoriaId) {
-          notasArray.push({ matriculaId: m.id, materiaId: this.materiaId, valor });
+        // Siempre en la materia propia del profesor
+        notasArray.push({ matriculaId: m.id, materiaId: this.materiaId, valor, semestre: this.semestreSeleccionado });
+        // Si es submateria, también en su gemela (la misma submateria en Práctica/Teoría)
+        if (this.materiaGemelaId) {
+          notasArray.push({ matriculaId: m.id, materiaId: this.materiaGemelaId, valor, semestre: this.semestreSeleccionado });
         }
       });
 
@@ -103,7 +112,7 @@ export class IngresarDisciplina implements OnInit {
     this.guardando = true;
     this.cdr.detectChanges();
 
-    this.http.post(`https://cf-guadalupana-production.up.railway.app/api/disciplina/masivo`, { notas: notasArray }, { headers }).subscribe({
+    this.http.post(`https://cf-guadalupana-production.up.railway.app/api/disciplina/masivo`, { notas: notasArray, semestre: this.semestreSeleccionado }, { headers }).subscribe({
       next: () => {
         this.guardando = false;
         this.snackBar.open('Notas de disciplina guardadas', 'OK', { duration: 3000 });

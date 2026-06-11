@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { calcularDisciplinaPonderada, calcularDisciplinaAnual } from '../lib/disciplina';
 
 const formatearNota = (valor: number | string): string => {
   if (valor === '' || valor === null || valor === undefined) return '';
@@ -43,7 +44,10 @@ export const descargarAL14 = async (req: Request, res: Response) => {
                 tarea: { semestre: Number(semestre) }
               } : undefined
             },
-            notasDisciplina: true
+            notasDisciplina: {
+              where: semestre ? { semestre: Number(semestre) } : undefined,
+              include: { materia: { select: { nombre: true, esSubmateria: true, materiaParent: true } } }
+            }
           },
           orderBy: { apellidos: 'asc' }
         }
@@ -101,12 +105,13 @@ export const descargarAL14 = async (req: Request, res: Response) => {
         return formatearNota(suma / notasMateria.length);
       };
 
-      // Disciplina — promedio de notasDisciplina
+      // Disciplina — doble ponderación (submaterias → Práctica/Teoría, luego con materias normales)
       const getPromedioDisciplina = (): string => {
-        const notas = (m as any).notasDisciplina?.filter((n: any) => n.valor !== null) || [];
-        if (notas.length === 0) return '';
-        const suma = notas.reduce((a: number, b: any) => a + b.valor, 0);
-        return formatearNota(suma / notas.length);
+        const notas = (m as any).notasDisciplina || [];
+        const valor = semestre
+          ? calcularDisciplinaPonderada(notas)
+          : calcularDisciplinaAnual(notas);
+        return valor !== null ? formatearNota(valor) : '';
       };
 
       // Promedio general (excluye submaterias)

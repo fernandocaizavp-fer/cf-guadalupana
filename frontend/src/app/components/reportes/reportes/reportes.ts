@@ -15,6 +15,7 @@ import { TareaService } from '../../../services/tarea';
 import { SuplетorioService } from '../../../services/supletorio';
 import { ReporteService } from '../../../services/reporte';
 import { ExamenGradoService } from '../../../services/examen-grado';
+import { calcularDisciplinaPonderada } from '../../../services/disciplina-util';
 
 @Component({
   selector: 'app-reportes',
@@ -213,10 +214,8 @@ export class Reportes implements OnInit {
   }
 
   getNotaDisciplina(matricula: any): string {
-    const notas = matricula.notasDisciplina || [];
-    if (notas.length === 0) return '-';
-    const suma = notas.reduce((a: number, b: any) => a + b.valor, 0);
-    const prom = suma / notas.length;
+    const prom = calcularDisciplinaPonderada(matricula.notasDisciplina || []);
+    if (prom === null) return '-';
     return prom % 1 === 0 ? String(prom) : prom.toFixed(1);
   }
 

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { calcularDisciplinaPonderada, calcularDisciplinaAnual } from '../lib/disciplina';
 
 export const guardarNotaDisciplina = async (req: Request, res: Response) => {
   const { matriculaId, materiaId, valor, semestre } = req.body;
@@ -85,17 +86,17 @@ export const getNotasDisciplinaPorCurso = async (req: Request, res: Response) =>
       where: { cursoId: Number(cursoId) },
       include: {
         notasDisciplina: {
-          where: semestre ? { semestre: Number(semestre) } : undefined
+          where: semestre ? { semestre: Number(semestre) } : undefined,
+          include: { materia: { select: { nombre: true, esSubmateria: true, materiaParent: true } } }
         }
       },
       orderBy: { apellidos: 'asc' }
     });
 
     const resumen = matriculas.map(m => {
-      const notas = m.notasDisciplina.filter(n => n.valor !== null);
-      const promedio = notas.length > 0
-        ? notas.reduce((a, b) => a + b.valor, 0) / notas.length
-        : null;
+      const promedio = semestre
+        ? calcularDisciplinaPonderada(m.notasDisciplina)
+        : calcularDisciplinaAnual(m.notasDisciplina);
       return {
         matriculaId: m.id,
         nombres: m.nombres,
@@ -120,27 +121,38 @@ export const getEstudiantesPorMateria = async (req: Request, res: Response) => {
       include: {
         curso: {
           include: {
-            matriculas: { orderBy: { apellidos: 'asc' } },
-            materias: {
-              where: {
-                esSubmateria: false,
-                nombre: { in: ['Práctica', 'Teoría'] }
-              }
-            }
+            matriculas: { orderBy: { apellidos: 'asc' } }
           }
         }
       }
     });
     if (!materia) return res.status(404).json({ error: 'Materia no encontrada' });
 
-    const practica = materia.curso.materias.find(m => m.nombre === 'Práctica');
-    const teoria = materia.curso.materias.find(m => m.nombre === 'Teoría');
+    // Si es submateria, buscar la gemela (mismo nombre, parent opuesto) para que
+    // la nota del profesor se registre en Práctica y Teoría de SU submateria
+    let materiaGemelaId: number | null = null;
+    if (materia.esSubmateria) {
+      const gemela = await prisma.materia.findFirst({
+        where: {
+          cursoId: materia.cursoId,
+          nombre: materia.nombre,
+          esSubmateria: true,
+          materiaParent: materia.materiaParent === 'Práctica' ? 'Teoría' : 'Práctica',
+          NOT: { id: materia.id }
+        }
+      });
+      materiaGemelaId = gemela?.id || null;
+    }
 
     res.json({
-      materia: { id: materia.id, nombre: materia.nombre },
+      materia: {
+        id: materia.id,
+        nombre: materia.nombre,
+        esSubmateria: materia.esSubmateria,
+        materiaParent: materia.materiaParent
+      },
       matriculas: materia.curso.matriculas,
-      materiaPracticaId: practica?.id || null,
-      materiaTeoriaId: teoria?.id || null
+      materiaGemelaId
     });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener estudiantes' });

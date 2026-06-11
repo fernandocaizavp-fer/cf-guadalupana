@@ -110,7 +110,8 @@ export const getNotasCursoSemestre = async (req: Request, res: Response) => {
           where: sem ? { tarea: { semestre: sem } } : undefined
         },
         notasDisciplina: {
-          where: sem ? { semestre: sem } : undefined
+          where: sem ? { semestre: sem } : undefined,
+          include: { materia: { select: { nombre: true, esSubmateria: true, materiaParent: true } } }
         }
       },
       orderBy: { apellidos: 'asc' }

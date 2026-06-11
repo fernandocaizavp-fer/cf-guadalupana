@@ -10,6 +10,7 @@ import { MatTableModule } from '@angular/material/table';
 import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../services/auth';
 import { MatriculaService } from '../../../services/matricula';
+import { calcularDisciplinaPonderada } from '../../../services/disciplina-util';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
@@ -138,14 +139,12 @@ cargarNotasSemestre() {
         };
       });
 
-      // Disciplina
+      // Disciplina — doble ponderación (submaterias → Práctica/Teoría, luego materias normales)
       const semActual = this.semestreSeleccionado;
       const notasDisc = notasDisciplina.filter(
         (n: any) => !n.semestre || n.semestre === semActual
       );
-      const promedioDisciplina = notasDisc.length > 0
-        ? notasDisc.reduce((a: number, b: any) => a + b.valor, 0) / notasDisc.length
-        : null;
+      const promedioDisciplina = calcularDisciplinaPonderada(notasDisc);
 
       const filaDisciplina = {
         id: -1,
