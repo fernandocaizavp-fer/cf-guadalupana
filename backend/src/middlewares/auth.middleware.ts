@@ -18,3 +18,11 @@ export const soloAdmin = (req: any, res: Response, next: NextFunction) => {
   if (req.usuario.rol !== 'ADMIN') return res.status(403).json({ error: 'Solo administradores' });
   next();
 };
+
+// Permite el acceso solo a los roles indicados (ej: soloRoles('ADMIN', 'PROFESOR'))
+export const soloRoles = (...roles: string[]) => (req: any, res: Response, next: NextFunction) => {
+  if (!roles.includes(req.usuario?.rol)) {
+    return res.status(403).json({ error: 'No autorizado para esta operación' });
+  }
+  next();
+};

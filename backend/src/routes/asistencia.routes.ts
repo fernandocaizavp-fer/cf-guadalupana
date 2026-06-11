@@ -3,15 +3,15 @@ import {
   crearAsistencia, getAsistenciasPorMateria, getResumenAsistenciaCurso,
   guardarObservacion, eliminarAsistencia, generarAL18
 } from '../controllers/asistencia.controller';
-import { verificarToken } from '../middlewares/auth.middleware';
+import { verificarToken, soloRoles } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.post('/', verificarToken, crearAsistencia);
+router.post('/', verificarToken, soloRoles('ADMIN', 'PROFESOR'), crearAsistencia);
 router.get('/materia/:materiaId', verificarToken, getAsistenciasPorMateria);
 router.get('/resumen/:cursoId', verificarToken, getResumenAsistenciaCurso);
-router.post('/observacion', verificarToken, guardarObservacion);
-router.delete('/:id', verificarToken, eliminarAsistencia);
+router.post('/observacion', verificarToken, soloRoles('ADMIN', 'PROFESOR'), guardarObservacion);
+router.delete('/:id', verificarToken, soloRoles('ADMIN', 'PROFESOR'), eliminarAsistencia);
 router.get('/al18/:cursoId', verificarToken, generarAL18);
 
 export default router;

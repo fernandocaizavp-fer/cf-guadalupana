@@ -6,12 +6,12 @@ import {
   getNotasDisciplinaPorCurso,
   getEstudiantesPorMateria
 } from '../controllers/disciplina.controller';
-import { verificarToken } from '../middlewares/auth.middleware';
+import { verificarToken, soloRoles } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.post('/', verificarToken, guardarNotaDisciplina);
-router.post('/masivo', verificarToken, guardarNotasDisciplinaMasivo);
+router.post('/', verificarToken, soloRoles('ADMIN', 'PROFESOR'), guardarNotaDisciplina);
+router.post('/masivo', verificarToken, soloRoles('ADMIN', 'PROFESOR'), guardarNotasDisciplinaMasivo);
 router.get('/estudiantes/:materiaId', verificarToken, getEstudiantesPorMateria);
 router.get('/materia/:materiaId', verificarToken, getNotasDisciplinaPorMateria);
 router.get('/curso/:cursoId', verificarToken, getNotasDisciplinaPorCurso);

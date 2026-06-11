@@ -31,7 +31,7 @@ export const crearAdmin = async (req: Request, res: Response) => {
     const usuario = await prisma.usuario.create({
       data: { nombre, apellido, correo, password: hash, rol: 'ADMIN', debeCambiarPassword: false }
     });
-    res.json({ message: 'Admin creado', usuario });
+    res.json({ message: 'Admin creado', usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo } });
   } catch (error) {
     res.status(500).json({ error: 'Error al crear admin' });
   }
