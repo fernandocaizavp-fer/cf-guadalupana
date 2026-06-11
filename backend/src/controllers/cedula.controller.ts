@@ -16,7 +16,16 @@ export const consultarCedula = async (req: Request, res: Response) => {
     const respuesta = await fetch(url);
     const data: any = await respuesta.json();
 
-    if (!data.success || !data.persona) {
+    console.log('[CEDULA] respuesta zampisoft:', JSON.stringify(data));
+
+    // El servicio respondió un error (token inválido, sin saldo, etc.)
+    if (!data.success) {
+      const detalle = data.error || data.message || 'Error del servicio de cédulas';
+      return res.status(502).json({ error: `Servicio de cédulas: ${detalle}` });
+    }
+
+    // El token funcionó pero la cédula no tiene datos
+    if (!data.persona) {
       return res.status(404).json({ error: 'No se encontraron datos para esta cédula' });
     }
 
