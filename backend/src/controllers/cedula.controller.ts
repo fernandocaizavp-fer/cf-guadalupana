@@ -16,40 +16,38 @@ export const consultarCedula = async (req: Request, res: Response) => {
     const respuesta = await fetch(url);
     const data: any = await respuesta.json();
 
-    console.log('[CEDULA] respuesta zampisoft:', JSON.stringify(data));
-
     // El servicio respondió un error (token inválido, sin saldo, etc.)
     if (!data.success) {
       const detalle = data.error || data.message || 'Error del servicio de cédulas';
-      return res.status(502).json({ error: `Servicio de cédulas: ${detalle}`, _debug: data });
+      return res.status(502).json({ error: `Servicio de cédulas: ${detalle}` });
     }
 
-    // El token funcionó pero la cédula no tiene datos
-    if (!data.persona) {
-      return res.status(404).json({ error: 'No se encontraron datos para esta cédula', _debug: data });
+    // La cédula no tiene datos (el servicio responde success pero sin nombre)
+    if (!data.nombre) {
+      return res.status(404).json({ error: 'No se encontraron datos para esta cédula' });
     }
 
-    const p = data.persona;
-    const dir = p.direccion || {};
+    // El servicio devuelve el domicilio como "PROVINCIA/CANTON/PARROQUIA"
+    const partesDomicilio = String(data.lugarDomicilio || '').split('/').map(s => s.trim());
 
     // Mapeamos los datos de la API a los nombres de tu formulario
     const resultado = {
-      apellidos: extraerApellidos(p.nombre),
-      nombres: extraerNombres(p.nombre),
-      sexo: p.sexo === 'HOMBRE' ? 'Masculino' : p.sexo === 'MUJER' ? 'Femenino' : '',
-      fechaNacimiento: p.fechas?.nacimiento || '',
-      nacionalidad: p.nacionalidad || 'ECUATORIANA',
+      apellidos: extraerApellidos(data.nombre),
+      nombres: extraerNombres(data.nombre),
+      sexo: data.genero === 'HOMBRE' ? 'Masculino' : data.genero === 'MUJER' ? 'Femenino' : '',
+      fechaNacimiento: formatearFecha(data.fechaNacimiento),
+      nacionalidad: data.nacionalidad || 'ECUATORIANA',
       pais: 'ECUADOR',
-      provincia: dir.provincia || '',
-      canton: dir.canton || '',
-      parroquia: dir.parroquia || '',
-      calle: dir.calle || '',
-      num: dir.numeroCasa || '',
-      telefono: p.celular || '',
-      correo: p.email || '',
-      nivelEstudio: p.instruccion || '',
-      nombrepapa: p.nombrePadre || '',
-      nombremama: p.nombreMadre || ''
+      provincia: partesDomicilio[0] || '',
+      canton: partesDomicilio[1] || '',
+      parroquia: partesDomicilio[2] || '',
+      calle: (data.calleDomicilio || '').trim(),
+      num: (data.numeracionDomicilio || '').trim(),
+      telefono: '',
+      correo: '',
+      nivelEstudio: (data.instruccion || '').trim(),
+      nombrepapa: (data.nombrePadre || '').trim(),
+      nombremama: (data.nombreMadre || '').trim()
     };
 
     res.json(resultado);
@@ -71,4 +69,12 @@ function extraerNombres(nombreCompleto: string): string {
   if (!nombreCompleto) return '';
   const partes = nombreCompleto.trim().split(/\s+/);
   return partes.slice(2).join(' ');
+}
+
+// El API devuelve la fecha como DD/MM/YYYY; el formulario (input type="date") necesita YYYY-MM-DD
+function formatearFecha(fecha: string): string {
+  if (!fecha) return '';
+  const m = fecha.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return '';
+  return `${m[3]}-${m[2]}-${m[1]}`;
 }
