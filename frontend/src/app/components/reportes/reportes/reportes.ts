@@ -72,6 +72,20 @@ export class Reportes implements OnInit {
   lugarFechaAL19 = '';
   jornadaAL19 = 'MATUTINA';
 
+  // Certificado de Promoción AL16 (individual por estudiante)
+  cursoAL16: number | null = null;
+  lugarFechaAL16 = '';
+  jornadaAL16 = 'MATUTINA';
+  estudiantesAL16: any[] = [];
+  loadingAL16 = false;
+  descargandoAL16: number | null = null;
+
+  // Cuadro Aprobados y No Aprobados AL22
+  cursoAL22: number | null = null;
+  lugarFechaAL22 = '';
+  jornadaAL22 = 'MATUTINA';
+  regimenAL22 = 'SIERRA';
+
   constructor(
     private router: Router,
     private cursoService: CursoService,
@@ -420,6 +434,76 @@ export class Reportes implements OnInit {
         window.URL.revokeObjectURL(url);
       },
       error: () => this.snackBar.open('Error al generar AL19', 'OK', { duration: 3000 })
+    });
+  }
+
+  // ── CERTIFICADO DE PROMOCIÓN AL16 ────────────────────
+  seleccionarCursoAL16() {
+    if (!this.cursoAL16) return;
+    this.loadingAL16 = true;
+    this.estudiantesAL16 = [];
+    this.cursoService.obtenerCurso(this.cursoAL16).subscribe({
+      next: (curso: any) => {
+        this.estudiantesAL16 = (curso.matriculas || []).sort((a: any, b: any) =>
+          (a.apellidos || '').localeCompare(b.apellidos || '')
+        );
+        this.loadingAL16 = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingAL16 = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  descargarAL16(est: any) {
+    if (!this.lugarFechaAL16) {
+      this.snackBar.open('Completa lugar y fecha', 'OK', { duration: 3000 });
+      return;
+    }
+    this.descargandoAL16 = est.id;
+    this.suplетorioService.generarAL16(est.id, this.lugarFechaAL16, this.jornadaAL16).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `AL16_${est.apellidos}_${est.nombres}.docx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.descargandoAL16 = null;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.descargandoAL16 = null;
+        this.snackBar.open('Error al generar AL16', 'OK', { duration: 3000 });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ── CUADRO APROBADOS Y NO APROBADOS AL22 ─────────────
+  descargarAL22() {
+    if (!this.cursoAL22 || !this.lugarFechaAL22) {
+      this.snackBar.open('Selecciona curso y completa lugar y fecha', 'OK', { duration: 3000 });
+      return;
+    }
+    this.suplетorioService.generarAL22(
+      this.cursoAL22,
+      this.lugarFechaAL22,
+      this.jornadaAL22,
+      this.regimenAL22
+    ).subscribe({
+      next: (blob: Blob) => {
+        const curso = this.cursos.find(c => c.id === this.cursoAL22);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `AL22_${curso?.ramaArtesanal || 'aprobados'}.docx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => this.snackBar.open('Error al generar AL22', 'OK', { duration: 3000 })
     });
   }
 

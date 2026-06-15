@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaAnual } from '../lib/disciplina';
+import { notaALetras } from '../lib/numeroALetras';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -9,6 +10,41 @@ const Docxtemplater = require('docxtemplater');
 const fmt = (valor: number | null | undefined): string => {
   if (valor === null || valor === undefined) return '';
   return valor % 1 === 0 ? String(valor) : valor.toFixed(1);
+};
+
+// Formato numérico con dos decimales para el certificado AL16 (p. ej. 8.50, 9.00).
+const fmt2 = (valor: number | null | undefined): string => {
+  if (valor === null || valor === undefined) return '';
+  return valor.toFixed(2);
+};
+
+// Estado de aprobación: nota >= 7 aprueba.
+const estadoAprobacion = (valor: number | null | undefined): string => {
+  if (valor === null || valor === undefined) return '';
+  return valor >= 7 ? 'APROBADO' : 'NO APROBADO';
+};
+
+const MESES_MAYUS = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+  'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+const MESES_CAP = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+// Promedio de las notas de tarea de una materia en un semestre (usado por AL15 y AL16).
+const getNota = (matricula: any, nombreMateria: string, semestre: number): number | null => {
+  const notas = matricula.notasTarea.filter((n: any) =>
+    n.tarea.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase()) &&
+    n.tarea.semestre === semestre && n.valor !== null
+  );
+  if (notas.length === 0) return null;
+  return notas.reduce((a: number, b: any) => a + b.valor, 0) / notas.length;
+};
+
+// Nota del supletorio de una materia, si existe.
+const getSupletorio = (matricula: any, nombreMateria: string): number | null => {
+  const sup = matricula.supletorios.find((s: any) =>
+    s.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase())
+  );
+  return sup?.valor ?? null;
 };
 
 const formatearNombre = (texto: string): string => {
@@ -119,24 +155,9 @@ export const generarAL15 = async (req: Request, res: Response) => {
 
     if (!curso) return res.status(404).json({ error: 'Curso no encontrado' });
 
-    const getN = (matricula: any, nombreMateria: string, semestre: number): number | null => {
-      const notas = matricula.notasTarea.filter((n: any) =>
-        n.tarea.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase()) &&
-        n.tarea.semestre === semestre && n.valor !== null
-      );
-      if (notas.length === 0) return null;
-      return notas.reduce((a: number, b: any) => a + b.valor, 0) / notas.length;
-    };
-
-    const getN1 = (m: any, nombre: string) => getN(m, nombre, 1);
-    const getN2 = (m: any, nombre: string) => getN(m, nombre, 2);
-
-    const getSup = (matricula: any, nombreMateria: string): number | null => {
-      const sup = matricula.supletorios.find((s: any) =>
-        s.materia.nombre.toLowerCase().includes(nombreMateria.toLowerCase())
-      );
-      return sup?.valor ?? null;
-    };
+    const getN1 = (m: any, nombre: string) => getNota(m, nombre, 1);
+    const getN2 = (m: any, nombre: string) => getNota(m, nombre, 2);
+    const getSup = getSupletorio;
 
     const getCedula = (nombreMateria: string): string => {
       const materia = curso.materias.find(m =>
@@ -150,10 +171,8 @@ export const generarAL15 = async (req: Request, res: Response) => {
     );
     const cc_tp = materiaPrincipal?.profesorPrincipal?.cedula || '';
 
-    const meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO',
-                   'JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
-    const anio1 = `${meses[curso.fechaInicio.getMonth()]} ${curso.fechaInicio.getFullYear()}`;
-    const anio2 = `${meses[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
+    const anio1 = `${MESES_MAYUS[curso.fechaInicio.getMonth()]} ${curso.fechaInicio.getFullYear()}`;
+    const anio2 = `${MESES_MAYUS[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
 
     const estudiantes = curso.matriculas.map((m, index) => {
       const teoria_n1 = getN1(m, 'Teoría');
@@ -305,6 +324,181 @@ export const generarAL15 = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al generar AL15' });
+  }
+};
+
+// AL16: Certificado de Promoción del año formativo (individual, por estudiante).
+// Reutiliza el mismo cálculo de notas finales del AL15 (promedio final con supletorios,
+// disciplina anual y promedio general).
+export const generarAL16 = async (req: Request, res: Response) => {
+  const { matriculaId } = req.params;
+  const { lugarFecha, jornada } = req.query;
+
+  try {
+    const matricula = await prisma.matricula.findUnique({
+      where: { id: Number(matriculaId) },
+      include: {
+        curso: true,
+        notasTarea: { include: { tarea: { include: { materia: true } } } },
+        supletorios: { include: { materia: true } },
+        notasDisciplina: {
+          include: { materia: { select: { nombre: true, esSubmateria: true, materiaParent: true } } }
+        }
+      }
+    });
+
+    if (!matricula) return res.status(404).json({ error: 'Matrícula no encontrada' });
+
+    const m = matricula;
+    const pf = (nombre: string) =>
+      calcularPfNum(getNota(m, nombre, 1), getNota(m, nombre, 2), getSupletorio(m, nombre));
+
+    const teoriaPf = pf('Teoría');
+    const practicaPf = pf('Práctica');
+    const admPf = pf('Administración');
+    const contPf = pf('Contabilidad');
+    const ticsPf = pf('TICs');
+    const inglesPf = pf('Inglés');
+    const desarrolloPf = pf('Desarrollo');
+    const proyPf = pf('Elaboración');
+    const legislacionPf = pf('Legislación');
+    const disciplinaVal = calcularDisciplinaAnual(m.notasDisciplina || []);
+
+    const componentes = [
+      teoriaPf, practicaPf, admPf, contPf, ticsPf, inglesPf,
+      desarrolloPf, legislacionPf, proyPf, disciplinaVal
+    ].filter(n => n !== null) as number[];
+    const promedioNum = componentes.length > 0
+      ? componentes.reduce((a, b) => a + b, 0) / componentes.length
+      : null;
+
+    const sexo = m.sexo || '';
+    const prefijo = sexo === 'Masculino' ? 'El' : sexo === 'Femenino' ? 'La' : 'El/La';
+    const tratamiento = sexo === 'Masculino' ? 'Sr.' : sexo === 'Femenino' ? 'Srta.' : 'Sr./Srta.';
+    const loLa = sexo === 'Masculino' ? 'lo' : sexo === 'Femenino' ? 'la' : 'lo/la';
+
+    const anio1 = `${MESES_CAP[m.curso.fechaInicio.getMonth()]} ${m.curso.fechaInicio.getFullYear()}`;
+    const anio2 = `${MESES_CAP[m.curso.fechaFin.getMonth()]} ${m.curso.fechaFin.getFullYear()}`;
+
+    const datos = {
+      prefijo, tratamiento, loLa,
+      nombres: formatearNombre(m.nombres || ''),
+      apellidos: formatearNombre(m.apellidos || ''),
+      AF1: anio1,
+      AF2: anio2,
+      jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
+      raArt: (m.curso.ramaArtesanal || '').toUpperCase(),
+
+      teoria: fmt2(teoriaPf), teoriaL: notaALetras(teoriaPf), teoE: estadoAprobacion(teoriaPf),
+      practica: fmt2(practicaPf), practicaL: notaALetras(practicaPf), pracE: estadoAprobacion(practicaPf),
+      administracion: fmt2(admPf), administracionL: notaALetras(admPf), admE: estadoAprobacion(admPf),
+      contabilidad: fmt2(contPf), contabilidadL: notaALetras(contPf), conE: estadoAprobacion(contPf),
+      ingles: fmt2(inglesPf), inglesL: notaALetras(inglesPf), ingE: estadoAprobacion(inglesPf),
+      desarrollo: fmt2(desarrolloPf), desarrolloL: notaALetras(desarrolloPf), desE: estadoAprobacion(desarrolloPf),
+      tics: fmt2(ticsPf), ticsL: notaALetras(ticsPf), ticsE: estadoAprobacion(ticsPf),
+      proyect: fmt2(proyPf), proyectL: notaALetras(proyPf), proyectE: estadoAprobacion(proyPf),
+      legislacion: fmt2(legislacionPf), legislacionL: notaALetras(legislacionPf), legisE: estadoAprobacion(legislacionPf),
+
+      disciplina: fmt2(disciplinaVal), disciplinaL: notaALetras(disciplinaVal, true),
+      promedio: fmt2(promedioNum), promedioL: notaALetras(promedioNum, true),
+      lugarfecha: lugarFecha || ''
+    };
+
+    const templatePath = path.join(process.cwd(), 'templates', 'AL16CERTIFICADOPROMOCION.docx');
+    const content = fs.readFileSync(templatePath, 'binary');
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: '{', end: '}' }
+    });
+
+    doc.render(datos);
+
+    const buffer = doc.getZip().generate({ type: 'nodebuffer' });
+    res.setHeader('Content-Disposition', `attachment; filename=AL16_${m.cedula}.docx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.send(buffer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al generar AL16' });
+  }
+};
+
+// AL22: Cuadro de participantes aprobados y no aprobados de grados (por curso).
+// La observación depende de las notas finales (igual que el AL16): si alguna de las 9
+// materias tiene nota final < 7, el participante queda NO APROBADO. La disciplina no cuenta.
+export const generarAL22 = async (req: Request, res: Response) => {
+  const { cursoId } = req.params;
+  const { lugarFecha, jornada, regimen } = req.query;
+
+  // Materias evaluadas para la promoción (las mismas con columna de estado en el AL16).
+  const MATERIAS = ['Teoría', 'Práctica', 'Administración', 'Contabilidad', 'TICs',
+    'Inglés', 'Desarrollo', 'Elaboración', 'Legislación'];
+
+  try {
+    const curso = await prisma.curso.findUnique({
+      where: { id: Number(cursoId) },
+      include: {
+        matriculas: {
+          orderBy: { apellidos: 'asc' },
+          include: {
+            notasTarea: { include: { tarea: { include: { materia: true } } } },
+            supletorios: { include: { materia: true } }
+          }
+        }
+      }
+    });
+
+    if (!curso) return res.status(404).json({ error: 'Curso no encontrado' });
+
+    const AF1 = `${MESES_MAYUS[curso.fechaInicio.getMonth()]} ${curso.fechaInicio.getFullYear()}`;
+    const AF2 = `${MESES_MAYUS[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
+
+    const estudiantes = curso.matriculas.map((m, index) => {
+      const tieneReprobada = MATERIAS.some(nombre => {
+        const pf = calcularPfNum(getNota(m, nombre, 1), getNota(m, nombre, 2), getSupletorio(m, nombre));
+        return pf !== null && pf < 7;
+      });
+      return {
+        num: String(index + 1),
+        apellidosnombres: `${formatearNombre(m.apellidos)} ${formatearNombre(m.nombres)}`,
+        cedula: m.cedula || '',
+        observacion: tieneReprobada ? 'NO APROBADO' : 'APROBADO'
+      };
+    });
+
+    const regimenStr = (String(regimen || 'SIERRA')).toUpperCase();
+
+    const datos = {
+      xC: regimenStr === 'COSTA' ? 'X' : '',
+      xS: regimenStr === 'SIERRA' ? 'X' : '',
+      jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
+      AF1,
+      AF2,
+      ramaArtesanal: (curso.ramaArtesanal || '').toUpperCase(),
+      lugarFecha: lugarFecha || '',
+      estudiantes
+    };
+
+    const templatePath = path.join(process.cwd(), 'templates', 'AL22CUADROSAPROBADOSNOAPROBADOS.docx');
+    const content = fs.readFileSync(templatePath, 'binary');
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: '{', end: '}' }
+    });
+
+    doc.render(datos);
+
+    const buffer = doc.getZip().generate({ type: 'nodebuffer' });
+    res.setHeader('Content-Disposition', `attachment; filename=AL22_${curso.ramaArtesanal}.docx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.send(buffer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al generar AL22' });
   }
 };
 

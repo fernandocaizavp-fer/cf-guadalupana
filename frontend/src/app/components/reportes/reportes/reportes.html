@@ -81,6 +81,26 @@
         </div>
         <mat-icon class="arrow">chevron_right</mat-icon>
       </div>
+
+      <div class="reporte-card-modern" (click)="abrirSeccion('certificado')">
+        <div class="card-accent certificado"></div>
+        <div class="icon-box certificado"><mat-icon>workspace_premium</mat-icon></div>
+        <div class="info">
+          <h3>Certificado de Promoción</h3>
+          <p>Certificado individual por estudiante. Documento oficial <strong>AL16</strong></p>
+        </div>
+        <mat-icon class="arrow">chevron_right</mat-icon>
+      </div>
+
+      <div class="reporte-card-modern" (click)="abrirSeccion('aprobados')">
+        <div class="card-accent aprobados"></div>
+        <div class="icon-box aprobados"><mat-icon>fact_check</mat-icon></div>
+        <div class="info">
+          <h3>Aprobados y No Aprobados</h3>
+          <p>Cuadro de participantes aprobados y no aprobados (grados). Documento oficial <strong>AL22</strong></p>
+        </div>
+        <mat-icon class="arrow">chevron_right</mat-icon>
+      </div>
     </div>
   }
 
@@ -518,6 +538,145 @@
     <div class="info-note-box proyectos">
       <mat-icon>info</mat-icon>
       <span>El AL19 incluye la nota final de Elaboración de Proyectos Productivos de ambos semestres.</span>
+    </div>
+  }
+
+  <!-- ── CERTIFICADO DE PROMOCIÓN AL16 ──────────────── -->
+  @if (seccionActiva === 'certificado') {
+    <div class="seccion-header-detail">
+      <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h2>Certificado de Promoción</h2>
+        <span class="badge red">OFICIAL AL16</span>
+      </div>
+    </div>
+
+    <div class="card-panel filter-panel">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Curso</mat-label>
+          <mat-select [(ngModel)]="cursoAL16" (ngModelChange)="seleccionarCursoAL16()">
+            @for (curso of cursos; track curso.id) {
+              <mat-option [value]="curso.id">{{ curso.ramaArtesanal }} — {{ curso.anioFormativo }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Jornada</mat-label>
+          <input matInput [(ngModel)]="jornadaAL16">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="span-2">
+          <mat-label>Lugar y Fecha</mat-label>
+          <input matInput [(ngModel)]="lugarFechaAL16" placeholder="Riobamba, 24 de abril del 2026">
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="info-note-box red">
+      <mat-icon>info</mat-icon>
+      <span>El AL16 es individual: elige el curso, completa lugar y fecha, y descarga el certificado de cada estudiante.</span>
+    </div>
+
+    @if (loadingAL16) {
+      <div class="center-box"><mat-spinner diameter="40"></mat-spinner></div>
+    }
+    @if (!loadingAL16 && estudiantesAL16.length > 0) {
+      <div class="table-container-modern">
+        <div class="table-info-bar">
+          <div class="info-item">
+            <mat-icon>people</mat-icon>
+            <span><strong>{{ estudiantesAL16.length }}</strong> estudiantes</span>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th class="text-left">Apellidos y Nombres</th>
+                <th>Cédula</th>
+                <th>Certificado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (est of estudiantesAL16; track est.id; let i = $index) {
+                <tr>
+                  <td class="text-center">{{ i + 1 }}</td>
+                  <td class="text-left font-bold">{{ est.apellidos }} {{ est.nombres }}</td>
+                  <td class="text-center"><code>{{ est.cedula }}</code></td>
+                  <td class="text-center">
+                    <button mat-flat-button class="btn-download red" (click)="descargarAL16(est)"
+                      [disabled]="descargandoAL16 === est.id">
+                      <mat-icon>download</mat-icon> AL16
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+    @if (!loadingAL16 && cursoAL16 && estudiantesAL16.length === 0) {
+      <div class="empty-box">
+        <mat-icon>workspace_premium</mat-icon>
+        <p>No hay estudiantes matriculados en este curso</p>
+      </div>
+    }
+  }
+
+  <!-- ── APROBADOS Y NO APROBADOS AL22 ──────────────── -->
+  @if (seccionActiva === 'aprobados') {
+    <div class="seccion-header-detail">
+      <button mat-icon-button (click)="seccionActiva = null" class="back-pill-dark">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h2>Aprobados y No Aprobados</h2>
+        <span class="badge indigo">OFICIAL AL22</span>
+      </div>
+    </div>
+
+    <div class="card-panel filter-panel">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Curso</mat-label>
+          <mat-select [(ngModel)]="cursoAL22">
+            @for (curso of cursos; track curso.id) {
+              <mat-option [value]="curso.id">{{ curso.ramaArtesanal }} — {{ curso.anioFormativo }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Régimen</mat-label>
+          <mat-select [(ngModel)]="regimenAL22">
+            <mat-option value="SIERRA">Sierra</mat-option>
+            <mat-option value="COSTA">Costa</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Jornada</mat-label>
+          <input matInput [(ngModel)]="jornadaAL22">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Lugar y Fecha</mat-label>
+          <input matInput [(ngModel)]="lugarFechaAL22" placeholder="Riobamba, 24 de abril del 2026">
+        </mat-form-field>
+        <div class="action-btn">
+          @if (cursoAL22) {
+            <button mat-flat-button class="btn-download indigo" (click)="descargarAL22()">
+              <mat-icon>download</mat-icon> AL22
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="info-note-box indigo">
+      <mat-icon>info</mat-icon>
+      <span>El AL22 marca APROBADO o NO APROBADO según las notas finales: si alguna materia es menor a 7, el participante queda NO APROBADO.</span>
     </div>
   }
 

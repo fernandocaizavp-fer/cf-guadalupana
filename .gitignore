@@ -143,3 +143,6 @@ backend/respaldo_cfguadalupana.sql
 
 # Archivos subidos por usuarios
 backend/uploads/
+
+# Documentacion interna del sistema (no publicar)
+CLAUDE.md
