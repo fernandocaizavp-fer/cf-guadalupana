@@ -120,6 +120,52 @@ export const guardarObservacion = async (req: Request, res: Response) => {
   }
 };
 
+// Actualizar registro de asistencia (fecha y/o estado de cada estudiante)
+export const actualizarAsistencia = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { fecha, detalles } = req.body;
+  try {
+    const asistenciaId = Number(id);
+
+    // Actualizar la fecha si se envió (parseada como fecha local, igual que al crear)
+    const data: any = {};
+    if (fecha) {
+      const [anio, mes, dia] = fecha.split('-').map(Number);
+      data.fecha = new Date(anio, mes - 1, dia, 12, 0, 0);
+    }
+    if (Object.keys(data).length > 0) {
+      await prisma.asistencia.update({ where: { id: asistenciaId }, data });
+    }
+
+    // Actualizar (o crear si faltara) el estado presente/ausente de cada estudiante
+    if (Array.isArray(detalles)) {
+      await Promise.all(
+        detalles.map((d: any) =>
+          prisma.asistenciaDetalle.upsert({
+            where: {
+              asistenciaId_matriculaId: {
+                asistenciaId,
+                matriculaId: Number(d.matriculaId)
+              }
+            },
+            update: { presente: d.presente },
+            create: {
+              asistenciaId,
+              matriculaId: Number(d.matriculaId),
+              presente: d.presente
+            }
+          })
+        )
+      );
+    }
+
+    res.json({ message: 'Asistencia actualizada' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al actualizar asistencia' });
+  }
+};
+
 // Eliminar registro de asistencia
 export const eliminarAsistencia = async (req: Request, res: Response) => {
   try {

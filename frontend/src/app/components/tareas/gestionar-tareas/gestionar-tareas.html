@@ -27,10 +27,10 @@
   <div class="crear-card">
     <div class="card-header">
       <div class="card-icon">
-        <mat-icon>add_task</mat-icon>
+        <mat-icon>{{ editandoId ? 'edit' : 'add_task' }}</mat-icon>
       </div>
       <div>
-        <h2>Nueva Tarea</h2>
+        <h2>{{ editandoId ? 'Editar Tarea' : 'Nueva Tarea' }}</h2>
         <p>Semestre {{ semestreSeleccionado }}</p>
       </div>
     </div>
@@ -56,9 +56,15 @@
     </div>
 
     <div class="card-footer">
-      <button mat-flat-button class="crear-btn" (click)="crearTarea()" [disabled]="guardando">
-        <mat-icon>add_task</mat-icon>
-        {{ guardando ? 'Creando...' : 'Crear Tarea' }}
+      @if (editandoId) {
+        <button mat-stroked-button class="cancelar-btn" (click)="cancelarEdicion()" [disabled]="guardando">
+          <mat-icon>close</mat-icon>
+          Cancelar
+        </button>
+      }
+      <button mat-flat-button class="crear-btn" (click)="guardarTarea()" [disabled]="guardando">
+        <mat-icon>{{ editandoId ? 'save' : 'add_task' }}</mat-icon>
+        {{ guardando ? 'Guardando...' : (editandoId ? 'Guardar Cambios' : 'Crear Tarea') }}
       </button>
     </div>
   </div>
@@ -118,6 +124,9 @@
             <div class="tarea-actions">
               <button mat-flat-button class="calificar-btn" (click)="irANotas(tarea.id)">
                 <mat-icon>grade</mat-icon> Calificar
+              </button>
+              <button mat-icon-button class="edit-btn" (click)="editarTarea(tarea)" title="Editar tarea">
+                <mat-icon>edit</mat-icon>
               </button>
               <button mat-icon-button class="delete-btn" (click)="eliminarTarea(tarea.id)">
                 <mat-icon>delete_outline</mat-icon>

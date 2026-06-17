@@ -144,6 +144,7 @@ export class GestionarAnuncios implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/dashboard']);
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    this.router.navigate([usuario.rol === 'PROFESOR' ? '/profesor' : '/dashboard']);
   }
 }

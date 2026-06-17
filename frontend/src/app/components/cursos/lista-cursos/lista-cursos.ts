@@ -48,6 +48,11 @@ export class ListaCursos implements OnInit {
     this.router.navigate(['/cursos/nuevo']);
   }
 
+  editar(event: Event, id: number) {
+    event.stopPropagation();
+    this.router.navigate(['/cursos/editar', id]);
+  }
+
   eliminar(event: Event, id: number) {
     event.stopPropagation();
     if (confirm('¿Estás seguro de eliminar este curso?')) {

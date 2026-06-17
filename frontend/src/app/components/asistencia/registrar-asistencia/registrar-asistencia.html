@@ -38,7 +38,7 @@
             <mat-icon>edit_calendar</mat-icon>
           </div>
           <div>
-            <h2>Registrar Nueva Asistencia</h2>
+            <h2>{{ editandoId ? 'Editar Asistencia' : 'Registrar Nueva Asistencia' }}</h2>
             <p>Selecciona la fecha y marca el estado de cada estudiante</p>
           </div>
         </div>
@@ -78,9 +78,15 @@
       </div>
 
       <div class="guardar-row">
+        @if (editandoId) {
+          <button mat-stroked-button class="cancelar-btn" (click)="cancelarEdicion()" [disabled]="guardando">
+            <mat-icon>close</mat-icon>
+            Cancelar edición
+          </button>
+        }
         <button mat-flat-button class="guardar-btn" (click)="guardar()" [disabled]="guardando">
           <mat-icon>save</mat-icon>
-          {{ guardando ? 'Guardando...' : 'Guardar Asistencia' }}
+          {{ guardando ? 'Guardando...' : (editandoId ? 'Guardar Cambios' : 'Guardar Asistencia') }}
         </button>
       </div>
     </div>
@@ -119,6 +125,9 @@
                 {{ contarAusentes(asistencia) }} ausentes
               </span>
             </div>
+            <button mat-icon-button class="edit-btn" (click)="editarAsistencia(asistencia)" title="Editar registro">
+              <mat-icon>edit</mat-icon>
+            </button>
             <button mat-icon-button class="delete-btn" (click)="eliminarAsistencia(asistencia.id)">
               <mat-icon>delete_outline</mat-icon>
             </button>

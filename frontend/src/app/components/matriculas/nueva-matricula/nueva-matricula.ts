@@ -79,17 +79,19 @@ export class NuevaMatricula implements OnInit {
           this.datos.sexo === 'Femenino' ? 'Srta.' : '';
   }
 
-  guardarYDescargar() {
+  guardar() {
     if (!this.datos.cursoId) {
       this.snackBar.open('Selecciona un curso', 'OK', { duration: 3000 });
       return;
     }
     this.loading = true;
     this.matriculaService.crearMatricula(this.datos).subscribe({
-      next: (res) => {
-        const id = res.matricula.id;
-        this.snackBar.open('Matrícula creada exitosamente', 'OK', { duration: 3000 });
-        this.descargarDocumentos(id);
+      next: () => {
+        this.loading = false;
+        this.snackBar.open('Matrícula guardada exitosamente', 'OK', { duration: 3000 });
+        // Vuelve al detalle del curso, donde ya aparece el nuevo estudiante.
+        // La matrícula se puede descargar después desde ahí.
+        this.router.navigate(['/cursos', this.datos.cursoId]);
       },
       error: (err) => {
         this.loading = false;

@@ -123,6 +123,26 @@ export const getNotasCursoSemestre = async (req: Request, res: Response) => {
   }
 };
 
+// Actualizar tarea (nombre, descripción y fecha)
+export const actualizarTarea = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { nombre, descripcion, fecha } = req.body;
+  try {
+    const data: any = {};
+    if (nombre !== undefined) data.nombre = nombre;
+    if (descripcion !== undefined) data.descripcion = descripcion;
+    if (fecha) data.fecha = new Date(fecha);
+
+    const tarea = await prisma.tarea.update({
+      where: { id: Number(id) },
+      data
+    });
+    res.json({ message: 'Tarea actualizada', tarea });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar tarea' });
+  }
+};
+
 // Eliminar tarea
 export const eliminarTarea = async (req: Request, res: Response) => {
   try {

@@ -299,11 +299,11 @@
 
     <mat-card-actions align="end" class="form-actions">
       <button mat-button class="btn-cancel" (click)="volver()">CANCELAR</button>
-      <button mat-flat-button class="btn-submit" (click)="guardarYDescargar()" [disabled]="loading">
+      <button mat-flat-button class="btn-submit" (click)="guardar()" [disabled]="loading">
         @if (loading) {
           <mat-spinner diameter="20"></mat-spinner>
         } @else {
-          <mat-icon>save_alt</mat-icon> GUARDAR Y DESCARGAR MATRÍCULA
+          <mat-icon>save</mat-icon> GUARDAR MATRÍCULA
         }
       </button>
     </mat-card-actions>

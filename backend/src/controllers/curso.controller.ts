@@ -67,6 +67,26 @@ export const obtenerCurso = async (req: Request, res: Response) => {
   }
 };
 
+export const actualizarCurso = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { ramaArtesanal, anioFormativo, fechaInicio, fechaFin } = req.body;
+  try {
+    const data: any = {};
+    if (ramaArtesanal !== undefined) data.ramaArtesanal = ramaArtesanal;
+    if (anioFormativo !== undefined) data.anioFormativo = anioFormativo;
+    if (fechaInicio) data.fechaInicio = new Date(fechaInicio);
+    if (fechaFin) data.fechaFin = new Date(fechaFin);
+
+    const curso = await prisma.curso.update({
+      where: { id: Number(id) },
+      data
+    });
+    res.json({ message: 'Curso actualizado', curso });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar curso' });
+  }
+};
+
 export const eliminarCurso = async (req: Request, res: Response) => {
   try {
     await prisma.curso.delete({ where: { id: Number(req.params.id) } });

@@ -32,6 +32,7 @@ export class GestionarTareas implements OnInit {
   loading = true;
   guardando = false;
   semestreSeleccionado = 1;
+  editandoId: number | null = null; // null = creando; con valor = editando esa tarea
 
   nuevaTarea = {
     nombre: '',
@@ -108,12 +109,36 @@ export class GestionarTareas implements OnInit {
     this.cargarTareas();
   }
 
-  crearTarea() {
+  guardarTarea() {
     if (!this.nuevaTarea.nombre || !this.nuevaTarea.fecha) {
       this.snackBar.open('Nombre y fecha son obligatorios', 'OK', { duration: 3000 });
       return;
     }
     this.guardando = true;
+
+    // Modo edición: actualizar la tarea existente
+    if (this.editandoId) {
+      this.tareaService.actualizarTarea(this.editandoId, {
+        nombre: this.nuevaTarea.nombre,
+        descripcion: this.nuevaTarea.descripcion,
+        fecha: this.nuevaTarea.fecha
+      }).subscribe({
+        next: () => {
+          this.snackBar.open('Tarea actualizada exitosamente', 'OK', { duration: 3000 });
+          this.cancelarEdicion();
+          this.guardando = false;
+          this.cargarTareas();
+        },
+        error: () => {
+          this.guardando = false;
+          this.snackBar.open('Error al actualizar tarea', 'OK', { duration: 3000 });
+          this.cdr.detectChanges();
+        }
+      });
+      return;
+    }
+
+    // Modo creación
     this.tareaService.crearTarea({
       ...this.nuevaTarea,
       semestre: this.semestreSeleccionado,
@@ -131,6 +156,30 @@ export class GestionarTareas implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // Carga la tarea seleccionada en el formulario para editarla
+  editarTarea(tarea: any) {
+    this.editandoId = tarea.id;
+    this.nuevaTarea = {
+      nombre: tarea.nombre,
+      descripcion: tarea.descripcion || '',
+      fecha: this.formatearFecha(tarea.fecha),
+      semestre: tarea.semestre
+    };
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  cancelarEdicion() {
+    this.editandoId = null;
+    this.nuevaTarea = { nombre: '', descripcion: '', fecha: '', semestre: 1 };
+  }
+
+  // Convierte una fecha ISO a 'yyyy-MM-dd' para el input type="date"
+  private formatearFecha(valor: string): string {
+    if (!valor) return '';
+    const f = new Date(valor);
+    return `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
   }
 
   irANotas(tareaId: number) {

@@ -118,6 +118,10 @@ export class DashboardProfesor implements OnInit {
     this.router.navigate(['/disciplina/materia', materiaId]);
   }
 
+  irAAnuncios() {
+    this.router.navigate(['/anuncios']);
+  }
+
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);

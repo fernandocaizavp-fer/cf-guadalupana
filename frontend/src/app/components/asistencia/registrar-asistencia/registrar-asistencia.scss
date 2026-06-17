@@ -321,8 +321,19 @@ $rojo-border: #fca5a5;
 .guardar-row {
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
   padding-top: 16px;
   border-top: 1px solid #f1f5f9;
+
+  .cancelar-btn {
+    border-radius: 50px;
+    height: 44px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #64748b !important;
+
+    mat-icon { margin-right: 6px; }
+  }
 
   .guardar-btn {
     background: linear-gradient(135deg, $navy, #2a4f9f) !important;
@@ -459,6 +470,15 @@ $rojo-border: #fca5a5;
       color: $rojo;
       border: 1px solid $rojo-border;
     }
+  }
+}
+
+.edit-btn {
+  color: #94a3b8 !important;
+  transition: all 0.2s;
+  &:hover {
+    color: $navy !important;
+    background: #eef2ff !important;
   }
 }
 

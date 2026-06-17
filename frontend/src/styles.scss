@@ -36,3 +36,27 @@ body {
   height: 100%;
 }
 /* You can add global styles to this file, and also import other style files */
+
+/* ===== Mensajes de confirmación (snackbars) con la identidad del sistema ===== */
+.app-snackbar {
+  .mdc-snackbar__surface {
+    background: linear-gradient(135deg, #1a2a5e, #2a4f9f) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 30px rgba(26, 42, 94, 0.35) !important;
+    padding-right: 8px !important;
+  }
+
+  .mdc-snackbar__label,
+  .mat-mdc-snack-bar-label {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.2px;
+  }
+
+  // Botón de acción ("OK" / cerrar) en dorado
+  .mat-mdc-snack-bar-action,
+  .mat-mdc-snack-bar-action .mdc-button__label {
+    color: #c8a84b !important;
+    font-weight: 800 !important;
+  }
+}

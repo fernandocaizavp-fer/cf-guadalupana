@@ -186,6 +186,7 @@ $white: #ffffff;
   padding: 16px 28px 24px;
   display: flex;
   justify-content: flex-end;
+  gap: 14px;
   border-top: 1px solid #f1f5f9;
 
   .crear-btn {
@@ -406,6 +407,16 @@ $white: #ffffff;
     &:hover {
       background: $gold !important;
       color: white !important;
+    }
+  }
+
+  .edit-btn {
+    color: #cbd5e1 !important;
+    transition: all 0.2s;
+
+    &:hover {
+      color: $navy !important;
+      background: #eef2ff !important;
     }
   }
 

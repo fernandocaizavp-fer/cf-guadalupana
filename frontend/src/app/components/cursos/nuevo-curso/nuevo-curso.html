@@ -5,8 +5,8 @@
         <mat-icon>arrow_back</mat-icon>
       </button>
       <div class="title-meta">
-        <h1>Nuevo Curso</h1>
-        <span>Registro de curso</span>
+        <h1>{{ cursoId ? 'Editar Curso' : 'Nuevo Curso' }}</h1>
+        <span>{{ cursoId ? 'Actualización de curso' : 'Registro de curso' }}</span>
       </div>
     </div>
     <span class="flex-spacer"></span>
@@ -16,8 +16,10 @@
 <div class="content">
   <mat-card class="form-card">
     <mat-card-header>
-      <mat-card-title>Crear Curso</mat-card-title>
-      <mat-card-subtitle>Se crearán automáticamente las 10 materias del curso</mat-card-subtitle>
+      <mat-card-title>{{ cursoId ? 'Editar Curso' : 'Crear Curso' }}</mat-card-title>
+      <mat-card-subtitle>
+        {{ cursoId ? 'Modifica los datos del curso' : 'Se crearán automáticamente las 10 materias del curso' }}
+      </mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
@@ -48,7 +50,7 @@
 
     <mat-card-actions>
       <button mat-raised-button color="primary" (click)="guardar()" [disabled]="loading">
-        <mat-icon>save</mat-icon> CREAR CURSO
+        <mat-icon>save</mat-icon> {{ cursoId ? 'GUARDAR CAMBIOS' : 'CREAR CURSO' }}
       </button>
       <button mat-stroked-button (click)="volver()">CANCELAR</button>
     </mat-card-actions>

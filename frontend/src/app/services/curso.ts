@@ -46,6 +46,12 @@ agregarSubmateria(cursoId: number, nombre: string): Observable<any> {
       headers: this.getHeaders()
     });
   }
+
+  actualizarCurso(id: number, datos: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/cursos/${id}`, datos, {
+      headers: this.getHeaders()
+    });
+  }
   eliminarCurso(id: number): Observable<any> {
   return this.http.delete(`${this.apiUrl}/cursos/${id}`, {
     headers: this.getHeaders()

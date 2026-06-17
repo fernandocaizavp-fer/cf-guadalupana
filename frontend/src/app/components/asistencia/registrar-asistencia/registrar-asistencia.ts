@@ -27,6 +27,7 @@ export class RegistrarAsistencia implements OnInit {
   loading = true;
   guardando = false;
   fecha = new Date().toISOString().split('T')[0];
+  editandoId: number | null = null; // null = nuevo registro; con valor = editando ese registro
 
   // presentes[matriculaId] = true/false
   presentes: { [key: number]: boolean } = {};
@@ -128,6 +129,29 @@ export class RegistrarAsistencia implements OnInit {
       presente: this.presentes[m.id] ?? true
     }));
 
+    // Modo edición: actualizar el registro existente
+    if (this.editandoId) {
+      this.asistenciaService.actualizarAsistencia(this.editandoId, {
+        fecha: this.fecha,
+        detalles
+      }).subscribe({
+        next: () => {
+          this.guardando = false;
+          this.snackBar.open('Asistencia actualizada exitosamente', 'OK', { duration: 3000 });
+          this.cancelarEdicion();
+          this.cargarAsistencias();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.guardando = false;
+          this.snackBar.open('Error al actualizar asistencia', 'OK', { duration: 3000 });
+          this.cdr.detectChanges();
+        }
+      });
+      return;
+    }
+
+    // Modo creación
     this.asistenciaService.crearAsistencia({
       fecha: this.fecha,
       materiaId: this.materiaId,
@@ -146,6 +170,26 @@ export class RegistrarAsistencia implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // Carga un registro del historial en el panel para reeditarlo
+  editarAsistencia(asistencia: any) {
+    this.editandoId = asistencia.id;
+    const f = new Date(asistencia.fecha);
+    this.fecha = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
+    // Parte de todos presentes y aplica el estado guardado de cada estudiante
+    this.marcarTodos();
+    (asistencia.detalles || []).forEach((d: any) => {
+      this.presentes[d.matriculaId] = d.presente;
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.cdr.detectChanges();
+  }
+
+  cancelarEdicion() {
+    this.editandoId = null;
+    this.fecha = new Date().toISOString().split('T')[0];
+    this.marcarTodos();
   }
 
   eliminarAsistencia(id: number) {

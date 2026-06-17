@@ -28,9 +28,14 @@
         <div class="curso-card" (click)="irADetalle(curso.id)">
           <div class="curso-card-top" [class]="'color-' + (curso.id % 5)">
             <mat-icon class="curso-icon">school</mat-icon>
-            <button class="delete-btn" (click)="eliminar($event, curso.id)" title="Eliminar">
-              <mat-icon>delete</mat-icon>
-            </button>
+            <div class="card-actions">
+              <button class="edit-btn" (click)="editar($event, curso.id)" title="Editar">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="delete-btn" (click)="eliminar($event, curso.id)" title="Eliminar">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
           </div>
           <div class="curso-card-body">
             <h3>{{ curso.ramaArtesanal }}</h3>

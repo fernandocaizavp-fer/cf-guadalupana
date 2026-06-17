@@ -23,6 +23,12 @@ export class AsistenciaService {
     });
   }
 
+  actualizarAsistencia(id: number, datos: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/asistencias/${id}`, datos, {
+      headers: this.getHeaders()
+    });
+  }
+
   getAsistenciasPorMateria(materiaId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/asistencias/materia/${materiaId}`, {
       headers: this.getHeaders()

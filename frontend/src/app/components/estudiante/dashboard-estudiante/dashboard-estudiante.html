@@ -82,6 +82,9 @@
                 </div>
                 @if (!materia.esDisciplina) {
                   <mat-icon class="arrow">chevron_right</mat-icon>
+                } @else {
+                  <!-- Espacio invisible para alinear el cuadro de promedio con las demás filas -->
+                  <mat-icon class="arrow arrow-placeholder">chevron_right</mat-icon>
                 }
               </div>
             }
@@ -98,8 +101,11 @@
 
         @if (anuncios.length === 0) {
           <div class="sin-anuncios">
-            <mat-icon>notifications_none</mat-icon>
-            <p>No hay anuncios publicados</p>
+            <div class="sin-anuncios-icono">
+              <mat-icon>campaign</mat-icon>
+            </div>
+            <p>Aún no hay anuncios</p>
+            <span>Las novedades del centro aparecerán aquí</span>
           </div>
         }
 

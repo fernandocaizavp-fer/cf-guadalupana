@@ -153,8 +153,17 @@ mat-divider { margin: 35px 0 !important; border-color: #f1f1f1 !important; }
     border-radius: 12px;
     font-weight: 700;
     box-shadow: 0 8px 20px rgba($navy, 0.2);
-    
-    mat-icon { margin-right: 8px; font-size: 20px; }
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      margin-right: 8px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
   }
 }
 

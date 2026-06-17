@@ -30,6 +30,12 @@ export class TareaService {
     });
   }
 
+  actualizarTarea(id: number, datos: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/tareas/${id}`, datos, {
+      headers: this.getHeaders()
+    });
+  }
+
   guardarNotas(notas: any[]): Observable<any> {
     return this.http.post(`${this.apiUrl}/tareas/notas`, { notas }, {
       headers: this.getHeaders()
