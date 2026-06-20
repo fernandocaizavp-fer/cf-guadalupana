@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "prisma generate && tsc",
-    "start": "prisma migrate deploy && node dist/index.js"
+    "seed": "ts-node src/seed.ts",
+    "start": "prisma migrate deploy && node dist/seed.js; node dist/index.js"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
