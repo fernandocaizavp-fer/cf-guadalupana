@@ -27,12 +27,21 @@ export const upload = multer({
   }
 });
 
-export const crearAnuncio = async (req: Request, res: Response) => {
+export const crearAnuncio = async (req: any, res: Response) => {
   const { titulo, contenido } = req.body;
   const imagen = req.file ? `/uploads/anuncios/${req.file.filename}` : null;
   try {
+    // El autor se deriva del usuario autenticado (token), no del body.
+    // El JWT solo trae { id, rol }, por eso consultamos el nombre.
+    const autorRol = req.usuario?.rol ?? null;
+    const autor = await prisma.usuario.findUnique({
+      where: { id: req.usuario?.id },
+      select: { nombre: true, apellido: true }
+    });
+    const autorNombre = autor ? `${autor.nombre} ${autor.apellido}` : null;
+
     const anuncio = await prisma.anuncio.create({
-      data: { titulo, contenido, imagen }
+      data: { titulo, contenido, imagen, autorRol, autorNombre }
     });
     res.json({ message: 'Anuncio creado', anuncio });
   } catch (error) {

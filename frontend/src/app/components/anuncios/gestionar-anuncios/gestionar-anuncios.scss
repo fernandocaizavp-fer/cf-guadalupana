@@ -281,6 +281,18 @@ $gold: #c8a84b;
   border-radius: 20px;
 }
 
+.anuncio-autor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+
+  mat-icon { font-size: 14px; width: 14px; height: 14px; color: $gold; }
+}
+
 .anuncio-actions {
   display: flex;
   gap: 8px;

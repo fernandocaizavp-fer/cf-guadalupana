@@ -233,13 +233,15 @@ model ObservacionAsistencia {
 }
 
 model Anuncio {
-  id        Int      @id @default(autoincrement())
-  titulo    String   @db.VarChar(150)
-  contenido String
-  imagen    String?  @db.VarChar(200)
-  activo    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  titulo      String   @db.VarChar(150)
+  contenido   String
+  imagen      String?  @db.VarChar(200)
+  activo      Boolean  @default(true)
+  autorRol    Rol?
+  autorNombre String?  @db.VarChar(200)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model NotaDisciplina {

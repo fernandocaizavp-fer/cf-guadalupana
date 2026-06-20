@@ -11,6 +11,7 @@ import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../services/auth';
 import { MatriculaService } from '../../../services/matricula';
 import { calcularDisciplinaPonderada } from '../../../services/disciplina-util';
+import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
@@ -27,6 +28,7 @@ export class DashboardEstudiante implements OnInit {
   semestreSeleccionado = 1;
   materiasConTareas: any[] = [];
   anuncios: any[] = [];
+  etiquetaAutor = etiquetaAutorAnuncio;
 
   constructor(
     private authService: AuthService,

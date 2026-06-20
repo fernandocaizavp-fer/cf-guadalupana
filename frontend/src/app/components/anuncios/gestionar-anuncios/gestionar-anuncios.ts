@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { DatePipe } from '@angular/common';
 import { AnuncioService } from '../../../services/anuncio';
+import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
 
 @Component({
   selector: 'app-gestionar-anuncios',
@@ -24,6 +25,7 @@ export class GestionarAnuncios implements OnInit {
   anuncios: any[] = [];
   loading = true;
   guardando = false;
+  etiquetaAutor = etiquetaAutorAnuncio;
   imagenPreview: string | null = null;
   imagenFile: File | null = null;
   editando: any = null;

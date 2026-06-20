@@ -321,6 +321,13 @@
 
                   <p>{{ anuncio.contenido }}</p>
 
+                  @if (etiquetaAutor(anuncio)) {
+                    <div class="announcement-author">
+                      <mat-icon>person</mat-icon>
+                      <span>Publicado por: {{ etiquetaAutor(anuncio) }}</span>
+                    </div>
+                  }
+
                 </div>
 
               </div>

@@ -407,3 +407,15 @@
 
   mat-icon { font-size: 13px; width: 13px; height: 13px; }
 }
+
+.anuncio-autor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 600;
+
+  mat-icon { font-size: 13px; width: 13px; height: 13px; }
+}

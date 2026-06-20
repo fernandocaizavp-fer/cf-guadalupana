@@ -9,6 +9,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../services/auth';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
+import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
 
 @Component({
   selector: 'app-dashboard-profesor',
@@ -25,6 +26,7 @@ export class DashboardProfesor implements OnInit {
   cursosAgrupados: any[] = [];
   anuncios: any[] = [];
   loading = true;
+  etiquetaAutor = etiquetaAutorAnuncio;
 
   constructor(
     private authService: AuthService,
