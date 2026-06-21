@@ -35,18 +35,30 @@ export function primeraNotaFueraDeRango(
   return null;
 }
 
+const UN_DIA_MS = 24 * 60 * 60 * 1000;
+
 /**
- * Indica si la ventana general de supletorios está abierta ahora mismo
- * (interruptor del admin activo y fecha actual dentro del rango configurado).
+ * True si la fecha actual no ha pasado el final del día de `hasta`.
+ * Se suma un día para que la fecha límite sea INCLUSIVA: "hasta el 3" cubre
+ * todo el día 3 (hasta las 00:00 del día 4).
+ */
+export function vigenteHasta(hasta: Date | null | undefined): boolean {
+  if (!hasta) return false;
+  return Date.now() < new Date(hasta).getTime() + UN_DIA_MS;
+}
+
+/**
+ * Indica si la ventana general de supletorios está abierta ahora mismo,
+ * controlada SOLO por las fechas. Sin un período definido (ambas fechas en
+ * null) se considera cerrada. La fecha de fin es inclusiva (todo ese día).
  */
 export function ventanaSupletorioAbierta(config: {
-  supletorioHabilitado: boolean;
   supletorioInicio: Date | null;
   supletorioFin: Date | null;
 }): boolean {
-  if (!config.supletorioHabilitado) return false;
+  if (!config.supletorioInicio && !config.supletorioFin) return false;
   const ahora = new Date();
   if (config.supletorioInicio && ahora < config.supletorioInicio) return false;
-  if (config.supletorioFin && ahora > config.supletorioFin) return false;
+  if (config.supletorioFin && !vigenteHasta(config.supletorioFin)) return false;
   return true;
 }

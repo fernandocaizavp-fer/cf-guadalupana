@@ -16,7 +16,6 @@ export const obtenerConfiguracion = async (req: Request, res: Response) => {
 // PUT /api/configuracion — solo ADMIN
 export const actualizarConfiguracion = async (req: Request, res: Response) => {
   const {
-    supletorioHabilitado,
     supletorioInicio,
     supletorioFin,
     notaMinima,
@@ -42,7 +41,6 @@ export const actualizarConfiguracion = async (req: Request, res: Response) => {
     const config = await prisma.configuracion.upsert({
       where: { id: 1 },
       update: {
-        supletorioHabilitado: supletorioHabilitado === true || supletorioHabilitado === 'true',
         supletorioInicio: supletorioInicio ? new Date(supletorioInicio) : null,
         supletorioFin: supletorioFin ? new Date(supletorioFin) : null,
         notaMinima: min,
@@ -51,7 +49,6 @@ export const actualizarConfiguracion = async (req: Request, res: Response) => {
       },
       create: {
         id: 1,
-        supletorioHabilitado: supletorioHabilitado === true || supletorioHabilitado === 'true',
         supletorioInicio: supletorioInicio ? new Date(supletorioInicio) : null,
         supletorioFin: supletorioFin ? new Date(supletorioFin) : null,
         notaMinima: min,

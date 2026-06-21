@@ -63,11 +63,17 @@ export class SupletorioDocente implements OnInit {
     });
   }
 
+  // La fecha de fin es inclusiva: se suma un día para cubrir todo ese día.
+  private vigenteHasta(fecha: any): boolean {
+    if (!fecha) return false;
+    return Date.now() < new Date(fecha).getTime() + 24 * 60 * 60 * 1000;
+  }
+
   private calcularVentana(c: any): boolean {
-    if (!c?.supletorioHabilitado) return false;
+    if (!c?.supletorioInicio && !c?.supletorioFin) return false;
     const ahora = new Date();
     if (c.supletorioInicio && ahora < new Date(c.supletorioInicio)) return false;
-    if (c.supletorioFin && ahora > new Date(c.supletorioFin)) return false;
+    if (c.supletorioFin && !this.vigenteHasta(c.supletorioFin)) return false;
     return true;
   }
 
@@ -114,9 +120,7 @@ export class SupletorioDocente implements OnInit {
 
                 // Habilitar supletorio según el control del administrador:
                 // ventana general abierta, o permiso individual vigente para este estudiante.
-                const ahora = new Date();
-                const permisoIndividual = !!m.supletorioHabilitadoHasta &&
-                  new Date(m.supletorioHabilitadoHasta) >= ahora;
+                const permisoIndividual = this.vigenteHasta(m.supletorioHabilitadoHasta);
                 const habilitarSup = this.ventanaAbierta || permisoIndividual;
 
                 this.supletorios[m.id] = '';

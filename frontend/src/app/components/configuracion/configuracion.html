@@ -24,15 +24,14 @@
     <div class="config-card">
       <div class="config-header">
         <mat-icon>event_available</mat-icon>
-        <h2>Supletorios</h2>
+        <h2>Plazo de supletorios</h2>
       </div>
       <div class="config-body">
-        <mat-slide-toggle [(ngModel)]="supletorioHabilitado">
-          Habilitar supletorios para todos los cursos
-        </mat-slide-toggle>
         <p class="hint">
-          Cuando está activo y la fecha actual está dentro del plazo, los docentes
-          pueden registrar notas de supletorio.
+          Define el período en que los docentes pueden registrar notas de supletorio.
+          Dentro de estas fechas el plazo está abierto; fuera de ellas, cerrado.
+          La fecha de fin es inclusiva (cubre todo ese día). Deja ambas vacías para
+          mantenerlo cerrado.
         </p>
 
         <div class="fechas">
@@ -86,12 +85,13 @@
     <div class="config-card">
       <div class="config-header">
         <mat-icon>how_to_reg</mat-icon>
-        <h2>Habilitar supletorio por reclamo</h2>
+        <h2>Permiso especial de supletorio</h2>
       </div>
       <div class="config-body">
         <p class="hint">
-          Permite que un estudiante rinda supletorio fuera del plazo general (caso de
-          oficio/reclamo). Solo aplica a ese estudiante y hasta la fecha indicada.
+          Permite que un estudiante registre su supletorio fuera del plazo general.
+          Solo aplica a ese estudiante y hasta la fecha indicada (inclusive ese día);
+          después se cierra automáticamente.
         </p>
 
         <div class="buscador">

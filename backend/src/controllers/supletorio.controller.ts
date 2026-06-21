@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaAnual } from '../lib/disciplina';
 import { notaALetras } from '../lib/numeroALetras';
-import { getConfiguracion, ventanaSupletorioAbierta, notaEnRango } from '../lib/configuracion';
+import { getConfiguracion, ventanaSupletorioAbierta, notaEnRango, vigenteHasta } from '../lib/configuracion';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -92,8 +92,7 @@ export const guardarSupletorio = async (req: Request, res: Response) => {
       where: { id: Number(matriculaId) },
       select: { supletorioHabilitadoHasta: true }
     });
-    const permisoIndividual = !!matricula?.supletorioHabilitadoHasta &&
-      new Date() <= matricula.supletorioHabilitadoHasta;
+    const permisoIndividual = vigenteHasta(matricula?.supletorioHabilitadoHasta);
     if (!ventanaSupletorioAbierta(config) && !permisoIndividual) {
       return res.status(403).json({
         error: 'Los supletorios no están habilitados en este momento'
@@ -144,9 +143,8 @@ export const guardarSupletoriosMasivo = async (req: Request, res: Response) => {
         where: { id: { in: ids } },
         select: { id: true, supletorioHabilitadoHasta: true }
       });
-      const ahora = new Date();
       const permitido = new Map(
-        matriculas.map((m) => [m.id, !!m.supletorioHabilitadoHasta && ahora <= m.supletorioHabilitadoHasta])
+        matriculas.map((m) => [m.id, vigenteHasta(m.supletorioHabilitadoHasta)])
       );
       const bloqueado = supletorios.find((s: any) => !permitido.get(Number(s.matriculaId)));
       if (bloqueado) {

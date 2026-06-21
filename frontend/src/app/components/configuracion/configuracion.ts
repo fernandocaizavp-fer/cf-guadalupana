@@ -6,7 +6,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DatePipe } from '@angular/common';
@@ -15,7 +14,7 @@ import { ConfiguracionService, Configuracion } from '../../services/configuracio
 @Component({
   selector: 'app-configuracion',
   imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
-    MatProgressSpinnerModule, MatSnackBarModule, MatSlideToggleModule,
+    MatProgressSpinnerModule, MatSnackBarModule,
     MatFormFieldModule, MatInputModule, DatePipe],
   templateUrl: './configuracion.html',
   styleUrl: './configuracion.scss'
@@ -24,8 +23,7 @@ export class ConfiguracionComponent implements OnInit {
   loading = true;
   guardando = false;
 
-  // Supletorios
-  supletorioHabilitado = false;
+  // Supletorios (controlados solo por el plazo de fechas)
   supletorioInicio = '';   // yyyy-MM-dd
   supletorioFin = '';      // yyyy-MM-dd
 
@@ -60,7 +58,6 @@ export class ConfiguracionComponent implements OnInit {
   cargar() {
     this.configService.obtener().subscribe({
       next: (c: Configuracion) => {
-        this.supletorioHabilitado = c.supletorioHabilitado;
         this.supletorioInicio = this.soloFecha(c.supletorioInicio);
         this.supletorioFin = this.soloFecha(c.supletorioFin);
         this.notaMinima = c.notaMinima;
@@ -90,7 +87,6 @@ export class ConfiguracionComponent implements OnInit {
 
     this.guardando = true;
     this.configService.actualizar({
-      supletorioHabilitado: this.supletorioHabilitado,
       supletorioInicio: this.supletorioInicio || null,
       supletorioFin: this.supletorioFin || null,
       notaMinima: Number(this.notaMinima),
