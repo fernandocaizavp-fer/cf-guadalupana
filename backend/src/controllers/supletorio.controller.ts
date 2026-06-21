@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaAnual } from '../lib/disciplina';
 import { notaALetras } from '../lib/numeroALetras';
+import { getConfiguracion, ventanaSupletorioAbierta, notaEnRango } from '../lib/configuracion';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -18,10 +19,10 @@ const fmt2 = (valor: number | null | undefined): string => {
   return valor.toFixed(2);
 };
 
-// Estado de aprobación: nota >= 7 aprueba.
-const estadoAprobacion = (valor: number | null | undefined): string => {
+// Estado de aprobación: nota >= notaAprobacion configurada (7 por defecto).
+const estadoAprobacion = (valor: number | null | undefined, aprob: number = 7): string => {
   if (valor === null || valor === undefined) return '';
-  return valor >= 7 ? 'APROBADO' : 'NO APROBADO';
+  return valor >= aprob ? 'APROBADO' : 'NO APROBADO';
 };
 
 const MESES_MAYUS = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
@@ -76,6 +77,29 @@ const calcularPf = (n1: number | null, n2: number | null, sup: number | null): s
 export const guardarSupletorio = async (req: Request, res: Response) => {
   const { matriculaId, materiaId, valor } = req.body;
   try {
+    const config = await getConfiguracion();
+    const valorNum = valor !== null && valor !== '' ? Number(valor) : null;
+
+    // Validación del rango de notas configurado
+    if (valorNum !== null && !notaEnRango(valorNum, config)) {
+      return res.status(400).json({
+        error: `La nota debe estar entre ${config.notaMinima} y ${config.notaMaxima}`
+      });
+    }
+
+    // Control de habilitación: ventana general del admin o permiso individual
+    const matricula = await prisma.matricula.findUnique({
+      where: { id: Number(matriculaId) },
+      select: { supletorioHabilitadoHasta: true }
+    });
+    const permisoIndividual = !!matricula?.supletorioHabilitadoHasta &&
+      new Date() <= matricula.supletorioHabilitadoHasta;
+    if (!ventanaSupletorioAbierta(config) && !permisoIndividual) {
+      return res.status(403).json({
+        error: 'Los supletorios no están habilitados en este momento'
+      });
+    }
+
     const supletorio = await prisma.supletorio.upsert({
       where: {
         materiaId_matriculaId: {
@@ -83,11 +107,11 @@ export const guardarSupletorio = async (req: Request, res: Response) => {
           matriculaId: Number(matriculaId)
         }
       },
-      update: { valor: valor !== null ? Number(valor) : null },
+      update: { valor: valorNum },
       create: {
         materiaId: Number(materiaId),
         matriculaId: Number(matriculaId),
-        valor: valor !== null ? Number(valor) : null
+        valor: valorNum
       }
     });
     res.json({ message: 'Supletorio guardado', supletorio });
@@ -99,6 +123,39 @@ export const guardarSupletorio = async (req: Request, res: Response) => {
 export const guardarSupletoriosMasivo = async (req: Request, res: Response) => {
   const { supletorios } = req.body;
   try {
+    const config = await getConfiguracion();
+
+    // Validación del rango de notas configurado para todo el lote
+    const fueraDeRango = supletorios.find((s: any) => {
+      const v = s.valor !== null && s.valor !== '' ? Number(s.valor) : null;
+      return v !== null && !notaEnRango(v, config);
+    });
+    if (fueraDeRango) {
+      return res.status(400).json({
+        error: `Hay notas fuera del rango permitido (${config.notaMinima} - ${config.notaMaxima})`
+      });
+    }
+
+    // Control de habilitación. Si la ventana general está cerrada, cada
+    // estudiante del lote debe tener permiso individual vigente.
+    if (!ventanaSupletorioAbierta(config)) {
+      const ids: number[] = Array.from(new Set(supletorios.map((s: any) => Number(s.matriculaId))));
+      const matriculas = await prisma.matricula.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, supletorioHabilitadoHasta: true }
+      });
+      const ahora = new Date();
+      const permitido = new Map(
+        matriculas.map((m) => [m.id, !!m.supletorioHabilitadoHasta && ahora <= m.supletorioHabilitadoHasta])
+      );
+      const bloqueado = supletorios.find((s: any) => !permitido.get(Number(s.matriculaId)));
+      if (bloqueado) {
+        return res.status(403).json({
+          error: 'Los supletorios no están habilitados (plazo cerrado y sin permiso individual para algún estudiante)'
+        });
+      }
+    }
+
     const resultados = await Promise.all(
       supletorios.map((s: any) =>
         prisma.supletorio.upsert({
@@ -335,6 +392,8 @@ export const generarAL16 = async (req: Request, res: Response) => {
   const { lugarFecha, jornada } = req.query;
 
   try {
+    const config = await getConfiguracion();
+    const aprob = config.notaAprobacion;
     const matricula = await prisma.matricula.findUnique({
       where: { id: Number(matriculaId) },
       include: {
@@ -389,15 +448,15 @@ export const generarAL16 = async (req: Request, res: Response) => {
       jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
       raArt: (m.curso.ramaArtesanal || '').toUpperCase(),
 
-      teoria: fmt2(teoriaPf), teoriaL: notaALetras(teoriaPf), teoE: estadoAprobacion(teoriaPf),
-      practica: fmt2(practicaPf), practicaL: notaALetras(practicaPf), pracE: estadoAprobacion(practicaPf),
-      administracion: fmt2(admPf), administracionL: notaALetras(admPf), admE: estadoAprobacion(admPf),
-      contabilidad: fmt2(contPf), contabilidadL: notaALetras(contPf), conE: estadoAprobacion(contPf),
-      ingles: fmt2(inglesPf), inglesL: notaALetras(inglesPf), ingE: estadoAprobacion(inglesPf),
-      desarrollo: fmt2(desarrolloPf), desarrolloL: notaALetras(desarrolloPf), desE: estadoAprobacion(desarrolloPf),
-      tics: fmt2(ticsPf), ticsL: notaALetras(ticsPf), ticsE: estadoAprobacion(ticsPf),
-      proyect: fmt2(proyPf), proyectL: notaALetras(proyPf), proyectE: estadoAprobacion(proyPf),
-      legislacion: fmt2(legislacionPf), legislacionL: notaALetras(legislacionPf), legisE: estadoAprobacion(legislacionPf),
+      teoria: fmt2(teoriaPf), teoriaL: notaALetras(teoriaPf), teoE: estadoAprobacion(teoriaPf, aprob),
+      practica: fmt2(practicaPf), practicaL: notaALetras(practicaPf), pracE: estadoAprobacion(practicaPf, aprob),
+      administracion: fmt2(admPf), administracionL: notaALetras(admPf), admE: estadoAprobacion(admPf, aprob),
+      contabilidad: fmt2(contPf), contabilidadL: notaALetras(contPf), conE: estadoAprobacion(contPf, aprob),
+      ingles: fmt2(inglesPf), inglesL: notaALetras(inglesPf), ingE: estadoAprobacion(inglesPf, aprob),
+      desarrollo: fmt2(desarrolloPf), desarrolloL: notaALetras(desarrolloPf), desE: estadoAprobacion(desarrolloPf, aprob),
+      tics: fmt2(ticsPf), ticsL: notaALetras(ticsPf), ticsE: estadoAprobacion(ticsPf, aprob),
+      proyect: fmt2(proyPf), proyectL: notaALetras(proyPf), proyectE: estadoAprobacion(proyPf, aprob),
+      legislacion: fmt2(legislacionPf), legislacionL: notaALetras(legislacionPf), legisE: estadoAprobacion(legislacionPf, aprob),
 
       disciplina: fmt2(disciplinaVal), disciplinaL: notaALetras(disciplinaVal, true),
       promedio: fmt2(promedioNum), promedioL: notaALetras(promedioNum, true),
@@ -437,6 +496,8 @@ export const generarAL22 = async (req: Request, res: Response) => {
     'Inglés', 'Desarrollo', 'Elaboración', 'Legislación'];
 
   try {
+    const config = await getConfiguracion();
+    const aprob = config.notaAprobacion;
     const curso = await prisma.curso.findUnique({
       where: { id: Number(cursoId) },
       include: {
@@ -458,7 +519,7 @@ export const generarAL22 = async (req: Request, res: Response) => {
     const estudiantes = curso.matriculas.map((m, index) => {
       const tieneReprobada = MATERIAS.some(nombre => {
         const pf = calcularPfNum(getNota(m, nombre, 1), getNota(m, nombre, 2), getSupletorio(m, nombre));
-        return pf !== null && pf < 7;
+        return pf !== null && pf < aprob;
       });
       return {
         num: String(index + 1),
@@ -507,6 +568,8 @@ export const generarAL19 = async (req: Request, res: Response) => {
   const { lugarFecha, jornada } = req.query;
 
   try {
+    const config = await getConfiguracion();
+    const aprob = config.notaAprobacion;
     const curso = await prisma.curso.findUnique({
       where: { id: Number(cursoId) },
       include: {
@@ -551,7 +614,7 @@ export const generarAL19 = async (req: Request, res: Response) => {
       const sup = getSup(m);
       const notaNum = calcularPfNum(n1, n2, sup);
       const nota = fmt(notaNum);
-      const observacion = notaNum === null ? '' : notaNum >= 7 ? 'Aprobado' : 'Desaprobado';
+      const observacion = notaNum === null ? '' : notaNum >= aprob ? 'Aprobado' : 'Desaprobado';
 
       return {
         num: String(index + 1),

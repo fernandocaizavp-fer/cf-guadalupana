@@ -1,0 +1,156 @@
+<mat-toolbar class="admin-toolbar">
+  <div class="toolbar-content">
+    <div class="nav-group">
+      <button mat-icon-button (click)="volver()" class="back-pill">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-meta">
+        <h1>Configuración</h1>
+        <span>Supletorios y rango de calificaciones</span>
+      </div>
+    </div>
+    <span class="flex-spacer"></span>
+  </div>
+</mat-toolbar>
+
+@if (loading) {
+  <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+}
+
+@if (!loading) {
+  <div class="content">
+
+    <!-- SECCIÓN: SUPLETORIOS -->
+    <div class="config-card">
+      <div class="config-header">
+        <mat-icon>event_available</mat-icon>
+        <h2>Supletorios</h2>
+      </div>
+      <div class="config-body">
+        <mat-slide-toggle [(ngModel)]="supletorioHabilitado">
+          Habilitar supletorios para todos los cursos
+        </mat-slide-toggle>
+        <p class="hint">
+          Cuando está activo y la fecha actual está dentro del plazo, los docentes
+          pueden registrar notas de supletorio.
+        </p>
+
+        <div class="fechas">
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha de inicio</mat-label>
+            <input matInput type="date" [(ngModel)]="supletorioInicio">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha de fin</mat-label>
+            <input matInput type="date" [(ngModel)]="supletorioFin">
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: RANGO DE NOTAS -->
+    <div class="config-card">
+      <div class="config-header">
+        <mat-icon>tune</mat-icon>
+        <h2>Rango de calificaciones</h2>
+      </div>
+      <div class="config-body">
+        <div class="notas-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nota mínima</mat-label>
+            <input matInput type="number" step="0.1" [(ngModel)]="notaMinima">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Nota máxima</mat-label>
+            <input matInput type="number" step="0.1" [(ngModel)]="notaMaxima">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Nota para aprobar</mat-label>
+            <input matInput type="number" step="0.1" [(ngModel)]="notaAprobacion">
+          </mat-form-field>
+        </div>
+        <p class="hint">
+          Estos valores se aplican al registrar notas y al calcular aprobados en los reportes.
+        </p>
+      </div>
+    </div>
+
+    <div class="acciones">
+      <button mat-flat-button color="primary" (click)="guardar()" [disabled]="guardando">
+        <mat-icon>save</mat-icon>
+        {{ guardando ? 'Guardando...' : 'Guardar configuración' }}
+      </button>
+    </div>
+
+    <!-- SECCIÓN: PERMISO INDIVIDUAL (RECLAMO) -->
+    <div class="config-card">
+      <div class="config-header">
+        <mat-icon>how_to_reg</mat-icon>
+        <h2>Habilitar supletorio por reclamo</h2>
+      </div>
+      <div class="config-body">
+        <p class="hint">
+          Permite que un estudiante rinda supletorio fuera del plazo general (caso de
+          oficio/reclamo). Solo aplica a ese estudiante y hasta la fecha indicada.
+        </p>
+
+        <div class="buscador">
+          <mat-form-field appearance="outline" class="grow">
+            <mat-label>Buscar estudiante (nombre, apellido o cédula)</mat-label>
+            <input matInput [(ngModel)]="busqueda" (keyup.enter)="buscar()">
+          </mat-form-field>
+          <button mat-flat-button color="primary" (click)="buscar()" [disabled]="buscando">
+            <mat-icon>search</mat-icon> Buscar
+          </button>
+        </div>
+
+        @if (resultados.length > 0) {
+          <div class="resultados">
+            @for (m of resultados; track m.id) {
+              <div class="resultado-item" [class.activo]="seleccionado?.id === m.id">
+                <div class="info">
+                  <strong>{{ m.apellidos }} {{ m.nombres }}</strong>
+                  <span>CI: {{ m.cedula }} — {{ m.curso?.ramaArtesanal }}</span>
+                  @if (m.supletorioHabilitadoHasta) {
+                    <span class="permiso-vigente">
+                      Permiso hasta {{ m.supletorioHabilitadoHasta | date:'dd/MM/yyyy' }}
+                    </span>
+                  }
+                </div>
+                <div class="item-actions">
+                  <button mat-stroked-button (click)="elegir(m)">Habilitar</button>
+                  @if (m.supletorioHabilitadoHasta) {
+                    <button mat-button color="warn" (click)="revocarPermiso(m)">Revocar</button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (seleccionado) {
+          <div class="permiso-form">
+            <h3>Permiso para {{ seleccionado.apellidos }} {{ seleccionado.nombres }}</h3>
+            <div class="permiso-campos">
+              <mat-form-field appearance="outline">
+                <mat-label>Habilitado hasta</mat-label>
+                <input matInput type="date" [(ngModel)]="permisoFecha">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="grow">
+                <mat-label>Motivo (oficio/reclamo)</mat-label>
+                <input matInput [(ngModel)]="permisoMotivo">
+              </mat-form-field>
+            </div>
+            <div class="permiso-acciones">
+              <button mat-flat-button color="primary" (click)="habilitarPermiso()">
+                <mat-icon>check</mat-icon> Confirmar permiso
+              </button>
+              <button mat-button (click)="seleccionado = null">Cancelar</button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+}

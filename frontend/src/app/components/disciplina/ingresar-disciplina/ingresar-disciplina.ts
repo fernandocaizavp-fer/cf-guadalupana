@@ -9,6 +9,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../../services/auth';
+import { ConfiguracionService } from '../../../services/configuracion';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
@@ -27,11 +28,14 @@ export class IngresarDisciplina implements OnInit {
   semestreSeleccionado = 1;
   loading = true;
   guardando = false;
+  notaMin = 0;
+  notaMax = 10;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
+    private configService: ConfiguracionService,
     private http: HttpClient,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
@@ -39,6 +43,9 @@ export class IngresarDisciplina implements OnInit {
 
   ngOnInit() {
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
+    this.configService.obtener().subscribe({
+      next: (c) => { this.notaMin = c.notaMinima; this.notaMax = c.notaMaxima; }
+    });
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.authService.getToken()}`
     });

@@ -83,6 +83,11 @@ model Matricula {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
+  // Permiso individual y temporal para rendir supletorio fuera del plazo general
+  // (caso de reclamo/oficio). Nullable: sin permiso si está en null.
+  supletorioHabilitadoHasta DateTime?
+  supletorioMotivo          String?   @db.VarChar(200)
+
   cursoId   Int
   curso     Curso   @relation(fields: [cursoId], references: [id])
   usuarioId Int     @unique
@@ -278,4 +283,21 @@ model RecuperacionPassword {
   expira    DateTime
   usado     Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+// Configuración global del sistema (fila única, id = 1).
+// Todos los campos tienen valor por defecto para no alterar el comportamiento
+// actual si el administrador nunca la edita.
+model Configuracion {
+  id                   Int       @id @default(1)
+  // CAMBIO 1 — control de supletorios por el administrador
+  supletorioHabilitado Boolean   @default(false)
+  supletorioInicio     DateTime?
+  supletorioFin        DateTime?
+  // CAMBIO 2 — rango de notas configurable
+  notaMinima           Float     @default(0)
+  notaMaxima           Float     @default(10)
+  notaAprobacion       Float     @default(7)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }

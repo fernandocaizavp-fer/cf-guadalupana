@@ -9,6 +9,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../services/auth';
 import { TareaService } from '../../../services/tarea';
 import { SuplетorioService } from '../../../services/supletorio';
+import { ConfiguracionService } from '../../../services/configuracion';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
@@ -26,6 +27,11 @@ export class SupletorioDocente implements OnInit {
   guardando = false;
   usuario: any;
 
+  // Configuración (rango de notas y ventana de supletorios)
+  ventanaAbierta = false;
+  notaMin = 0;
+  notaMax = 10;
+
   // supletorios[matriculaId] = valor
   supletorios: { [key: number]: string } = {};
 
@@ -35,6 +41,7 @@ export class SupletorioDocente implements OnInit {
     private authService: AuthService,
     private tareaService: TareaService,
     private suplетorioService: SuplетorioService,
+    private configService: ConfiguracionService,
     private http: HttpClient,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
@@ -44,7 +51,24 @@ export class SupletorioDocente implements OnInit {
 
   ngOnInit() {
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
-    this.cargarDatos();
+    // Primero la configuración; luego los datos del curso.
+    this.configService.obtener().subscribe({
+      next: (c) => {
+        this.notaMin = c.notaMinima;
+        this.notaMax = c.notaMaxima;
+        this.ventanaAbierta = this.calcularVentana(c);
+        this.cargarDatos();
+      },
+      error: () => this.cargarDatos()
+    });
+  }
+
+  private calcularVentana(c: any): boolean {
+    if (!c?.supletorioHabilitado) return false;
+    const ahora = new Date();
+    if (c.supletorioInicio && ahora < new Date(c.supletorioInicio)) return false;
+    if (c.supletorioFin && ahora > new Date(c.supletorioFin)) return false;
+    return true;
   }
 
   cargarDatos() {
@@ -88,8 +112,12 @@ export class SupletorioDocente implements OnInit {
                   ? (promedioS1 + promedioS2) / 2
                   : null;
 
-                // Habilitar supletorio si suma < 7
-                const habilitarSup = suma !== null && suma < 7;
+                // Habilitar supletorio según el control del administrador:
+                // ventana general abierta, o permiso individual vigente para este estudiante.
+                const ahora = new Date();
+                const permisoIndividual = !!m.supletorioHabilitadoHasta &&
+                  new Date(m.supletorioHabilitadoHasta) >= ahora;
+                const habilitarSup = this.ventanaAbierta || permisoIndividual;
 
                 this.supletorios[m.id] = '';
 

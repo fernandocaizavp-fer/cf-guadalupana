@@ -16,6 +16,7 @@ import disciplinaRoutes from './routes/disciplina.routes';
 import reporteRoutes from './routes/reporte.routes';
 import examenGradoRoutes from './routes/examen-grado.routes';
 import cedulaRoutes from './routes/cedula.routes';
+import configuracionRoutes from './routes/configuracion.routes';
 import { defensaDoS } from './middlewares/defensa.middleware';
 
 
@@ -45,6 +46,7 @@ app.use('/api/disciplina', disciplinaRoutes);
 app.use('/api/reportes', reporteRoutes);
 app.use('/api/examen-grado', examenGradoRoutes);
 app.use('/api/cedula', cedulaRoutes);
+app.use('/api/configuracion', configuracionRoutes);
 
 
 

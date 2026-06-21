@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { ExamenGradoService } from '../../../services/examen-grado';
+import { ConfiguracionService } from '../../../services/configuracion';
 
 @Component({
   selector: 'app-ingresar-examen-grado',
@@ -22,17 +23,23 @@ export class IngresarExamenGrado implements OnInit {
   loading = true;
   guardando = false;
   materiaId!: number;
+  notaMin = 0;
+  notaMax = 10;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private examenGradoService: ExamenGradoService,
+    private configService: ConfiguracionService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
+    this.configService.obtener().subscribe({
+      next: (c) => { this.notaMin = c.notaMinima; this.notaMax = c.notaMaxima; }
+    });
     this.cargarEstudiantes();
   }
 

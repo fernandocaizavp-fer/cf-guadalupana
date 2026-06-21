@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CursoService } from '../../../services/curso';
 import { TareaService } from '../../../services/tarea';
+import { ConfiguracionService } from '../../../services/configuracion';
 import { Title } from '@angular/platform-browser';
 
 
@@ -27,6 +28,8 @@ export class NotasTarea implements OnInit {
   matriculas: any[] = [];
   loading = true;
   guardando = false;
+  notaMin = 0;
+  notaMax = 10;
 
   // notas[matriculaId] = { valor, observacion }
   notas: { [key: number]: { valor: string, observacion: string } } = {};
@@ -36,6 +39,7 @@ export class NotasTarea implements OnInit {
     private router: Router,
     private tareaService: TareaService,
     private cursoService: CursoService,
+    private configService: ConfiguracionService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
     private titleService: Title
@@ -45,6 +49,9 @@ export class NotasTarea implements OnInit {
     this.titleService.setTitle('Calificaciones');
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
     this.tareaId = Number(this.route.snapshot.paramMap.get('tareaId'));
+    this.configService.obtener().subscribe({
+      next: (c) => { this.notaMin = c.notaMinima; this.notaMax = c.notaMaxima; }
+    });
     this.cargarDatos();
   }
 
@@ -97,9 +104,9 @@ export class NotasTarea implements OnInit {
         this.snackBar.open('Notas guardadas exitosamente', 'OK', { duration: 3000 });
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (e) => {
         this.guardando = false;
-        this.snackBar.open('Error al guardar notas', 'OK', { duration: 3000 });
+        this.snackBar.open(e?.error?.error || 'Error al guardar notas', 'OK', { duration: 3000 });
         this.cdr.detectChanges();
       }
     });

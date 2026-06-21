@@ -25,6 +25,7 @@ import { Documentos } from './components/documentos/documentos/documentos';
 import { IngresarExamenGrado } from './components/examen-grado/ingresar-examen-grado/ingresar-examen-grado';
 import { CambiarPassword } from './components/cambiar-password/cambiar-password';
 import { RecuperarPassword } from './components/recuperar-password/recuperar-password';
+import { ConfiguracionComponent } from './components/configuracion/configuracion';
 
 
 
@@ -53,6 +54,7 @@ export const routes: Routes = [
   { path: 'disciplina/materia/:materiaId', component: IngresarDisciplina, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
   { path: 'documentos', component: Documentos, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'examen-grado/:materiaId', component: IngresarExamenGrado, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
+  { path: 'configuracion', component: ConfiguracionComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'cambiar-password', component: CambiarPassword, canActivate: [AuthGuard] },
   { path: 'recuperar-password', component: RecuperarPassword },
   

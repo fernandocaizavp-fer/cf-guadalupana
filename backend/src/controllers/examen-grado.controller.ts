@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaAnual } from '../lib/disciplina';
+import { getConfiguracion, primeraNotaFueraDeRango } from '../lib/configuracion';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -55,6 +56,16 @@ export const getEstudiantesExamenGrado = async (req: Request, res: Response) => 
 export const guardarExamenesGrado = async (req: Request, res: Response) => {
   const { notas } = req.body;
   try {
+    const config = await getConfiguracion();
+    const fuera = primeraNotaFueraDeRango(
+      notas.map((n: any) => (n.valor !== '' && n.valor !== null ? Number(n.valor) : null)),
+      config
+    );
+    if (fuera !== null) {
+      return res.status(400).json({
+        error: `La nota ${fuera} está fuera del rango permitido (${config.notaMinima} - ${config.notaMaxima})`
+      });
+    }
     const resultados = await Promise.all(
       notas.map((n: any) =>
         prisma.examenGrado.upsert({

@@ -58,8 +58,8 @@
               <td class="td-nota">
                 <input
                   type="number"
-                  min="0"
-                  max="10"
+                  [min]="notaMin"
+                  [max]="notaMax"
                   step="0.1"
                   class="nota-input"
                   [(ngModel)]="notas[matricula.id].valor"

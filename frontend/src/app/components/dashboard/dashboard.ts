@@ -26,7 +26,11 @@ export class Dashboard {
   irAReportes() {
     this.router.navigate(['/reportes']);
   }
-  
+
+  irAConfiguracion() {
+    this.router.navigate(['/configuracion']);
+  }
+
   irACursos() {
     this.router.navigate(['/cursos']);
   }

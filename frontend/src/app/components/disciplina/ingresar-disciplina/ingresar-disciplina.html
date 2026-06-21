@@ -67,7 +67,7 @@
             <span class="col-nota">
               <input type="number" class="nota-input"
                 [(ngModel)]="notas[matricula.id]"
-                min="0" max="10" step="0.1"
+                [min]="notaMin" [max]="notaMax" step="0.1"
                 placeholder="—">
             </span>
           </div>

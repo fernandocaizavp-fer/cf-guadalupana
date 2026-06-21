@@ -1,10 +1,17 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaPonderada, calcularDisciplinaAnual } from '../lib/disciplina';
+import { getConfiguracion, notaEnRango, primeraNotaFueraDeRango } from '../lib/configuracion';
 
 export const guardarNotaDisciplina = async (req: Request, res: Response) => {
   const { matriculaId, materiaId, valor, semestre } = req.body;
   try {
+    const config = await getConfiguracion();
+    if (valor !== null && valor !== '' && !notaEnRango(Number(valor), config)) {
+      return res.status(400).json({
+        error: `La nota debe estar entre ${config.notaMinima} y ${config.notaMaxima}`
+      });
+    }
     const nota = await prisma.notaDisciplina.upsert({
       where: {
         matriculaId_materiaId_semestre: {
@@ -30,6 +37,16 @@ export const guardarNotaDisciplina = async (req: Request, res: Response) => {
 export const guardarNotasDisciplinaMasivo = async (req: Request, res: Response) => {
   const { notas, semestre } = req.body;
   try {
+    const config = await getConfiguracion();
+    const fuera = primeraNotaFueraDeRango(
+      notas.map((n: any) => (n.valor !== '' && n.valor !== null ? Number(n.valor) : null)),
+      config
+    );
+    if (fuera !== null) {
+      return res.status(400).json({
+        error: `La nota ${fuera} está fuera del rango permitido (${config.notaMinima} - ${config.notaMaxima})`
+      });
+    }
     const resultados = await Promise.all(
       notas.map((n: any) =>
         prisma.notaDisciplina.upsert({

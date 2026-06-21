@@ -35,7 +35,11 @@
       <div class="info-icon">
         <mat-icon>tips_and_updates</mat-icon>
       </div>
-      <p>El supletorio se habilita únicamente cuando la suma de promedios del estudiante es <strong>menor a 7</strong>. Las filas resaltadas indican estudiantes habilitados.</p>
+      @if (ventanaAbierta) {
+        <p>El plazo de supletorios está <strong>abierto</strong>. Puedes registrar las notas de los estudiantes habilitados.</p>
+      } @else {
+        <p>El plazo general de supletorios está <strong>cerrado</strong>. Solo podrás registrar notas de estudiantes con un permiso individual vigente (habilitado por administración).</p>
+      }
     </div>
 
     <div class="results-container">
@@ -82,12 +86,12 @@
                 </td>
                 <td class="col-sup">
                   @if (est.habilitarSup) {
-                    <input type="number" min="0" max="10" step="0.1"
+                    <input type="number" [min]="notaMin" [max]="notaMax" step="0.1"
                       class="nota-input"
                       [(ngModel)]="supletorios[est.id]"
                       placeholder="—">
                   } @else {
-                    <span class="no-sup">No aplica</span>
+                    <span class="no-sup">No habilitado</span>
                   }
                 </td>
                 <td class="col-final">
