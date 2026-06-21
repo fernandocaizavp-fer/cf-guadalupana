@@ -97,8 +97,13 @@ $warning: #f59e0b;
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   transition: all 0.3s;
   animation: slideIn 0.4s ease backwards;
+  cursor: pointer;
 
-  &:hover { transform: translateX(5px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+  &:hover {
+    transform: translateX(5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    .abrir-arrow { color: $gold; transform: translateX(2px); }
+  }
 
   .card-status-bar {
     width: 5px;
@@ -131,6 +136,31 @@ $warning: #f59e0b;
     font-size: 12px; color: #b45309; font-style: italic;
     mat-icon { font-size: 14px; width: 14px; height: 14px; }
   }
+}
+
+.card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.mini-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 3px 9px;
+  border-radius: 20px;
+  mat-icon { font-size: 14px; width: 14px; height: 14px; color: #94a3b8; }
+}
+
+.abrir-arrow {
+  color: #cbd5e1;
+  transition: all 0.2s;
+  align-self: center;
 }
 
 .card-score {
