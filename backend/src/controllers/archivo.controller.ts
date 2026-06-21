@@ -3,6 +3,12 @@ import prisma from '../lib/prisma';
 import { subirArchivo, eliminarArchivo } from '../lib/cloudinary';
 import { validarTamano } from '../middlewares/upload.middleware';
 
+// Multer decodifica el nombre del archivo como latin1; lo reinterpretamos como
+// UTF-8 para conservar bien las tildes y la ñ (p. ej. "rúbrica evaluación").
+function nombreUtf8(nombre: string): string {
+  return Buffer.from(nombre, 'latin1').toString('utf8');
+}
+
 // Busca la matrícula del usuario autenticado (estudiante).
 async function matriculaDelUsuario(req: any) {
   if (!req.usuario?.id) return null;
@@ -22,13 +28,14 @@ export const subirArchivosTarea = async (req: Request, res: Response) => {
   try {
     const creados = [];
     for (const archivo of archivos) {
-      const subido = await subirArchivo(archivo.buffer, archivo.originalname);
+      const nombre = nombreUtf8(archivo.originalname);
+      const subido = await subirArchivo(archivo.buffer, nombre);
       const fila = await prisma.archivoTarea.create({
         data: {
           url: subido.url,
           publicId: subido.publicId,
           resourceType: subido.resourceType,
-          nombreOriginal: archivo.originalname,
+          nombreOriginal: nombre,
           tipo: archivo.mimetype,
           tamano: archivo.size,
           tareaId: Number(tareaId)
@@ -79,13 +86,14 @@ export const subirEntrega = async (req: any, res: Response) => {
 
     const creados = [];
     for (const archivo of archivos) {
-      const subido = await subirArchivo(archivo.buffer, archivo.originalname);
+      const nombre = nombreUtf8(archivo.originalname);
+      const subido = await subirArchivo(archivo.buffer, nombre);
       const fila = await prisma.archivoEntrega.create({
         data: {
           url: subido.url,
           publicId: subido.publicId,
           resourceType: subido.resourceType,
-          nombreOriginal: archivo.originalname,
+          nombreOriginal: nombre,
           tipo: archivo.mimetype,
           tamano: archivo.size,
           entregaId: entrega.id

@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,10 +8,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
 import { TareaService } from '../../../services/tarea';
+import { CursoService } from '../../../services/curso';
+import { ConfiguracionService } from '../../../services/configuracion';
 
 @Component({
   selector: 'app-detalle-tarea',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule,
+  imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, MatSnackBarModule, DatePipe],
   templateUrl: './detalle-tarea.html',
   styleUrl: './detalle-tarea.scss'
@@ -19,9 +22,13 @@ export class DetalleTarea implements OnInit {
   materiaId = 0;
   tareaId = 0;
   tarea: any = null;
-  entregas: any[] = [];
+  estudiantes: any[] = [];
+  notas: { [key: number]: { valor: string; observacion: string } } = {};
   loading = true;
   subiendo = false;
+  guardando = false;
+  notaMin = 0;
+  notaMax = 10;
 
   private readonly MAX_BYTES = 10 * 1024 * 1024;
 
@@ -29,6 +36,8 @@ export class DetalleTarea implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private tareaService: TareaService,
+    private cursoService: CursoService,
+    private configService: ConfiguracionService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
   ) {}
@@ -36,6 +45,9 @@ export class DetalleTarea implements OnInit {
   ngOnInit() {
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
     this.tareaId = Number(this.route.snapshot.paramMap.get('tareaId'));
+    this.configService.obtener().subscribe({
+      next: (c) => { this.notaMin = c.notaMinima; this.notaMax = c.notaMaxima; }
+    });
     this.cargar();
   }
 
@@ -44,26 +56,68 @@ export class DetalleTarea implements OnInit {
     this.tareaService.getTareasPorMateria(this.materiaId).subscribe({
       next: (tareas) => {
         this.tarea = tareas.find((t: any) => t.id === this.tareaId) || null;
-        this.cargarEntregas();
-        this.loading = false;
+        const cursoId = this.tarea?.materia?.curso?.id || this.tarea?.materia?.cursoId;
+        if (cursoId) {
+          this.cargarEstudiantes(cursoId);
+        } else {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  private cargarEstudiantes(cursoId: number) {
+    // Estudiantes del curso + entregas de la tarea (para mostrar y calificar juntos)
+    this.cursoService.obtenerCurso(cursoId).subscribe({
+      next: (curso) => {
+        const matriculas = curso.matriculas || [];
+        this.tareaService.getEntregasTarea(this.tareaId).subscribe({
+          next: (entregas) => {
+            const mapaEntregas = new Map<number, any>(entregas.map((e: any) => [e.matriculaId, e]));
+            this.estudiantes = matriculas.map((m: any) => {
+              const notaExistente = this.tarea.notas?.find((n: any) => n.matriculaId === m.id);
+              this.notas[m.id] = {
+                valor: notaExistente?.valor !== null && notaExistente?.valor !== undefined
+                  ? String(notaExistente.valor) : '',
+                observacion: notaExistente?.observacion || ''
+              };
+              return { ...m, entrega: mapaEntregas.get(m.id) || null };
+            });
+            this.loading = false;
+            this.cdr.detectChanges();
+          },
+          error: () => { this.loading = false; this.cdr.detectChanges(); }
+        });
+      },
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  guardarCalificaciones() {
+    this.guardando = true;
+    const notasArray = this.estudiantes.map(e => ({
+      tareaId: this.tareaId,
+      matriculaId: e.id,
+      valor: this.notas[e.id]?.valor !== '' ? this.notas[e.id]?.valor : null,
+      observacion: this.notas[e.id]?.observacion || null
+    }));
+    this.tareaService.guardarNotas(notasArray).subscribe({
+      next: () => {
+        this.guardando = false;
+        this.snackBar.open('Calificaciones guardadas', 'OK', { duration: 2500 });
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.loading = false;
+      error: (e) => {
+        this.guardando = false;
+        this.snackBar.open(e?.error?.error || 'Error al guardar calificaciones', 'OK', { duration: 4000 });
         this.cdr.detectChanges();
       }
     });
   }
 
-  private cargarEntregas() {
-    this.tareaService.getEntregasTarea(this.tareaId).subscribe({
-      next: (entregas) => {
-        this.entregas = entregas;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
+  // ---------- Documentos de la tarea ----------
   onArchivosSeleccionados(event: Event) {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
@@ -103,10 +157,6 @@ export class DetalleTarea implements OnInit {
       },
       error: () => this.snackBar.open('Error al eliminar archivo', 'OK', { duration: 3000 })
     });
-  }
-
-  calificar() {
-    this.router.navigate(['/tareas', this.materiaId, 'notas', this.tareaId]);
   }
 
   volver() {

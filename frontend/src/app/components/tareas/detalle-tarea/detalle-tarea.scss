@@ -222,3 +222,94 @@ $border: #e2e8f0;
 
   .entrega-comentario { font-size: 12px; color: #64748b; margin: 0 0 8px; }
 }
+
+/* Tabla de estudiantes: calificar + entregas */
+.guardar-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: $navy;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: filter 0.2s;
+  &:hover { filter: brightness(1.1); }
+  &:disabled { opacity: 0.6; cursor: default; }
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+}
+
+.alumnos-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.alumno-row {
+  display: grid;
+  grid-template-columns: 1.6fr 2fr 80px 1.6fr;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 8px;
+  border-bottom: 1px solid #f1f5f9;
+
+  &.alumno-head {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+    border-bottom: 2px solid #eef0f5;
+  }
+
+  .col-nombre { font-weight: 600; color: $navy; font-size: 14px; }
+}
+
+.entrega-files { display: flex; flex-direction: column; gap: 4px; }
+
+.entrega-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  color: #334155;
+  font-size: 12px;
+  &:hover { color: $navy; }
+  mat-icon { font-size: 15px; width: 15px; height: 15px; color: #94a3b8; }
+  .file-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+}
+
+.sin-entrega { font-size: 12px; color: #cbd5e1; font-style: italic; }
+
+.nota-input {
+  width: 64px;
+  text-align: center;
+  padding: 8px 6px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: $navy;
+  outline: none;
+  &:focus { border-color: $gold; }
+}
+
+.obs-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  &:focus { border-color: $gold; }
+}
+
+@media (max-width: 760px) {
+  .alumno-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    &.alumno-head { display: none; }
+  }
+}

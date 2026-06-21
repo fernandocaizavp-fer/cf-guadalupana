@@ -10,8 +10,8 @@
       </div>
     </div>
     <span class="flex-spacer"></span>
-    <button class="calificar-top" (click)="calificar()">
-      <mat-icon>grade</mat-icon> Calificar
+    <button class="calificar-top" (click)="guardarCalificaciones()" [disabled]="guardando">
+      <mat-icon>save</mat-icon> {{ guardando ? 'Guardando...' : 'Guardar calificaciones' }}
     </button>
   </div>
 </mat-toolbar>
@@ -45,8 +45,8 @@
         <div class="info-dato">
           <mat-icon>group</mat-icon>
           <div>
-            <span class="dato-label">Entregas</span>
-            <span class="dato-valor">{{ entregas.length }}</span>
+            <span class="dato-label">Estudiantes</span>
+            <span class="dato-valor">{{ estudiantes.length }}</span>
           </div>
         </div>
       </div>
@@ -82,36 +82,52 @@
       }
     </div>
 
-    <!-- ENTREGAS DE LOS ESTUDIANTES -->
+    <!-- ESTUDIANTES: CALIFICAR + ENTREGAS -->
     <div class="panel">
       <div class="panel-head">
-        <div class="panel-title"><mat-icon>inbox</mat-icon> Entregas de los estudiantes</div>
+        <div class="panel-title"><mat-icon>grading</mat-icon> Estudiantes</div>
+        <button class="guardar-inline" (click)="guardarCalificaciones()" [disabled]="guardando">
+          <mat-icon>save</mat-icon> {{ guardando ? 'Guardando...' : 'Guardar' }}
+        </button>
       </div>
 
-      @if (entregas.length > 0) {
-        <div class="entregas-grid">
-          @for (e of entregas; track e.id) {
-            <div class="entrega-card">
-              <div class="entrega-alumno">
-                <mat-icon>person</mat-icon>
-                <span>{{ e.matricula?.apellidos }} {{ e.matricula?.nombres }}</span>
-              </div>
-              @if (e.comentario) {
-                <p class="entrega-comentario">{{ e.comentario }}</p>
-              }
-              <div class="files-grid">
-                @for (a of e.archivos; track a.id) {
-                  <a [href]="a.url" target="_blank" rel="noopener" class="file-chip file-link">
-                    <mat-icon>insert_drive_file</mat-icon>
-                    <span class="file-name">{{ a.nombreOriginal }}</span>
-                  </a>
+      @if (estudiantes.length > 0) {
+        <div class="alumnos-table">
+          <div class="alumno-row alumno-head">
+            <span class="col-nombre">Estudiante</span>
+            <span class="col-entrega">Entrega</span>
+            <span class="col-nota">Nota</span>
+            <span class="col-obs">Observación</span>
+          </div>
+          @for (e of estudiantes; track e.id) {
+            <div class="alumno-row">
+              <span class="col-nombre">{{ e.apellidos }} {{ e.nombres }}</span>
+              <span class="col-entrega">
+                @if (e.entrega?.archivos?.length > 0) {
+                  <div class="entrega-files">
+                    @for (a of e.entrega.archivos; track a.id) {
+                      <a [href]="a.url" target="_blank" rel="noopener" class="entrega-file">
+                        <mat-icon>insert_drive_file</mat-icon>
+                        <span class="file-name">{{ a.nombreOriginal }}</span>
+                      </a>
+                    }
+                  </div>
+                } @else {
+                  <span class="sin-entrega">Sin entrega</span>
                 }
-              </div>
+              </span>
+              <span class="col-nota">
+                <input type="number" [min]="notaMin" [max]="notaMax" step="0.1"
+                  class="nota-input" [(ngModel)]="notas[e.id].valor" placeholder="—">
+              </span>
+              <span class="col-obs">
+                <input type="text" class="obs-input" [(ngModel)]="notas[e.id].observacion" placeholder="Opcional">
+              </span>
             </div>
           }
         </div>
       } @else {
-        <p class="vacio">Ningún estudiante ha subido su entrega todavía.</p>
+        <p class="vacio">No hay estudiantes matriculados en este curso.</p>
       }
     </div>
 
