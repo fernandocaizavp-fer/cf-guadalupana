@@ -59,14 +59,6 @@
         </div>
         <div class="row-grid-4">
           <mat-form-field appearance="outline">
-            <mat-label>Apellidos</mat-label>
-            <input matInput [(ngModel)]="datos.apellidos">
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Nombres</mat-label>
-            <input matInput [(ngModel)]="datos.nombres">
-          </mat-form-field>
-          <mat-form-field appearance="outline">
             <mat-label>Cédula / Pasaporte</mat-label>
             <input matInput [(ngModel)]="datos.cedula" (blur)="buscarPorCedula()" maxlength="10">
             @if (consultandoCedula) {
@@ -74,6 +66,14 @@
             } @else {
               <mat-icon matSuffix>badge</mat-icon>
             }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Apellidos</mat-label>
+            <input matInput [(ngModel)]="datos.apellidos">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Nombres</mat-label>
+            <input matInput [(ngModel)]="datos.nombres">
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Sexo</mat-label>
