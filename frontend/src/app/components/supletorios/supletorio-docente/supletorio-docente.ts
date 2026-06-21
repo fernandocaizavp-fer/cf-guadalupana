@@ -63,17 +63,25 @@ export class SupletorioDocente implements OnInit {
     });
   }
 
-  // La fecha de fin es inclusiva: se suma un día para cubrir todo ese día.
+  // Comparación por día calendario, anclada a Ecuador (UTC-5), ambos extremos
+  // inclusivos. Evita cortes por hora/zona horaria.
+  private hoyEcuador(): string {
+    return new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString().substring(0, 10);
+  }
+  private diaGuardado(fecha: any): string {
+    return new Date(fecha).toISOString().substring(0, 10);
+  }
+
   private vigenteHasta(fecha: any): boolean {
     if (!fecha) return false;
-    return Date.now() < new Date(fecha).getTime() + 24 * 60 * 60 * 1000;
+    return this.hoyEcuador() <= this.diaGuardado(fecha);
   }
 
   private calcularVentana(c: any): boolean {
     if (!c?.supletorioInicio && !c?.supletorioFin) return false;
-    const ahora = new Date();
-    if (c.supletorioInicio && ahora < new Date(c.supletorioInicio)) return false;
-    if (c.supletorioFin && !this.vigenteHasta(c.supletorioFin)) return false;
+    const hoy = this.hoyEcuador();
+    if (c.supletorioInicio && hoy < this.diaGuardado(c.supletorioInicio)) return false;
+    if (c.supletorioFin && hoy > this.diaGuardado(c.supletorioFin)) return false;
     return true;
   }
 

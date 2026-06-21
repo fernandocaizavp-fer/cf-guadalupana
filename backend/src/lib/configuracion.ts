@@ -35,30 +35,43 @@ export function primeraNotaFueraDeRango(
   return null;
 }
 
-const UN_DIA_MS = 24 * 60 * 60 * 1000;
+// Ecuador no tiene horario de verano: zona fija UTC-5.
+const ECUADOR_OFFSET_MS = 5 * 60 * 60 * 1000;
 
-/**
- * True si la fecha actual no ha pasado el final del día de `hasta`.
- * Se suma un día para que la fecha límite sea INCLUSIVA: "hasta el 3" cubre
- * todo el día 3 (hasta las 00:00 del día 4).
- */
-export function vigenteHasta(hasta: Date | null | undefined): boolean {
-  if (!hasta) return false;
-  return Date.now() < new Date(hasta).getTime() + UN_DIA_MS;
+// Día calendario (YYYY-MM-DD) de hoy en hora de Ecuador.
+function hoyEcuador(): string {
+  return new Date(Date.now() - ECUADOR_OFFSET_MS).toISOString().substring(0, 10);
+}
+
+// Día calendario (YYYY-MM-DD) de una fecha guardada. Las fechas de la
+// configuración se guardan como medianoche UTC del día elegido, así que su
+// porción de día es directa (sin desplazar por zona horaria).
+function diaGuardado(d: Date | string): string {
+  return new Date(d).toISOString().substring(0, 10);
 }
 
 /**
- * Indica si la ventana general de supletorios está abierta ahora mismo,
- * controlada SOLO por las fechas. Sin un período definido (ambas fechas en
- * null) se considera cerrada. La fecha de fin es inclusiva (todo ese día).
+ * True si hoy (Ecuador) es igual o anterior al día `hasta` (INCLUSIVO):
+ * "hasta el 3" cubre todo el día 3. La comparación es por día calendario,
+ * no por hora, para evitar cortes por zona horaria.
+ */
+export function vigenteHasta(hasta: Date | null | undefined): boolean {
+  if (!hasta) return false;
+  return hoyEcuador() <= diaGuardado(hasta);
+}
+
+/**
+ * Indica si la ventana general de supletorios está abierta hoy, controlada
+ * SOLO por las fechas (comparación por día calendario, ambos extremos
+ * inclusivos). Sin período definido (ambas fechas en null) se considera cerrada.
  */
 export function ventanaSupletorioAbierta(config: {
   supletorioInicio: Date | null;
   supletorioFin: Date | null;
 }): boolean {
   if (!config.supletorioInicio && !config.supletorioFin) return false;
-  const ahora = new Date();
-  if (config.supletorioInicio && ahora < config.supletorioInicio) return false;
-  if (config.supletorioFin && !vigenteHasta(config.supletorioFin)) return false;
+  const hoy = hoyEcuador();
+  if (config.supletorioInicio && hoy < diaGuardado(config.supletorioInicio)) return false;
+  if (config.supletorioFin && hoy > diaGuardado(config.supletorioFin)) return false;
   return true;
 }
