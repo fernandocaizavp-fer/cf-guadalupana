@@ -103,6 +103,7 @@ model Matricula {
   notasDisciplina       NotaDisciplina[]
   examenesGrado         ExamenGrado[]
   observacionAsistencia ObservacionAsistencia?
+  entregasTarea         EntregaTarea[]
 }
 
 model DatosPersonalesMatricula {
@@ -180,7 +181,9 @@ model Tarea {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  notas NotaTarea[]
+  notas    NotaTarea[]
+  archivos ArchivoTarea[]
+  entregas EntregaTarea[]
 }
 
 model Supletorio {
@@ -300,4 +303,47 @@ model Configuracion {
   notaAprobacion       Float     @default(7)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
+}
+
+// Archivos que el docente adjunta a una tarea (almacenados en Cloudinary).
+model ArchivoTarea {
+  id             Int      @id @default(autoincrement())
+  url            String   @db.VarChar(500)
+  publicId       String   @db.VarChar(255)
+  resourceType   String?  @db.VarChar(20)
+  nombreOriginal String   @db.VarChar(255)
+  tipo           String?  @db.VarChar(120)
+  tamano         Int?
+  tareaId        Int
+  tarea          Tarea    @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+}
+
+// Entrega de un estudiante para una tarea (cabecera). Una por tarea+matrícula.
+model EntregaTarea {
+  id          Int              @id @default(autoincrement())
+  comentario  String?          @db.VarChar(500)
+  tareaId     Int
+  tarea       Tarea            @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  matriculaId Int
+  matricula   Matricula        @relation(fields: [matriculaId], references: [id], onDelete: Cascade)
+  archivos    ArchivoEntrega[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([tareaId, matriculaId])
+}
+
+// Archivos de una entrega del estudiante (almacenados en Cloudinary).
+model ArchivoEntrega {
+  id             Int          @id @default(autoincrement())
+  url            String       @db.VarChar(500)
+  publicId       String       @db.VarChar(255)
+  resourceType   String?      @db.VarChar(20)
+  nombreOriginal String       @db.VarChar(255)
+  tipo           String?      @db.VarChar(120)
+  tamano         Int?
+  entregaId      Int
+  entrega        EntregaTarea @relation(fields: [entregaId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
 }

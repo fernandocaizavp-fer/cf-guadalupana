@@ -114,7 +114,7 @@
             @for (anuncio of anuncios; track anuncio.id) {
               <div class="anuncio-card">
                 @if (anuncio.imagen) {
-                  <img [src]="'https://cf-guadalupana-production.up.railway.app' + anuncio.imagen"
+                  <img [src]="urlImagen(anuncio.imagen)"
                     alt="{{ anuncio.titulo }}" class="anuncio-img">
                 }
                 <div class="anuncio-body">

@@ -26,6 +26,7 @@ import { IngresarExamenGrado } from './components/examen-grado/ingresar-examen-g
 import { CambiarPassword } from './components/cambiar-password/cambiar-password';
 import { RecuperarPassword } from './components/recuperar-password/recuperar-password';
 import { ConfiguracionComponent } from './components/configuracion/configuracion';
+import { DetalleTarea } from './components/tareas/detalle-tarea/detalle-tarea';
 
 
 
@@ -43,6 +44,7 @@ export const routes: Routes = [
   { path: 'estudiante', component: DashboardEstudiante, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
   { path: 'tareas/:materiaId', component: GestionarTareas, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
   { path: 'tareas/:materiaId/notas/:tareaId', component: NotasTarea, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
+  { path: 'tareas/:materiaId/detalle/:tareaId', component: DetalleTarea, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'PROFESOR'] } },
   { path: 'docentes', component: GestionDocentes, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'estudiante/materia/:materiaId/:semestre', component: DetalleMateria, canActivate: [AuthGuard], data: { roles: ['ESTUDIANTE'] } },
   { path: 'supletorios/:cursoId', component: IngresarSupletorios, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },

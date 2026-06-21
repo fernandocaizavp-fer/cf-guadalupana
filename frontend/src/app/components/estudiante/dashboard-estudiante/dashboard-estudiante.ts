@@ -30,6 +30,13 @@ export class DashboardEstudiante implements OnInit {
   anuncios: any[] = [];
   etiquetaAutor = etiquetaAutorAnuncio;
 
+  urlImagen(imagen: string): string {
+    if (!imagen) return '';
+    return imagen.startsWith('http')
+      ? imagen
+      : `https://cf-guadalupana-production.up.railway.app${imagen}`;
+  }
+
   constructor(
     private authService: AuthService,
     private router: Router,

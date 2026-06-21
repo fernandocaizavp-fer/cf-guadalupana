@@ -1,25 +1,13 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import path from 'path';
-import fs from 'fs';
 import multer from 'multer';
+import { subirArchivo } from '../lib/cloudinary';
 
-// Configurar multer para subir imágenes
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(process.cwd(), 'uploads', 'anuncios');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `anuncio_${Date.now()}${ext}`);
-  }
-});
-
+// La imagen del anuncio se sube a Cloudinary (no a disco: Railway borra los
+// archivos en cada redeploy). Se guarda en memoria y luego se sube.
 export const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
     const tipos = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
     if (tipos.includes(file.mimetype)) cb(null, true);
@@ -29,8 +17,11 @@ export const upload = multer({
 
 export const crearAnuncio = async (req: any, res: Response) => {
   const { titulo, contenido } = req.body;
-  const imagen = req.file ? `/uploads/anuncios/${req.file.filename}` : null;
   try {
+    // Sube la imagen a Cloudinary y guarda la URL completa (permanente).
+    const imagen = req.file
+      ? (await subirArchivo(req.file.buffer, req.file.originalname, 'cf_guadalupana/anuncios')).url
+      : null;
     // El autor se deriva del usuario autenticado (token), no del body.
     // El JWT solo trae { id, rol }, por eso consultamos el nombre.
     const autorRol = req.usuario?.rol ?? null;
@@ -75,10 +66,11 @@ export const listarTodosAnuncios = async (req: Request, res: Response) => {
 export const actualizarAnuncio = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { titulo, contenido, activo } = req.body;
-  const imagen = req.file ? `/uploads/anuncios/${req.file.filename}` : undefined;
   try {
     const data: any = { titulo, contenido, activo: activo === 'true' || activo === true };
-    if (imagen) data.imagen = imagen;
+    if (req.file) {
+      data.imagen = (await subirArchivo(req.file.buffer, req.file.originalname, 'cf_guadalupana/anuncios')).url;
+    }
     const anuncio = await prisma.anuncio.update({
       where: { id: Number(id) },
       data

@@ -55,6 +55,28 @@
       </mat-form-field>
     </div>
 
+    <!-- DOCUMENTOS DE LA TAREA -->
+    <div class="form-archivos">
+      <label class="adjuntar-label">
+        <mat-icon>upload_file</mat-icon>
+        Adjuntar documentos (opcional)
+        <input type="file" multiple hidden (change)="onSeleccionArchivosForm($event)">
+      </label>
+      @if (archivosNuevos.length > 0) {
+        <div class="staged-files">
+          @for (f of archivosNuevos; track $index) {
+            <span class="staged-chip">
+              <mat-icon>description</mat-icon>
+              <span class="staged-name">{{ f.name }}</span>
+              <button type="button" (click)="quitarArchivoNuevo($index)" title="Quitar">
+                <mat-icon>close</mat-icon>
+              </button>
+            </span>
+          }
+        </div>
+      }
+    </div>
+
     <div class="card-footer">
       @if (editandoId) {
         <button mat-stroked-button class="cancelar-btn" (click)="cancelarEdicion()" [disabled]="guardando">
@@ -97,7 +119,7 @@
   @if (!loading && tareas.length > 0) {
     <div class="tareas-grid">
       @for (tarea of tareas; track tarea.id) {
-        <div class="tarea-card">
+        <div class="tarea-card" (click)="abrirTarea(tarea.id)">
 
           <div class="tarea-card-top">
             <div class="tarea-info">
@@ -117,20 +139,26 @@
           </div>
 
           <div class="tarea-footer">
-            <span class="estudiantes-count">
-              <mat-icon>people</mat-icon>
-              {{ tarea.notas?.length || 0 }} calificados
-            </span>
-            <div class="tarea-actions">
-              <button mat-flat-button class="calificar-btn" (click)="irANotas(tarea.id)">
-                <mat-icon>grade</mat-icon> Calificar
-              </button>
+            <div class="tarea-meta">
+              <span class="meta-chip">
+                <mat-icon>people</mat-icon>
+                {{ tarea.notas?.length || 0 }} calificados
+              </span>
+              @if (tarea.archivos?.length > 0) {
+                <span class="meta-chip">
+                  <mat-icon>attach_file</mat-icon>
+                  {{ tarea.archivos.length }} documento{{ tarea.archivos.length !== 1 ? 's' : '' }}
+                </span>
+              }
+            </div>
+            <div class="tarea-actions" (click)="$event.stopPropagation()">
               <button mat-icon-button class="edit-btn" (click)="editarTarea(tarea)" title="Editar tarea">
                 <mat-icon>edit</mat-icon>
               </button>
-              <button mat-icon-button class="delete-btn" (click)="eliminarTarea(tarea.id)">
+              <button mat-icon-button class="delete-btn" (click)="eliminarTarea(tarea.id)" title="Eliminar tarea">
                 <mat-icon>delete_outline</mat-icon>
               </button>
+              <mat-icon class="abrir-arrow">chevron_right</mat-icon>
             </div>
           </div>
 

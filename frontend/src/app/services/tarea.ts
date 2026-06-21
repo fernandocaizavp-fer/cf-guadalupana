@@ -61,4 +61,39 @@ export class TareaService {
       { headers: this.getHeaders(), responseType: 'blob' }
     );
   }
+
+  // ---------- Archivos adjuntos del docente ----------
+  subirArchivosTarea(tareaId: number, archivos: File[]): Observable<any> {
+    const form = new FormData();
+    archivos.forEach(a => form.append('archivos', a));
+    return this.http.post(`${this.apiUrl}/tareas/${tareaId}/archivos`, form, {
+      headers: this.getHeaders()
+    });
+  }
+
+  eliminarArchivoTarea(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/tareas/archivos/${id}`, { headers: this.getHeaders() });
+  }
+
+  getEntregasTarea(tareaId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/tareas/${tareaId}/entregas`, { headers: this.getHeaders() });
+  }
+
+  // ---------- Entregas del estudiante ----------
+  subirEntrega(tareaId: number, archivos: File[], comentario = ''): Observable<any> {
+    const form = new FormData();
+    archivos.forEach(a => form.append('archivos', a));
+    if (comentario) form.append('comentario', comentario);
+    return this.http.post(`${this.apiUrl}/tareas/${tareaId}/entregas`, form, {
+      headers: this.getHeaders()
+    });
+  }
+
+  getMiEntrega(tareaId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/tareas/${tareaId}/entregas/mias`, { headers: this.getHeaders() });
+  }
+
+  eliminarArchivoEntrega(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/tareas/entregas/archivos/${id}`, { headers: this.getHeaders() });
+  }
 }

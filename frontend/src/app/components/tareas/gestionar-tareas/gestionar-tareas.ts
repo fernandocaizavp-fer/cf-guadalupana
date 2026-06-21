@@ -124,10 +124,7 @@ export class GestionarTareas implements OnInit {
         fecha: this.nuevaTarea.fecha
       }).subscribe({
         next: () => {
-          this.snackBar.open('Tarea actualizada exitosamente', 'OK', { duration: 3000 });
-          this.cancelarEdicion();
-          this.guardando = false;
-          this.cargarTareas();
+          this.finalizarGuardado(this.editandoId!, 'Tarea actualizada exitosamente');
         },
         error: () => {
           this.guardando = false;
@@ -144,11 +141,8 @@ export class GestionarTareas implements OnInit {
       semestre: this.semestreSeleccionado,
       materiaId: this.materiaId
     }).subscribe({
-      next: () => {
-        this.snackBar.open('Tarea creada exitosamente', 'OK', { duration: 3000 });
-        this.nuevaTarea = { nombre: '', descripcion: '', fecha: '', semestre: 1 };
-        this.guardando = false;
-        this.cargarTareas();
+      next: (res: any) => {
+        this.finalizarGuardado(res.tarea.id, 'Tarea creada exitosamente');
       },
       error: () => {
         this.guardando = false;
@@ -173,6 +167,7 @@ export class GestionarTareas implements OnInit {
   cancelarEdicion() {
     this.editandoId = null;
     this.nuevaTarea = { nombre: '', descripcion: '', fecha: '', semestre: 1 };
+    this.archivosNuevos = [];
   }
 
   // Convierte una fecha ISO a 'yyyy-MM-dd' para el input type="date"
@@ -203,6 +198,53 @@ export class GestionarTareas implements OnInit {
     if (notas.length === 0) return '-';
     const suma = notas.reduce((a: number, b: any) => a + b.valor, 0);
     return (suma / notas.length).toFixed(2);
+  }
+
+  // ---------- Archivos al crear/editar la tarea ----------
+  private readonly MAX_BYTES = 10 * 1024 * 1024;
+  archivosNuevos: File[] = [];
+
+  onSeleccionArchivosForm(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files || []);
+    const grande = files.find(f => f.size > this.MAX_BYTES);
+    if (grande) {
+      this.snackBar.open(`El archivo ${grande.name} supera el tamaño máximo de 10 MB`, 'OK', { duration: 4000 });
+      input.value = '';
+      return;
+    }
+    this.archivosNuevos = [...this.archivosNuevos, ...files];
+    input.value = '';
+  }
+
+  quitarArchivoNuevo(i: number) {
+    this.archivosNuevos.splice(i, 1);
+  }
+
+  // Sube los archivos pendientes a la tarea recién guardada y reinicia el formulario.
+  private finalizarGuardado(tareaId: number, mensaje: string) {
+    const terminar = () => {
+      this.archivosNuevos = [];
+      this.nuevaTarea = { nombre: '', descripcion: '', fecha: '', semestre: 1 };
+      this.editandoId = null;
+      this.guardando = false;
+      this.snackBar.open(mensaje, 'OK', { duration: 3000 });
+      this.cargarTareas();
+    };
+    if (this.archivosNuevos.length === 0) { terminar(); return; }
+    this.tareaService.subirArchivosTarea(tareaId, this.archivosNuevos).subscribe({
+      next: () => terminar(),
+      error: () => {
+        this.guardando = false;
+        this.snackBar.open('Tarea guardada, pero falló la subida de archivos', 'OK', { duration: 4000 });
+        this.archivosNuevos = [];
+        this.cargarTareas();
+      }
+    });
+  }
+
+  abrirTarea(tareaId: number) {
+    this.router.navigate(['/tareas', this.materiaId, 'detalle', tareaId]);
   }
 
   volver() {

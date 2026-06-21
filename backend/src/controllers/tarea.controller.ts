@@ -37,7 +37,8 @@ export const getTareasPorMateria = async (req: Request, res: Response) => {
         },
         notas: {
           include: { matricula: true }
-        }
+        },
+        archivos: { orderBy: { createdAt: 'asc' } }
       },
       orderBy: { fecha: 'asc' }
     });

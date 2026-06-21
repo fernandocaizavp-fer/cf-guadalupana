@@ -60,13 +60,58 @@
                 }
               </div>
 
-              <div class="card-score" 
+              <div class="card-score"
                    [class.score-high]="+tarea.miNota >= 7"
                    [class.score-mid]="+tarea.miNota >= 5 && +tarea.miNota < 7"
                    [class.score-low]="tarea.miNota !== null && +tarea.miNota < 5">
                 <span class="val">{{ tarea.miNota !== null ? tarea.miNota : '-' }}</span>
                 <span class="lbl">NOTA</span>
               </div>
+            </div>
+
+            <!-- MATERIAL DEL DOCENTE -->
+            @if (tarea.archivos?.length > 0) {
+              <div class="files-block">
+                <span class="files-title"><mat-icon>attach_file</mat-icon> Material de la tarea</span>
+                <ul class="files-list">
+                  @for (a of tarea.archivos; track a.id) {
+                    <li>
+                      <a [href]="a.url" target="_blank" rel="noopener">
+                        <mat-icon>description</mat-icon> {{ a.nombreOriginal }}
+                      </a>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            <!-- MI ENTREGA -->
+            <div class="files-block entrega-block">
+              <div class="entrega-head">
+                <span class="files-title"><mat-icon>cloud_upload</mat-icon> Mi entrega</span>
+                <label class="subir-label">
+                  <mat-icon>upload_file</mat-icon>
+                  {{ tarea.subiendo ? 'Subiendo...' : 'Subir archivos' }}
+                  <input type="file" multiple hidden
+                    (change)="onSeleccionEntrega($event, tarea)" [disabled]="tarea.subiendo">
+                </label>
+              </div>
+              @if (tarea.miEntrega?.archivos?.length > 0) {
+                <ul class="files-list">
+                  @for (a of tarea.miEntrega.archivos; track a.id) {
+                    <li>
+                      <a [href]="a.url" target="_blank" rel="noopener">
+                        <mat-icon>insert_drive_file</mat-icon> {{ a.nombreOriginal }}
+                      </a>
+                      <button mat-icon-button (click)="eliminarArchivoEntrega(a, tarea)" title="Eliminar">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="sin-files">Aún no has subido tu entrega.</p>
+              }
             </div>
           </div>
         }

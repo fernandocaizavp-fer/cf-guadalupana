@@ -142,7 +142,12 @@ export class GestionarAnuncios implements OnInit {
   }
 
   getImagenUrl(imagen: string): string {
-    return `https://cf-guadalupana-production.up.railway.app${imagen}`;
+    if (!imagen) return '';
+    // Cloudinary devuelve URL completa (http...); los anuncios viejos guardan
+    // una ruta relativa servida por el backend.
+    return imagen.startsWith('http')
+      ? imagen
+      : `https://cf-guadalupana-production.up.railway.app${imagen}`;
   }
 
   volver() {

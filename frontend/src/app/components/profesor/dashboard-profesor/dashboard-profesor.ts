@@ -28,6 +28,13 @@ export class DashboardProfesor implements OnInit {
   loading = true;
   etiquetaAutor = etiquetaAutorAnuncio;
 
+  urlImagen(imagen: string): string {
+    if (!imagen) return '';
+    return imagen.startsWith('http')
+      ? imagen
+      : `https://cf-guadalupana-production.up.railway.app${imagen}`;
+  }
+
   constructor(
     private authService: AuthService,
     private router: Router,
