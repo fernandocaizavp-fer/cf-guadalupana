@@ -97,6 +97,30 @@ export const habilitarSupletorioIndividual = async (req: Request, res: Response)
   }
 };
 
+// GET /api/configuracion/permisos-supletorio — solo ADMIN
+// Lista las matrículas con un permiso individual de supletorio vigente (fecha
+// no nula), para poder mostrarlas y revocarlas sin tener que volver a buscar.
+export const listarPermisosSupletorio = async (req: Request, res: Response) => {
+  try {
+    const matriculas = await prisma.matricula.findMany({
+      where: { supletorioHabilitadoHasta: { not: null } },
+      select: {
+        id: true,
+        nombres: true,
+        apellidos: true,
+        cedula: true,
+        supletorioHabilitadoHasta: true,
+        supletorioMotivo: true,
+        curso: { select: { ramaArtesanal: true } }
+      },
+      orderBy: { supletorioHabilitadoHasta: 'asc' }
+    });
+    res.json(matriculas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al listar los permisos de supletorio' });
+  }
+};
+
 // DELETE /api/configuracion/permiso-supletorio/:matriculaId — solo ADMIN
 // Revoca el permiso individual.
 export const revocarSupletorioIndividual = async (req: Request, res: Response) => {

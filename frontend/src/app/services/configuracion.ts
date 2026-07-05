@@ -52,6 +52,12 @@ export class ConfiguracionService {
     });
   }
 
+  listarPermisosSupletorio(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/configuracion/permisos-supletorio`, {
+      headers: this.getHeaders()
+    });
+  }
+
   buscarEstudiante(q: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/matriculas/buscar?q=${encodeURIComponent(q)}`, {
       headers: this.getHeaders()

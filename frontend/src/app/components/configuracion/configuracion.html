@@ -108,17 +108,18 @@
       </button>
     </div>
 
-    <!-- SECCIÓN: PERMISO INDIVIDUAL (RECLAMO) -->
+    <!-- SECCIÓN: CORRECCIÓN DE NOTA (SUPLETORIO) -->
     <div class="config-card">
       <div class="config-header">
         <mat-icon>how_to_reg</mat-icon>
-        <h2>Permiso especial de supletorio</h2>
+        <h2>Corrección de nota (supletorio)</h2>
       </div>
       <div class="config-body">
         <p class="hint">
-          Permite que un estudiante registre su supletorio fuera del plazo general.
-          Solo aplica a ese estudiante y hasta la fecha indicada (inclusive ese día);
-          después se cierra automáticamente.
+          Autoriza a un estudiante puntual a registrar/corregir su supletorio fuera del
+          plazo general (por un reclamo u oficio). Solo aplica a ese estudiante y hasta
+          la fecha indicada (inclusive ese día); después se cierra automáticamente.
+          Revocar cierra el permiso pero no borra la nota ya corregida.
         </p>
 
         <div class="buscador">
@@ -176,6 +177,32 @@
             </div>
           </div>
         }
+
+        <!-- Permisos vigentes: se cargan solos y persisten al recargar -->
+        <div class="permisos-activos">
+          <h3>Permisos activos</h3>
+          @if (permisosActivos.length === 0) {
+            <p class="hint">No hay permisos de supletorio vigentes.</p>
+          } @else {
+            <div class="resultados">
+              @for (m of permisosActivos; track m.id) {
+                <div class="resultado-item">
+                  <div class="info">
+                    <strong>{{ m.apellidos }} {{ m.nombres }}</strong>
+                    <span>CI: {{ m.cedula }} — {{ m.curso?.ramaArtesanal }}</span>
+                    <span class="permiso-vigente">
+                      Permiso hasta {{ m.supletorioHabilitadoHasta | date:'dd/MM/yyyy' }}
+                      @if (m.supletorioMotivo) { — {{ m.supletorioMotivo }} }
+                    </span>
+                  </div>
+                  <div class="item-actions">
+                    <button mat-button color="warn" (click)="revocarPermiso(m)">Revocar</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
       </div>
     </div>
 

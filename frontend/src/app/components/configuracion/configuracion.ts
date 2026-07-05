@@ -43,6 +43,7 @@ export class ConfiguracionComponent implements OnInit {
   seleccionado: any = null;
   permisoFecha = '';   // yyyy-MM-dd
   permisoMotivo = '';
+  permisosActivos: any[] = [];   // permisos vigentes (persisten al recargar)
 
   constructor(
     private configService: ConfiguracionService,
@@ -53,6 +54,17 @@ export class ConfiguracionComponent implements OnInit {
 
   ngOnInit() {
     this.cargar();
+    this.cargarPermisos();
+  }
+
+  cargarPermisos() {
+    this.configService.listarPermisosSupletorio().subscribe({
+      next: (permisos) => {
+        this.permisosActivos = permisos;
+        this.cdr.detectChanges();
+      },
+      error: () => { /* silencioso: la lista queda vacía */ }
+    });
   }
 
   private soloFecha(iso: string | null): string {
@@ -146,6 +158,7 @@ export class ConfiguracionComponent implements OnInit {
       next: () => {
         this.snackBar.open('Permiso individual habilitado', 'OK', { duration: 3000 });
         this.seleccionado = null;
+        this.cargarPermisos();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -160,6 +173,7 @@ export class ConfiguracionComponent implements OnInit {
       next: () => {
         m.supletorioHabilitadoHasta = null;
         this.snackBar.open('Permiso revocado', 'OK', { duration: 3000 });
+        this.cargarPermisos();
         this.cdr.detectChanges();
       },
       error: () => {

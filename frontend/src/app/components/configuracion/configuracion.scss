@@ -154,3 +154,11 @@ $gold: #c8a84b;
 
   .permiso-acciones { display: flex; gap: 8px; }
 }
+
+.permisos-activos {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e6e6e6;
+
+  h3 { margin: 0 0 12px; font-size: 14px; color: #1a2238; }
+}
