@@ -76,8 +76,8 @@ export class IngresarExamenGrado implements OnInit {
         this.guardando = false;
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.snackBar.open('Error al guardar', 'OK', { duration: 3000 });
+      error: (err) => {
+        this.snackBar.open(err?.error?.error || 'Error al guardar', 'OK', { duration: 4000 });
         this.guardando = false;
         this.cdr.detectChanges();
       }

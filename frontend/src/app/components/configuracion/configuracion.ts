@@ -27,6 +27,10 @@ export class ConfiguracionComponent implements OnInit {
   supletorioInicio = '';   // yyyy-MM-dd
   supletorioFin = '';      // yyyy-MM-dd
 
+  // Exámenes de grado (mismo esquema de plazo por fechas)
+  examenGradoInicio = '';  // yyyy-MM-dd
+  examenGradoFin = '';     // yyyy-MM-dd
+
   // Rango de notas
   notaMinima = 0;
   notaMaxima = 10;
@@ -60,6 +64,8 @@ export class ConfiguracionComponent implements OnInit {
       next: (c: Configuracion) => {
         this.supletorioInicio = this.soloFecha(c.supletorioInicio);
         this.supletorioFin = this.soloFecha(c.supletorioFin);
+        this.examenGradoInicio = this.soloFecha(c.examenGradoInicio);
+        this.examenGradoFin = this.soloFecha(c.examenGradoFin);
         this.notaMinima = c.notaMinima;
         this.notaMaxima = c.notaMaxima;
         this.notaAprobacion = c.notaAprobacion;
@@ -89,6 +95,8 @@ export class ConfiguracionComponent implements OnInit {
     this.configService.actualizar({
       supletorioInicio: this.supletorioInicio || null,
       supletorioFin: this.supletorioFin || null,
+      examenGradoInicio: this.examenGradoInicio || null,
+      examenGradoFin: this.examenGradoFin || null,
       notaMinima: Number(this.notaMinima),
       notaMaxima: Number(this.notaMaxima),
       notaAprobacion: Number(this.notaAprobacion)

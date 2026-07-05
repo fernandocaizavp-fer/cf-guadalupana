@@ -297,6 +297,9 @@ model Configuracion {
   supletorioHabilitado Boolean   @default(false)
   supletorioInicio     DateTime?
   supletorioFin        DateTime?
+  // Plazo general de exámenes de grado (controlado por el administrador)
+  examenGradoInicio    DateTime?
+  examenGradoFin       DateTime?
   // CAMBIO 2 — rango de notas configurable
   notaMinima           Float     @default(0)
   notaMaxima           Float     @default(10)

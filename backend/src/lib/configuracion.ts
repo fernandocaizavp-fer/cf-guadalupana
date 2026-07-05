@@ -61,17 +61,30 @@ export function vigenteHasta(hasta: Date | null | undefined): boolean {
 }
 
 /**
- * Indica si la ventana general de supletorios está abierta hoy, controlada
- * SOLO por las fechas (comparación por día calendario, ambos extremos
- * inclusivos). Sin período definido (ambas fechas en null) se considera cerrada.
+ * Indica si una ventana [inicio, fin] está abierta hoy, controlada SOLO por las
+ * fechas (comparación por día calendario, ambos extremos inclusivos). Sin
+ * período definido (ambas fechas en null) se considera cerrada.
  */
+export function ventanaAbierta(inicio: Date | null, fin: Date | null): boolean {
+  if (!inicio && !fin) return false;
+  const hoy = hoyEcuador();
+  if (inicio && hoy < diaGuardado(inicio)) return false;
+  if (fin && hoy > diaGuardado(fin)) return false;
+  return true;
+}
+
+/** Ventana general de supletorios. */
 export function ventanaSupletorioAbierta(config: {
   supletorioInicio: Date | null;
   supletorioFin: Date | null;
 }): boolean {
-  if (!config.supletorioInicio && !config.supletorioFin) return false;
-  const hoy = hoyEcuador();
-  if (config.supletorioInicio && hoy < diaGuardado(config.supletorioInicio)) return false;
-  if (config.supletorioFin && hoy > diaGuardado(config.supletorioFin)) return false;
-  return true;
+  return ventanaAbierta(config.supletorioInicio, config.supletorioFin);
+}
+
+/** Ventana general de exámenes de grado. */
+export function ventanaExamenGradoAbierta(config: {
+  examenGradoInicio: Date | null;
+  examenGradoFin: Date | null;
+}): boolean {
+  return ventanaAbierta(config.examenGradoInicio, config.examenGradoFin);
 }

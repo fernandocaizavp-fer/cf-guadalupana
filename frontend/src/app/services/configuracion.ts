@@ -8,6 +8,8 @@ export interface Configuracion {
   supletorioHabilitado: boolean;
   supletorioInicio: string | null;
   supletorioFin: string | null;
+  examenGradoInicio: string | null;
+  examenGradoFin: string | null;
   notaMinima: number;
   notaMaxima: number;
   notaAprobacion: number;

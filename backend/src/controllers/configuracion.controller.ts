@@ -18,6 +18,8 @@ export const actualizarConfiguracion = async (req: Request, res: Response) => {
   const {
     supletorioInicio,
     supletorioFin,
+    examenGradoInicio,
+    examenGradoFin,
     notaMinima,
     notaMaxima,
     notaAprobacion
@@ -43,6 +45,8 @@ export const actualizarConfiguracion = async (req: Request, res: Response) => {
       update: {
         supletorioInicio: supletorioInicio ? new Date(supletorioInicio) : null,
         supletorioFin: supletorioFin ? new Date(supletorioFin) : null,
+        examenGradoInicio: examenGradoInicio ? new Date(examenGradoInicio) : null,
+        examenGradoFin: examenGradoFin ? new Date(examenGradoFin) : null,
         notaMinima: min,
         notaMaxima: max,
         notaAprobacion: aprob
@@ -51,6 +55,8 @@ export const actualizarConfiguracion = async (req: Request, res: Response) => {
         id: 1,
         supletorioInicio: supletorioInicio ? new Date(supletorioInicio) : null,
         supletorioFin: supletorioFin ? new Date(supletorioFin) : null,
+        examenGradoInicio: examenGradoInicio ? new Date(examenGradoInicio) : null,
+        examenGradoFin: examenGradoFin ? new Date(examenGradoFin) : null,
         notaMinima: min,
         notaMaxima: max,
         notaAprobacion: aprob

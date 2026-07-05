@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaAnual } from '../lib/disciplina';
-import { getConfiguracion, primeraNotaFueraDeRango } from '../lib/configuracion';
+import { getConfiguracion, primeraNotaFueraDeRango, ventanaExamenGradoAbierta } from '../lib/configuracion';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -65,6 +65,15 @@ export const guardarExamenesGrado = async (req: Request, res: Response) => {
   const { notas } = req.body;
   try {
     const config = await getConfiguracion();
+
+    // Control de habilitación: la ventana general de exámenes de grado debe
+    // estar abierta (el permiso individual de recalificación se agrega después).
+    if (!ventanaExamenGradoAbierta(config)) {
+      return res.status(403).json({
+        error: 'Los exámenes de grado no están habilitados en este momento'
+      });
+    }
+
     const fuera = primeraNotaFueraDeRango(
       notas.map((n: any) => (n.valor !== '' && n.valor !== null ? Number(n.valor) : null)),
       config
