@@ -206,5 +206,103 @@
       </div>
     </div>
 
+    <!-- SECCIÓN: RECALIFICACIÓN DE EXAMEN DE GRADO -->
+    <div class="config-card">
+      <div class="config-header">
+        <mat-icon>fact_check</mat-icon>
+        <h2>Recalificación de examen de grado</h2>
+      </div>
+      <div class="config-body">
+        <p class="hint">
+          Autoriza a un estudiante puntual a corregir su nota de examen de grado fuera
+          del plazo general (por un reclamo). Solo aplica a ese estudiante y hasta la
+          fecha indicada (inclusive ese día); después se cierra automáticamente.
+          Revocar cierra el permiso pero no borra la nota ya corregida.
+        </p>
+
+        <div class="buscador">
+          <mat-form-field appearance="outline" class="grow">
+            <mat-label>Buscar estudiante (nombre, apellido o cédula)</mat-label>
+            <input matInput [(ngModel)]="busquedaExamen" (keyup.enter)="buscarExamen()">
+          </mat-form-field>
+          <button mat-flat-button color="primary" (click)="buscarExamen()" [disabled]="buscandoExamen">
+            <mat-icon>search</mat-icon> Buscar
+          </button>
+        </div>
+
+        @if (resultadosExamen.length > 0) {
+          <div class="resultados">
+            @for (m of resultadosExamen; track m.id) {
+              <div class="resultado-item" [class.activo]="seleccionadoExamen?.id === m.id">
+                <div class="info">
+                  <strong>{{ m.apellidos }} {{ m.nombres }}</strong>
+                  <span>CI: {{ m.cedula }} — {{ m.curso?.ramaArtesanal }}</span>
+                  @if (m.examenGradoHabilitadoHasta) {
+                    <span class="permiso-vigente">
+                      Habilitado hasta {{ m.examenGradoHabilitadoHasta | date:'dd/MM/yyyy' }}
+                    </span>
+                  }
+                </div>
+                <div class="item-actions">
+                  <button mat-stroked-button (click)="elegirExamen(m)">Habilitar</button>
+                  @if (m.examenGradoHabilitadoHasta) {
+                    <button mat-button color="warn" (click)="revocarRecalificacion(m)">Revocar</button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (seleccionadoExamen) {
+          <div class="permiso-form">
+            <h3>Recalificación para {{ seleccionadoExamen.apellidos }} {{ seleccionadoExamen.nombres }}</h3>
+            <div class="permiso-campos">
+              <mat-form-field appearance="outline">
+                <mat-label>Habilitado hasta</mat-label>
+                <input matInput type="date" [(ngModel)]="permisoFechaExamen">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="grow">
+                <mat-label>Motivo (oficio/reclamo)</mat-label>
+                <input matInput [(ngModel)]="permisoMotivoExamen">
+              </mat-form-field>
+            </div>
+            <div class="permiso-acciones">
+              <button mat-flat-button color="primary" (click)="habilitarRecalificacion()">
+                <mat-icon>check</mat-icon> Confirmar recalificación
+              </button>
+              <button mat-button (click)="seleccionadoExamen = null">Cancelar</button>
+            </div>
+          </div>
+        }
+
+        <!-- Permisos vigentes: se cargan solos y persisten al recargar -->
+        <div class="permisos-activos">
+          <h3>Permisos activos</h3>
+          @if (permisosExamenActivos.length === 0) {
+            <p class="hint">No hay recalificaciones de examen de grado vigentes.</p>
+          } @else {
+            <div class="resultados">
+              @for (m of permisosExamenActivos; track m.id) {
+                <div class="resultado-item">
+                  <div class="info">
+                    <strong>{{ m.apellidos }} {{ m.nombres }}</strong>
+                    <span>CI: {{ m.cedula }} — {{ m.curso?.ramaArtesanal }}</span>
+                    <span class="permiso-vigente">
+                      Habilitado hasta {{ m.examenGradoHabilitadoHasta | date:'dd/MM/yyyy' }}
+                      @if (m.examenGradoMotivo) { — {{ m.examenGradoMotivo }} }
+                    </span>
+                  </div>
+                  <div class="item-actions">
+                    <button mat-button color="warn" (click)="revocarRecalificacion(m)">Revocar</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
   </div>
 }

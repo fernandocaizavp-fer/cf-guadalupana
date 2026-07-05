@@ -58,6 +58,23 @@ export class ConfiguracionService {
     });
   }
 
+  habilitarRecalificacionExamen(matriculaId: number, habilitadoHasta: string, motivo: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/configuracion/permiso-examen-grado`,
+      { matriculaId, habilitadoHasta, motivo }, { headers: this.getHeaders() });
+  }
+
+  revocarRecalificacionExamen(matriculaId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/configuracion/permiso-examen-grado/${matriculaId}`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  listarPermisosExamenGrado(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/configuracion/permisos-examen-grado`, {
+      headers: this.getHeaders()
+    });
+  }
+
   buscarEstudiante(q: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/matriculas/buscar?q=${encodeURIComponent(q)}`, {
       headers: this.getHeaders()

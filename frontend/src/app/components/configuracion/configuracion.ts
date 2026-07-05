@@ -45,6 +45,15 @@ export class ConfiguracionComponent implements OnInit {
   permisoMotivo = '';
   permisosActivos: any[] = [];   // permisos vigentes (persisten al recargar)
 
+  // Recalificación de examen de grado (permiso individual)
+  busquedaExamen = '';
+  buscandoExamen = false;
+  resultadosExamen: any[] = [];
+  seleccionadoExamen: any = null;
+  permisoFechaExamen = '';   // yyyy-MM-dd
+  permisoMotivoExamen = '';
+  permisosExamenActivos: any[] = [];
+
   constructor(
     private configService: ConfiguracionService,
     private router: Router,
@@ -55,12 +64,23 @@ export class ConfiguracionComponent implements OnInit {
   ngOnInit() {
     this.cargar();
     this.cargarPermisos();
+    this.cargarPermisosExamen();
   }
 
   cargarPermisos() {
     this.configService.listarPermisosSupletorio().subscribe({
       next: (permisos) => {
         this.permisosActivos = permisos;
+        this.cdr.detectChanges();
+      },
+      error: () => { /* silencioso: la lista queda vacía */ }
+    });
+  }
+
+  cargarPermisosExamen() {
+    this.configService.listarPermisosExamenGrado().subscribe({
+      next: (permisos) => {
+        this.permisosExamenActivos = permisos;
         this.cdr.detectChanges();
       },
       error: () => { /* silencioso: la lista queda vacía */ }
@@ -174,6 +194,67 @@ export class ConfiguracionComponent implements OnInit {
         m.supletorioHabilitadoHasta = null;
         this.snackBar.open('Permiso revocado', 'OK', { duration: 3000 });
         this.cargarPermisos();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.snackBar.open('Error al revocar', 'OK', { duration: 3000 });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ── Recalificación de examen de grado ──
+
+  buscarExamen() {
+    if (!this.busquedaExamen.trim()) return;
+    this.buscandoExamen = true;
+    this.configService.buscarEstudiante(this.busquedaExamen.trim()).subscribe({
+      next: (res) => {
+        this.resultadosExamen = res;
+        this.buscandoExamen = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.buscandoExamen = false;
+        this.snackBar.open('Error al buscar', 'OK', { duration: 3000 });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  elegirExamen(m: any) {
+    this.seleccionadoExamen = m;
+    this.permisoFechaExamen = '';
+    this.permisoMotivoExamen = '';
+  }
+
+  habilitarRecalificacion() {
+    if (!this.seleccionadoExamen || !this.permisoFechaExamen) {
+      this.snackBar.open('Selecciona estudiante y fecha límite', 'OK', { duration: 3000 });
+      return;
+    }
+    this.configService.habilitarRecalificacionExamen(
+      this.seleccionadoExamen.id, this.permisoFechaExamen, this.permisoMotivoExamen
+    ).subscribe({
+      next: () => {
+        this.snackBar.open('Recalificación habilitada', 'OK', { duration: 3000 });
+        this.seleccionadoExamen = null;
+        this.cargarPermisosExamen();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.snackBar.open('Error al habilitar la recalificación', 'OK', { duration: 3000 });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  revocarRecalificacion(m: any) {
+    this.configService.revocarRecalificacionExamen(m.id).subscribe({
+      next: () => {
+        m.examenGradoHabilitadoHasta = null;
+        this.snackBar.open('Recalificación revocada', 'OK', { duration: 3000 });
+        this.cargarPermisosExamen();
         this.cdr.detectChanges();
       },
       error: () => {

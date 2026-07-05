@@ -135,3 +135,71 @@ export const revocarSupletorioIndividual = async (req: Request, res: Response) =
     res.status(500).json({ error: 'Error al revocar el permiso individual' });
   }
 };
+
+// ── Recalificación de examen de grado (permiso individual, análogo al supletorio) ──
+
+// POST /api/configuracion/permiso-examen-grado — solo ADMIN
+// Habilita a un estudiante a corregir su examen de grado fuera del plazo general.
+export const habilitarRecalificacionExamen = async (req: Request, res: Response) => {
+  const { matriculaId, habilitadoHasta, motivo } = req.body;
+  if (!matriculaId || !habilitadoHasta) {
+    return res.status(400).json({ error: 'Se requiere matriculaId y la fecha límite' });
+  }
+  try {
+    const matricula = await prisma.matricula.update({
+      where: { id: Number(matriculaId) },
+      data: {
+        examenGradoHabilitadoHasta: new Date(habilitadoHasta),
+        examenGradoMotivo: motivo || null
+      },
+      select: {
+        id: true,
+        nombres: true,
+        apellidos: true,
+        examenGradoHabilitadoHasta: true,
+        examenGradoMotivo: true
+      }
+    });
+    res.json({ message: 'Recalificación de examen de grado habilitada', matricula });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al habilitar la recalificación de examen de grado' });
+  }
+};
+
+// GET /api/configuracion/permisos-examen-grado — solo ADMIN
+// Lista las matrículas con recalificación de examen de grado vigente.
+export const listarPermisosExamenGrado = async (req: Request, res: Response) => {
+  try {
+    const matriculas = await prisma.matricula.findMany({
+      where: { examenGradoHabilitadoHasta: { not: null } },
+      select: {
+        id: true,
+        nombres: true,
+        apellidos: true,
+        cedula: true,
+        examenGradoHabilitadoHasta: true,
+        examenGradoMotivo: true,
+        curso: { select: { ramaArtesanal: true } }
+      },
+      orderBy: { examenGradoHabilitadoHasta: 'asc' }
+    });
+    res.json(matriculas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al listar las recalificaciones de examen de grado' });
+  }
+};
+
+// DELETE /api/configuracion/permiso-examen-grado/:matriculaId — solo ADMIN
+// Revoca la recalificación individual (conserva la nota ya corregida).
+export const revocarRecalificacionExamen = async (req: Request, res: Response) => {
+  try {
+    const matricula = await prisma.matricula.update({
+      where: { id: Number(req.params.matriculaId) },
+      data: { examenGradoHabilitadoHasta: null, examenGradoMotivo: null },
+      select: { id: true, nombres: true, apellidos: true }
+    });
+    res.json({ message: 'Recalificación revocada', matricula });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al revocar la recalificación' });
+  }
+};

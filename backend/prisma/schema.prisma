@@ -88,6 +88,11 @@ model Matricula {
   supletorioHabilitadoHasta DateTime?
   supletorioMotivo          String?   @db.VarChar(200)
 
+  // Permiso individual y temporal para recalificar el examen de grado fuera del
+  // plazo general (caso de reclamo/corrección). Nullable: sin permiso si está en null.
+  examenGradoHabilitadoHasta DateTime?
+  examenGradoMotivo          String?   @db.VarChar(200)
+
   cursoId   Int
   curso     Curso   @relation(fields: [cursoId], references: [id])
   usuarioId Int     @unique

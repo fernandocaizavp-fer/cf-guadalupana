@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaAnual } from '../lib/disciplina';
-import { getConfiguracion, primeraNotaFueraDeRango, ventanaExamenGradoAbierta } from '../lib/configuracion';
+import { getConfiguracion, primeraNotaFueraDeRango, ventanaExamenGradoAbierta, vigenteHasta } from '../lib/configuracion';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -66,14 +66,6 @@ export const guardarExamenesGrado = async (req: Request, res: Response) => {
   try {
     const config = await getConfiguracion();
 
-    // Control de habilitación: la ventana general de exámenes de grado debe
-    // estar abierta (el permiso individual de recalificación se agrega después).
-    if (!ventanaExamenGradoAbierta(config)) {
-      return res.status(403).json({
-        error: 'Los exámenes de grado no están habilitados en este momento'
-      });
-    }
-
     const fuera = primeraNotaFueraDeRango(
       notas.map((n: any) => (n.valor !== '' && n.valor !== null ? Number(n.valor) : null)),
       config
@@ -83,8 +75,30 @@ export const guardarExamenesGrado = async (req: Request, res: Response) => {
         error: `La nota ${fuera} está fuera del rango permitido (${config.notaMinima} - ${config.notaMaxima})`
       });
     }
+
+    // Control de habilitación: si la ventana general está abierta, se guarda
+    // todo. Si está cerrada, solo se guardan los estudiantes con recalificación
+    // individual vigente (permiso por reclamo); el resto se ignora.
+    let notasAGuardar = notas;
+    if (!ventanaExamenGradoAbierta(config)) {
+      const ids: number[] = Array.from(new Set(notas.map((n: any) => Number(n.matriculaId))));
+      const matriculas = await prisma.matricula.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, examenGradoHabilitadoHasta: true }
+      });
+      const permitido = new Map(
+        matriculas.map((m) => [m.id, vigenteHasta(m.examenGradoHabilitadoHasta)])
+      );
+      notasAGuardar = notas.filter((n: any) => permitido.get(Number(n.matriculaId)));
+      if (notasAGuardar.length === 0) {
+        return res.status(403).json({
+          error: 'Los exámenes de grado no están habilitados en este momento'
+        });
+      }
+    }
+
     const resultados = await Promise.all(
-      notas.map((n: any) =>
+      notasAGuardar.map((n: any) =>
         prisma.examenGrado.upsert({
           where: {
             materiaId_matriculaId: {
