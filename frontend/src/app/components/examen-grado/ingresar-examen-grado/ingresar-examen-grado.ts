@@ -25,6 +25,7 @@ export class IngresarExamenGrado implements OnInit {
   materiaId!: number;
   notaMin = 0;
   notaMax = 10;
+  ventanaAbierta = false;   // plazo general de exámenes de grado
 
   constructor(
     private route: ActivatedRoute,
@@ -37,10 +38,36 @@ export class IngresarExamenGrado implements OnInit {
 
   ngOnInit() {
     this.materiaId = Number(this.route.snapshot.paramMap.get('materiaId'));
+    // Primero la configuración (para saber si el plazo está abierto); luego los datos.
     this.configService.obtener().subscribe({
-      next: (c) => { this.notaMin = c.notaMinima; this.notaMax = c.notaMaxima; }
+      next: (c) => {
+        this.notaMin = c.notaMinima;
+        this.notaMax = c.notaMaxima;
+        this.ventanaAbierta = this.calcularVentana(c);
+        this.cargarEstudiantes();
+      },
+      error: () => this.cargarEstudiantes()
     });
-    this.cargarEstudiantes();
+  }
+
+  // Comparación por día calendario anclada a Ecuador (UTC-5), ambos extremos
+  // inclusivos. Idéntica a la de supletorios.
+  private hoyEcuador(): string {
+    return new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString().substring(0, 10);
+  }
+  private diaGuardado(fecha: any): string {
+    return new Date(fecha).toISOString().substring(0, 10);
+  }
+  private vigenteHasta(fecha: any): boolean {
+    if (!fecha) return false;
+    return this.hoyEcuador() <= this.diaGuardado(fecha);
+  }
+  private calcularVentana(c: any): boolean {
+    if (!c?.examenGradoInicio && !c?.examenGradoFin) return false;
+    const hoy = this.hoyEcuador();
+    if (c.examenGradoInicio && hoy < this.diaGuardado(c.examenGradoInicio)) return false;
+    if (c.examenGradoFin && hoy > this.diaGuardado(c.examenGradoFin)) return false;
+    return true;
   }
 
   cargarEstudiantes() {
@@ -48,7 +75,12 @@ export class IngresarExamenGrado implements OnInit {
     this.examenGradoService.getEstudiantes(this.materiaId).subscribe({
       next: (data) => {
         this.materia = data.materia;
-        this.estudiantes = data.estudiantes;
+        // Cada estudiante está habilitado si el plazo general está abierto o
+        // tiene una recalificación individual vigente (habilitada por admin).
+        this.estudiantes = data.estudiantes.map((e: any) => ({
+          ...e,
+          habilitado: this.ventanaAbierta || this.vigenteHasta(e.examenGradoHabilitadoHasta)
+        }));
         this.estudiantes.forEach(e => {
           this.notas[e.id] = e.valor ?? null;
         });
@@ -63,13 +95,22 @@ export class IngresarExamenGrado implements OnInit {
   }
 
   guardar() {
-    this.guardando = true;
-    const notas = this.estudiantes.map(e => ({
-      matriculaId: e.id,
-      materiaId: this.materiaId,
-      valor: this.notas[e.id] !== null ? this.notas[e.id] : null
-    }));
+    // Solo se envían los estudiantes habilitados (plazo abierto o permiso
+    // individual). El backend revalida.
+    const notas = this.estudiantes
+      .filter(e => e.habilitado)
+      .map(e => ({
+        matriculaId: e.id,
+        materiaId: this.materiaId,
+        valor: this.notas[e.id] !== null ? this.notas[e.id] : null
+      }));
 
+    if (notas.length === 0) {
+      this.snackBar.open('No hay estudiantes habilitados para registrar exámenes', 'OK', { duration: 3000 });
+      return;
+    }
+
+    this.guardando = true;
     this.examenGradoService.guardar(notas).subscribe({
       next: () => {
         this.snackBar.open('Exámenes guardados correctamente', 'OK', { duration: 3000 });
@@ -86,6 +127,10 @@ export class IngresarExamenGrado implements OnInit {
 
   get estudiantesConNota(): number {
     return this.estudiantes.filter(e => this.notas[e.id] !== null && this.notas[e.id] !== undefined).length;
+  }
+
+  get estudiantesHabilitados(): number {
+    return this.estudiantes.filter(e => e.habilitado).length;
   }
 
   volver() {

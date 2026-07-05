@@ -137,6 +137,27 @@ $white: #ffffff;
 
   &:last-child { border-bottom: none; }
   &:hover { background: #f8fafc; }
+
+  &.habilitado { background: #fffdf5; }
+}
+
+.habilitado-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: darken($gold, 18%);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.no-sup {
+  color: #94a3b8;
+  font-size: 12px;
+  font-style: italic;
 }
 
 .col-num {

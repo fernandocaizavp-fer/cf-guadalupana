@@ -30,7 +30,11 @@
       <div class="info-icon">
         <mat-icon>info</mat-icon>
       </div>
-      <p>Ingresa la nota del examen escrito de grado para cada estudiante. Esta nota corresponde al examen final del curso y se registra una sola vez.</p>
+      @if (ventanaAbierta) {
+        <p>El plazo de exámenes de grado está <strong>abierto</strong>. Ingresa la nota de cada estudiante; esta nota corresponde al examen final del curso.</p>
+      } @else {
+        <p>El plazo general de exámenes de grado está <strong>cerrado</strong>. Solo podrás registrar notas de estudiantes con una recalificación individual vigente (habilitada por administración).</p>
+      }
     </div>
 
     @if (estudiantes.length === 0) {
@@ -49,18 +53,27 @@
         </div>
 
         @for (est of estudiantes; track est.id; let i = $index) {
-          <div class="tabla-row">
+          <div class="tabla-row" [class.habilitado]="est.habilitado">
             <span class="col-num">
               <span class="num-badge" [class.num-gold]="notas[est.id] !== null && notas[est.id] !== undefined">
                 {{ i + 1 }}
               </span>
             </span>
-            <span class="col-nombre">{{ est.apellidos }} {{ est.nombres }}</span>
+            <span class="col-nombre">
+              {{ est.apellidos }} {{ est.nombres }}
+              @if (!ventanaAbierta && est.habilitado) {
+                <span class="habilitado-badge">Recalificación</span>
+              }
+            </span>
             <span class="col-nota">
-              <input type="number" class="nota-input"
-                [(ngModel)]="notas[est.id]"
-                [min]="notaMin" [max]="notaMax" step="0.1"
-                placeholder="—">
+              @if (est.habilitado) {
+                <input type="number" class="nota-input"
+                  [(ngModel)]="notas[est.id]"
+                  [min]="notaMin" [max]="notaMax" step="0.1"
+                  placeholder="—">
+              } @else {
+                <span class="no-sup">No habilitado</span>
+              }
             </span>
           </div>
         }

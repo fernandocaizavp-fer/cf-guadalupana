@@ -42,7 +42,8 @@ export const getEstudiantesExamenGrado = async (req: Request, res: Response) => 
         nombres: m.nombres,
         apellidos: m.apellidos,
         cedula: m.cedula,
-        valor: examen?.valor ?? null
+        valor: examen?.valor ?? null,
+        examenGradoHabilitadoHasta: m.examenGradoHabilitadoHasta
       };
     });
 
