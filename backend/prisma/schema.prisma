@@ -253,6 +253,8 @@ model Anuncio {
   activo      Boolean  @default(true)
   autorRol    Rol?
   autorNombre String?  @db.VarChar(200)
+  // Materia a la que se refiere el anuncio (etiqueta opcional, denormalizada).
+  materiaNombre String? @db.VarChar(150)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

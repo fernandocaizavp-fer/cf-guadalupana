@@ -34,6 +34,19 @@
           placeholder="Describe el anuncio o evento..."></textarea>
       </mat-form-field>
 
+      @if (materiasOpciones.length > 0) {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Materia (opcional)</mat-label>
+          <mat-select [(ngModel)]="nuevo.materiaNombre">
+            <mat-option value="">General (todas)</mat-option>
+            @for (op of materiasOpciones; track op) {
+              <mat-option [value]="op">{{ op }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matSuffix>menu_book</mat-icon>
+        </mat-form-field>
+      }
+
       <div class="imagen-section">
         <label class="imagen-label">Imagen del anuncio (opcional)</label>
         <div class="imagen-upload" (click)="fileInput.click()">
@@ -105,6 +118,12 @@
               }
             </div>
             <h3>{{ anuncio.titulo }}</h3>
+            @if (anuncio.materiaNombre) {
+              <div class="anuncio-materia">
+                <mat-icon>menu_book</mat-icon>
+                <span>{{ anuncio.materiaNombre }}</span>
+              </div>
+            }
             <p>{{ anuncio.contenido }}</p>
             @if (etiquetaAutor(anuncio)) {
               <div class="anuncio-autor">

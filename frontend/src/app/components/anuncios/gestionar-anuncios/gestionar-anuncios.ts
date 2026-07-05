@@ -8,16 +8,19 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { DatePipe } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AnuncioService } from '../../../services/anuncio';
+import { AuthService } from '../../../services/auth';
 import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
 
 @Component({
   selector: 'app-gestionar-anuncios',
   imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatFormFieldModule,
-    MatInputModule, MatCardModule, DatePipe],
+    MatInputModule, MatSelectModule, MatCardModule, DatePipe],
   templateUrl: './gestionar-anuncios.html',
   styleUrl: './gestionar-anuncios.scss'
 })
@@ -29,22 +32,50 @@ export class GestionarAnuncios implements OnInit {
   imagenPreview: string | null = null;
   imagenFile: File | null = null;
   editando: any = null;
+  materiasOpciones: string[] = [];   // materias del usuario (para etiquetar)
 
   nuevo = {
     titulo: '',
     contenido: '',
-    activo: true
+    activo: true,
+    materiaNombre: ''
   };
 
   constructor(
     private router: Router,
     private anuncioService: AnuncioService,
+    private authService: AuthService,
+    private http: HttpClient,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.cargarAnuncios();
+    this.cargarMaterias();
+  }
+
+  cargarMaterias() {
+    const usuario = this.authService.getUsuario();
+    if (!usuario?.id) return;
+    const headers = new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken()}` });
+    this.http.get<any[]>(
+      `https://cf-guadalupana-production.up.railway.app/api/usuarios/mis-materias/${usuario.id}`,
+      { headers }
+    ).subscribe({
+      next: (materias) => {
+        const set = new Set<string>();
+        (materias || []).forEach((m: any) => {
+          // Omitir las materias principales Práctica/Teoría (no son dictables)
+          if (!m.esSubmateria && (m.nombre === 'Práctica' || m.nombre === 'Teoría')) return;
+          const curso = m.curso?.ramaArtesanal ? ` — ${m.curso.ramaArtesanal}` : '';
+          set.add(`${m.nombre}${curso}`);
+        });
+        this.materiasOpciones = Array.from(set).sort();
+        this.cdr.detectChanges();
+      },
+      error: () => { /* silencioso: sin materias, el combo queda solo con "General" */ }
+    });
   }
 
   cargarAnuncios() {
@@ -87,6 +118,7 @@ export class GestionarAnuncios implements OnInit {
   formData.append('titulo', this.nuevo.titulo);
   formData.append('contenido', this.nuevo.contenido);
   formData.append('activo', String(this.nuevo.activo));
+  formData.append('materiaNombre', this.nuevo.materiaNombre || '');
   if (this.imagenFile) formData.append('imagen', this.imagenFile);
 
   const request = this.editando
@@ -114,7 +146,8 @@ export class GestionarAnuncios implements OnInit {
     this.nuevo = {
       titulo: anuncio.titulo,
       contenido: anuncio.contenido,
-      activo: anuncio.activo
+      activo: anuncio.activo,
+      materiaNombre: anuncio.materiaNombre || ''
     };
     this.imagenPreview = anuncio.imagen ? `https://cf-guadalupana-production.up.railway.app${anuncio.imagen}` : null;
     this.cdr.detectChanges();
@@ -134,7 +167,7 @@ export class GestionarAnuncios implements OnInit {
   }
 
   resetForm() {
-    this.nuevo = { titulo: '', contenido: '', activo: true };
+    this.nuevo = { titulo: '', contenido: '', activo: true, materiaNombre: '' };
     this.imagenPreview = null;
     this.imagenFile = null;
     this.editando = null;

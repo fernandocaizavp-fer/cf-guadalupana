@@ -16,7 +16,7 @@ export const upload = multer({
 });
 
 export const crearAnuncio = async (req: any, res: Response) => {
-  const { titulo, contenido } = req.body;
+  const { titulo, contenido, materiaNombre } = req.body;
   try {
     // Sube la imagen a Cloudinary y guarda la URL completa (permanente).
     const imagen = req.file
@@ -32,7 +32,7 @@ export const crearAnuncio = async (req: any, res: Response) => {
     const autorNombre = autor ? `${autor.nombre} ${autor.apellido}` : null;
 
     const anuncio = await prisma.anuncio.create({
-      data: { titulo, contenido, imagen, autorRol, autorNombre }
+      data: { titulo, contenido, imagen, autorRol, autorNombre, materiaNombre: materiaNombre || null }
     });
     res.json({ message: 'Anuncio creado', anuncio });
   } catch (error) {
@@ -68,9 +68,14 @@ export const listarTodosAnuncios = async (req: Request, res: Response) => {
 
 export const actualizarAnuncio = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { titulo, contenido, activo } = req.body;
+  const { titulo, contenido, activo, materiaNombre } = req.body;
   try {
-    const data: any = { titulo, contenido, activo: activo === 'true' || activo === true };
+    const data: any = {
+      titulo,
+      contenido,
+      activo: activo === 'true' || activo === true,
+      materiaNombre: materiaNombre || null
+    };
     if (req.file) {
       data.imagen = (await subirArchivo(req.file.buffer, req.file.originalname, 'cf_guadalupana/anuncios')).url;
     }

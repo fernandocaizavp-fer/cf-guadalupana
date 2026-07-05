@@ -123,6 +123,12 @@
                     {{ anuncio.createdAt | date:'dd/MM/yyyy' }}
                   </div>
                   <h4>{{ anuncio.titulo }}</h4>
+                  @if (anuncio.materiaNombre) {
+                    <div class="anuncio-materia-chip">
+                      <mat-icon>menu_book</mat-icon>
+                      <span>{{ anuncio.materiaNombre }}</span>
+                    </div>
+                  }
                   <p>{{ anuncio.contenido }}</p>
                   @if (etiquetaAutor(anuncio)) {
                     <div class="anuncio-autor">
