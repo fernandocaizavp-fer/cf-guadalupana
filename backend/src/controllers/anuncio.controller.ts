@@ -36,6 +36,7 @@ export const crearAnuncio = async (req: any, res: Response) => {
     });
     res.json({ message: 'Anuncio creado', anuncio });
   } catch (error) {
+    console.error('[anuncio] crearAnuncio falló:', error);
     res.status(500).json({ error: 'Error al crear anuncio' });
   }
 };
@@ -48,6 +49,7 @@ export const listarAnuncios = async (req: Request, res: Response) => {
     });
     res.json(anuncios);
   } catch (error) {
+    console.error('[anuncio] listarAnuncios falló:', error);
     res.status(500).json({ error: 'Error al listar anuncios' });
   }
 };
@@ -59,6 +61,7 @@ export const listarTodosAnuncios = async (req: Request, res: Response) => {
     });
     res.json(anuncios);
   } catch (error) {
+    console.error('[anuncio] listarTodosAnuncios falló:', error);
     res.status(500).json({ error: 'Error al listar anuncios' });
   }
 };
@@ -77,6 +80,7 @@ export const actualizarAnuncio = async (req: Request, res: Response) => {
     });
     res.json({ message: 'Anuncio actualizado', anuncio });
   } catch (error) {
+    console.error('[anuncio] actualizarAnuncio falló:', error);
     res.status(500).json({ error: 'Error al actualizar anuncio' });
   }
 };
@@ -86,6 +90,7 @@ export const eliminarAnuncio = async (req: Request, res: Response) => {
     await prisma.anuncio.delete({ where: { id: Number(req.params.id) } });
     res.json({ message: 'Anuncio eliminado' });
   } catch (error) {
+    console.error('[anuncio] eliminarAnuncio falló:', error);
     res.status(500).json({ error: 'Error al eliminar anuncio' });
   }
 };
