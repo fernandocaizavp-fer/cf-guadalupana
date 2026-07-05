@@ -283,6 +283,13 @@ $border: #e2e8f0;
   .item-sep { color: #cbd5e1; font-weight: 300; }
   .item-nombre { color: #475569; }
 
+  .btn-quitar {
+    margin-left: auto;
+    font-size: 12px;
+    line-height: 28px;
+    mat-icon { color: inherit; }
+  }
+
   &.principal-item {
     background: #fffbeb;
     border-color: rgba($gold, 0.4);
@@ -302,6 +309,7 @@ $border: #e2e8f0;
       display: flex;
       align-items: center;
       gap: 8px;
+      width: 100%;
     }
 
     .grupo-subs {

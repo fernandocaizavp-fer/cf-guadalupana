@@ -94,6 +94,36 @@ export const asignarProfesorPrincipalMateria = async (req: Request, res: Respons
   }
 };
 
+// Quita el docente de una materia (libera la materia para reasignarla). No borra
+// tareas ni notas: esas cuelgan de la materia, no del profesor.
+export const desasignarProfesor = async (req: Request, res: Response) => {
+  const { materiaId } = req.body;
+  try {
+    const materia = await prisma.materia.update({
+      where: { id: Number(materiaId) },
+      data: { profesorId: null }
+    });
+    res.json({ message: 'Profesor desasignado', materia });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al desasignar profesor' });
+  }
+};
+
+// Quita el rol de docente principal de un curso (limpia profesorPrincipalId en
+// todas sus materias Práctica/Teoría).
+export const desasignarProfesorPrincipal = async (req: Request, res: Response) => {
+  const { cursoId } = req.body;
+  try {
+    await prisma.materia.updateMany({
+      where: { cursoId: Number(cursoId) },
+      data: { profesorPrincipalId: null }
+    });
+    res.json({ message: 'Profesor principal desasignado' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al desasignar profesor principal' });
+  }
+};
+
 export const getCursosConSubmaterias = async (req: Request, res: Response) => {
   const { profesorId } = req.params;
   try {

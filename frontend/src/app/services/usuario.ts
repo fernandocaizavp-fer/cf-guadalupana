@@ -59,6 +59,18 @@ export class UsuarioService {
   });
 }
 
+desasignarProfesor(materiaId: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/usuarios/desasignar-materia`, { materiaId }, {
+    headers: this.getHeaders()
+  });
+}
+
+desasignarProfesorPrincipal(cursoId: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/usuarios/desasignar-profesor-principal`, { cursoId }, {
+    headers: this.getHeaders()
+  });
+}
+
 getCursosConSubmaterias(profesorId: number): Observable<any[]> {
   return this.http.get<any[]>(`${this.apiUrl}/usuarios/cursos-con-submaterias/${profesorId}`,
     { headers: this.getHeaders() });

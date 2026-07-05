@@ -240,6 +240,9 @@
                   <div class="detalle-item principal-item">
                     <mat-icon>star</mat-icon>
                     <span>Docente principal — <strong>{{ m.cursoNombre }}</strong></span>
+                    <button mat-button color="warn" class="btn-quitar" (click)="quitarPrincipal(m)">
+                      <mat-icon>link_off</mat-icon> Quitar
+                    </button>
                   </div>
                 }
 
@@ -248,6 +251,9 @@
                     <span class="item-curso">{{ m.cursoNombre }}</span>
                     <span class="item-sep">—</span>
                     <span class="item-nombre">{{ m.nombre }}</span>
+                    <button mat-button color="warn" class="btn-quitar" (click)="quitarMateria(m)">
+                      <mat-icon>link_off</mat-icon> Quitar
+                    </button>
                   </div>
                 }
 
@@ -257,6 +263,9 @@
                       <span class="item-curso">{{ m.cursoNombre }}</span>
                       <span class="item-sep">—</span>
                       <span class="item-nombre">Práctica / Teoría</span>
+                      <button mat-button color="warn" class="btn-quitar" (click)="quitarSubmateriaGrupo(m)">
+                        <mat-icon>link_off</mat-icon> Quitar
+                      </button>
                     </div>
                     <div class="grupo-subs">
                       @for (sub of m.subs; track sub) {

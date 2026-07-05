@@ -137,7 +137,7 @@ export class GestionDocentes implements OnInit {
 
 getMateriasDocente(docente: any): any[] {
   const resultado: any[] = [];
-  const submateriasPorCurso: { [cursoId: number]: { cursoNombre: string; subs: string[] } } = {};
+  const submateriasPorCurso: { [cursoId: number]: { cursoNombre: string; subs: string[]; ids: number[] } } = {};
 
   this.cursosConMaterias.forEach(curso => {
     const esPrincipal = (curso.materias || []).some((m: any) =>
@@ -148,6 +148,7 @@ getMateriasDocente(docente: any): any[] {
       resultado.push({
         tipo: 'principal',
         id: `principal-${curso.id}`,
+        cursoId: curso.id,
         cursoNombre: curso.ramaArtesanal
       });
     }
@@ -169,11 +170,12 @@ getMateriasDocente(docente: any): any[] {
     (curso.materias || []).forEach((m: any) => {
       if (!m.esSubmateria || m.profesorId !== docente.id) return;
       if (!submateriasPorCurso[curso.id]) {
-        submateriasPorCurso[curso.id] = { cursoNombre: curso.ramaArtesanal, subs: [] };
+        submateriasPorCurso[curso.id] = { cursoNombre: curso.ramaArtesanal, subs: [], ids: [] };
       }
       if (!submateriasPorCurso[curso.id].subs.includes(m.nombre)) {
         submateriasPorCurso[curso.id].subs.push(m.nombre);
       }
+      submateriasPorCurso[curso.id].ids.push(m.id);
     });
   });
 
@@ -183,11 +185,58 @@ getMateriasDocente(docente: any): any[] {
       tipo: 'submateria-grupo',
       id: `sub-grupo-${cursoId}`,
       cursoNombre: grupo.cursoNombre,
-      subs: grupo.subs
+      subs: grupo.subs,
+      ids: grupo.ids
     });
   });
 
   return resultado;
+}
+
+// ── Quitar asignaciones (libera la materia para reasignarla) ──
+
+quitarMateria(item: any) {
+  if (!confirm(`¿Quitar "${item.nombre}" (${item.cursoNombre}) de este docente?`)) return;
+  this.usuarioService.desasignarProfesor(item.id).subscribe({
+    next: () => {
+      this.snackBar.open('Materia liberada', 'OK', { duration: 3000 });
+      this.cargarDocentes();
+    },
+    error: () => this.snackBar.open('Error al quitar la materia', 'OK', { duration: 3000 })
+  });
+}
+
+quitarSubmateriaGrupo(item: any) {
+  if (!confirm(`¿Quitar las submaterias de "${item.cursoNombre}" de este docente?`)) return;
+  const ids: number[] = item.ids || [];
+  let completados = 0;
+  let huboError = false;
+  ids.forEach((id) => this.usuarioService.desasignarProfesor(id).subscribe({
+    next: () => {
+      completados++;
+      if (completados === ids.length) {
+        this.snackBar.open('Submaterias liberadas', 'OK', { duration: 3000 });
+        this.cargarDocentes();
+      }
+    },
+    error: () => {
+      if (!huboError) {
+        huboError = true;
+        this.snackBar.open('Error al quitar las submaterias', 'OK', { duration: 3000 });
+      }
+    }
+  }));
+}
+
+quitarPrincipal(item: any) {
+  if (!confirm(`¿Quitar el rol de docente principal de "${item.cursoNombre}"?`)) return;
+  this.usuarioService.desasignarProfesorPrincipal(item.cursoId).subscribe({
+    next: () => {
+      this.snackBar.open('Rol de docente principal quitado', 'OK', { duration: 3000 });
+      this.cargarDocentes();
+    },
+    error: () => this.snackBar.open('Error al quitar el rol principal', 'OK', { duration: 3000 })
+  });
 }
 
   eliminarDocente(id: number) {
