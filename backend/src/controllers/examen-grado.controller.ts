@@ -46,7 +46,15 @@ export const getEstudiantesExamenGrado = async (req: Request, res: Response) => 
       };
     });
 
-    res.json({ materia: { id: materia.id, nombre: materia.nombre }, estudiantes });
+    res.json({
+      materia: {
+        id: materia.id,
+        nombre: materia.nombre,
+        esSubmateria: materia.esSubmateria,
+        materiaParent: materia.materiaParent
+      },
+      estudiantes
+    });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener estudiantes' });
   }

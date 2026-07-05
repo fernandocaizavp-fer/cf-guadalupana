@@ -231,12 +231,37 @@
                         Disciplina
                       </button>
 
-                      <button mat-flat-button
-                        class="btn orange"
-                        (click)="irAExamenGrado(materia.id)">
-                        <mat-icon>school</mat-icon>
-                        Examen de grado
-                      </button>
+                      @if (materia.esSubmateria) {
+
+                        <button mat-flat-button
+                          class="btn orange"
+                          [matMenuTriggerFor]="examenMenu">
+                          <mat-icon>school</mat-icon>
+                          Examen de grado
+                          <mat-icon>arrow_drop_down</mat-icon>
+                        </button>
+
+                        <mat-menu #examenMenu="matMenu">
+                          <button mat-menu-item (click)="irAExamenGrado(materia.id)">
+                            <mat-icon>build</mat-icon>
+                            <span>Examen de grado — Práctica</span>
+                          </button>
+                          <button mat-menu-item (click)="irAExamenGrado(materia.idGemela)">
+                            <mat-icon>menu_book</mat-icon>
+                            <span>Examen de grado — Teoría</span>
+                          </button>
+                        </mat-menu>
+
+                      } @else {
+
+                        <button mat-flat-button
+                          class="btn orange"
+                          (click)="irAExamenGrado(materia.id)">
+                          <mat-icon>school</mat-icon>
+                          Examen de grado
+                        </button>
+
+                      }
 
                     </div>
 

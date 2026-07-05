@@ -6,7 +6,7 @@
       </button>
       <div class="title-meta">
         <h1>{{ materia?.nombre || 'Materia' }}</h1>
-        <span>Examen Escrito de Grado</span>
+        <span>Examen Escrito de Grado@if (materia?.materiaParent) { &nbsp;·&nbsp;{{ materia.materiaParent }} }</span>
       </div>
     </div>
     <span class="flex-spacer"></span>
