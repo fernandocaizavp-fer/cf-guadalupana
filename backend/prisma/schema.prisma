@@ -255,6 +255,9 @@ model Anuncio {
   autorNombre String?  @db.VarChar(200)
   // Materia a la que se refiere el anuncio (etiqueta opcional, denormalizada).
   materiaNombre String? @db.VarChar(150)
+  // Curso al que se dirige el anuncio. Null = general (lo ven todos). Con valor,
+  // solo lo ven los estudiantes matriculados en ese curso.
+  cursoId     Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

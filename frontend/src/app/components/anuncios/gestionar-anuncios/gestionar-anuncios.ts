@@ -32,13 +32,15 @@ export class GestionarAnuncios implements OnInit {
   imagenPreview: string | null = null;
   imagenFile: File | null = null;
   editando: any = null;
-  materiasOpciones: string[] = [];   // materias del usuario (para etiquetar)
+  // materias del usuario (label visible + curso al que pertenece)
+  materiasOpciones: { label: string; cursoId: number }[] = [];
 
   nuevo = {
     titulo: '',
     contenido: '',
     activo: true,
-    materiaNombre: ''
+    materiaNombre: '',
+    cursoId: null as number | null
   };
 
   constructor(
@@ -64,18 +66,26 @@ export class GestionarAnuncios implements OnInit {
       { headers }
     ).subscribe({
       next: (materias) => {
-        const set = new Set<string>();
+        const map = new Map<string, number>();
         (materias || []).forEach((m: any) => {
           // Omitir las materias principales Práctica/Teoría (no son dictables)
           if (!m.esSubmateria && (m.nombre === 'Práctica' || m.nombre === 'Teoría')) return;
           const curso = m.curso?.ramaArtesanal ? ` — ${m.curso.ramaArtesanal}` : '';
-          set.add(`${m.nombre}${curso}`);
+          const label = `${m.nombre}${curso}`;
+          if (!map.has(label)) map.set(label, m.cursoId);
         });
-        this.materiasOpciones = Array.from(set).sort();
+        this.materiasOpciones = Array.from(map, ([label, cursoId]) => ({ label, cursoId }))
+          .sort((a, b) => a.label.localeCompare(b.label));
         this.cdr.detectChanges();
       },
       error: () => { /* silencioso: sin materias, el combo queda solo con "General" */ }
     });
+  }
+
+  // Al elegir una materia en el combo, guarda también el curso al que pertenece.
+  onMateriaChange() {
+    const op = this.materiasOpciones.find(o => o.label === this.nuevo.materiaNombre);
+    this.nuevo.cursoId = op ? op.cursoId : null;
   }
 
   cargarAnuncios() {
@@ -119,6 +129,7 @@ export class GestionarAnuncios implements OnInit {
   formData.append('contenido', this.nuevo.contenido);
   formData.append('activo', String(this.nuevo.activo));
   formData.append('materiaNombre', this.nuevo.materiaNombre || '');
+  formData.append('cursoId', this.nuevo.cursoId != null ? String(this.nuevo.cursoId) : '');
   if (this.imagenFile) formData.append('imagen', this.imagenFile);
 
   const request = this.editando
@@ -147,7 +158,8 @@ export class GestionarAnuncios implements OnInit {
       titulo: anuncio.titulo,
       contenido: anuncio.contenido,
       activo: anuncio.activo,
-      materiaNombre: anuncio.materiaNombre || ''
+      materiaNombre: anuncio.materiaNombre || '',
+      cursoId: anuncio.cursoId ?? null
     };
     this.imagenPreview = anuncio.imagen ? `https://cf-guadalupana-production.up.railway.app${anuncio.imagen}` : null;
     this.cdr.detectChanges();
@@ -167,7 +179,7 @@ export class GestionarAnuncios implements OnInit {
   }
 
   resetForm() {
-    this.nuevo = { titulo: '', contenido: '', activo: true, materiaNombre: '' };
+    this.nuevo = { titulo: '', contenido: '', activo: true, materiaNombre: '', cursoId: null };
     this.imagenPreview = null;
     this.imagenFile = null;
     this.editando = null;

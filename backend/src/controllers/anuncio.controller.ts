@@ -16,7 +16,7 @@ export const upload = multer({
 });
 
 export const crearAnuncio = async (req: any, res: Response) => {
-  const { titulo, contenido, materiaNombre } = req.body;
+  const { titulo, contenido, materiaNombre, cursoId } = req.body;
   try {
     // Sube la imagen a Cloudinary y guarda la URL completa (permanente).
     const imagen = req.file
@@ -32,7 +32,11 @@ export const crearAnuncio = async (req: any, res: Response) => {
     const autorNombre = autor ? `${autor.nombre} ${autor.apellido}` : null;
 
     const anuncio = await prisma.anuncio.create({
-      data: { titulo, contenido, imagen, autorRol, autorNombre, materiaNombre: materiaNombre || null }
+      data: {
+        titulo, contenido, imagen, autorRol, autorNombre,
+        materiaNombre: materiaNombre || null,
+        cursoId: cursoId ? Number(cursoId) : null
+      }
     });
     res.json({ message: 'Anuncio creado', anuncio });
   } catch (error) {
@@ -41,10 +45,23 @@ export const crearAnuncio = async (req: any, res: Response) => {
   }
 };
 
-export const listarAnuncios = async (req: Request, res: Response) => {
+export const listarAnuncios = async (req: any, res: Response) => {
   try {
+    // Los estudiantes solo ven los anuncios de su curso + los generales (sin
+    // curso). Docentes y admin ven todos los activos (para gestionarlos).
+    let where: any = { activo: true };
+    if (req.usuario?.rol === 'ESTUDIANTE') {
+      const matricula = await prisma.matricula.findUnique({
+        where: { usuarioId: req.usuario.id },
+        select: { cursoId: true }
+      });
+      where = {
+        activo: true,
+        OR: [{ cursoId: null }, { cursoId: matricula?.cursoId ?? -1 }]
+      };
+    }
     const anuncios = await prisma.anuncio.findMany({
-      where: { activo: true },
+      where,
       orderBy: { createdAt: 'desc' }
     });
     res.json(anuncios);
@@ -68,13 +85,14 @@ export const listarTodosAnuncios = async (req: Request, res: Response) => {
 
 export const actualizarAnuncio = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { titulo, contenido, activo, materiaNombre } = req.body;
+  const { titulo, contenido, activo, materiaNombre, cursoId } = req.body;
   try {
     const data: any = {
       titulo,
       contenido,
       activo: activo === 'true' || activo === true,
-      materiaNombre: materiaNombre || null
+      materiaNombre: materiaNombre || null,
+      cursoId: cursoId ? Number(cursoId) : null
     };
     if (req.file) {
       data.imagen = (await subirArchivo(req.file.buffer, req.file.originalname, 'cf_guadalupana/anuncios')).url;

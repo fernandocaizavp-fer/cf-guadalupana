@@ -36,14 +36,15 @@
 
       @if (materiasOpciones.length > 0) {
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Materia (opcional)</mat-label>
-          <mat-select [(ngModel)]="nuevo.materiaNombre">
-            <mat-option value="">General (todas)</mat-option>
-            @for (op of materiasOpciones; track op) {
-              <mat-option [value]="op">{{ op }}</mat-option>
+          <mat-label>Materia / paralelo (opcional)</mat-label>
+          <mat-select [(ngModel)]="nuevo.materiaNombre" (ngModelChange)="onMateriaChange()">
+            <mat-option value="">General (todos los estudiantes)</mat-option>
+            @for (op of materiasOpciones; track op.label) {
+              <mat-option [value]="op.label">{{ op.label }}</mat-option>
             }
           </mat-select>
           <mat-icon matSuffix>menu_book</mat-icon>
+          <mat-hint>Si eliges una materia, solo la verán los estudiantes de ese paralelo.</mat-hint>
         </mat-form-field>
       }
 
