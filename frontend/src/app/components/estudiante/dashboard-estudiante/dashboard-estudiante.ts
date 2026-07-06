@@ -7,17 +7,19 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../services/auth';
 import { MatriculaService } from '../../../services/matricula';
 import { calcularDisciplinaPonderada } from '../../../services/disciplina-util';
 import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
+import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard-estudiante',
   imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
-    MatProgressSpinnerModule, MatSnackBarModule, MatTableModule, DatePipe],
+    MatProgressSpinnerModule, MatSnackBarModule, MatTableModule, MatDialogModule, DatePipe],
   templateUrl: './dashboard-estudiante.html',
   styleUrl: './dashboard-estudiante.scss'
 })
@@ -43,7 +45,8 @@ export class DashboardEstudiante implements OnInit {
     private matriculaService: MatriculaService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-    private http: HttpClient
+    private http: HttpClient,
+    private dialog: MatDialog
   ) {
     this.usuario = this.authService.getUsuario();
   }
@@ -208,8 +211,20 @@ cargarNotasSemestre() {
   }
 
   logout() {
-    if (!confirm('¿Estás seguro de que deseas cerrar sesión?')) return;
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.dialog.open(ConfirmDialog, {
+      width: '380px',
+      data: {
+        titulo: 'Cerrar sesión',
+        mensaje: '¿Estás seguro de que deseas cerrar sesión?',
+        confirmText: 'Cerrar sesión',
+        cancelText: 'Cancelar',
+        icon: 'logout'
+      }
+    }).afterClosed().subscribe(ok => {
+      if (ok) {
+        this.authService.logout();
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }

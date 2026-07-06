@@ -7,17 +7,19 @@ import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../../services/auth';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
+import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-dashboard-profesor',
   standalone: true,
   imports: [
     MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
-    MatMenuModule, MatProgressSpinnerModule, MatSnackBarModule, DatePipe
+    MatMenuModule, MatProgressSpinnerModule, MatSnackBarModule, MatDialogModule, DatePipe
   ],
   templateUrl: './dashboard-profesor.html',
   styleUrl: './dashboard-profesor.scss'
@@ -41,7 +43,8 @@ export class DashboardProfesor implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-    private http: HttpClient
+    private http: HttpClient,
+    private dialog: MatDialog
   ) {
     this.usuario = this.authService.getUsuario();
   }
@@ -133,8 +136,20 @@ export class DashboardProfesor implements OnInit {
   }
 
   logout() {
-    if (!confirm('¿Estás seguro de que deseas cerrar sesión?')) return;
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.dialog.open(ConfirmDialog, {
+      width: '380px',
+      data: {
+        titulo: 'Cerrar sesión',
+        mensaje: '¿Estás seguro de que deseas cerrar sesión?',
+        confirmText: 'Cerrar sesión',
+        cancelText: 'Cancelar',
+        icon: 'logout'
+      }
+    }).afterClosed().subscribe(ok => {
+      if (ok) {
+        this.authService.logout();
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }
