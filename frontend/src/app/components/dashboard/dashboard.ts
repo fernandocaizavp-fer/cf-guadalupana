@@ -48,6 +48,7 @@ export class Dashboard {
   }
 
   logout() {
+    if (!confirm('¿Estás seguro de que deseas cerrar sesión?')) return;
     this.authService.logout();
     this.router.navigate(['/login']);
   }

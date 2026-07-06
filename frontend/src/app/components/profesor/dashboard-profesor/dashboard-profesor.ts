@@ -133,6 +133,7 @@ export class DashboardProfesor implements OnInit {
   }
 
   logout() {
+    if (!confirm('¿Estás seguro de que deseas cerrar sesión?')) return;
     this.authService.logout();
     this.router.navigate(['/login']);
   }
