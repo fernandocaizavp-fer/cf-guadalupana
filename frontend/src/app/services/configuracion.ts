@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth';
+import { environment } from '../../environments/environment';
 
 export interface Configuracion {
   id: number;
@@ -19,7 +20,7 @@ export interface Configuracion {
   providedIn: 'root'
 })
 export class ConfiguracionService {
-  private apiUrl = 'https://cf-guadalupana-production.up.railway.app/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

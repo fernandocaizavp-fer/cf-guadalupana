@@ -24,7 +24,12 @@ export const crearMatricula = async (req: Request, res: Response) => {
     const totalMatriculas = await prisma.matricula.count({
       where: { cursoId: Number(cursoId) }
     });
-    const matriculaNo = String(totalMatriculas + 1).padStart(3, '0');
+    const numericMatriculaNo = totalMatriculas + 1;
+    const matriculaNo = String(numericMatriculaNo).padStart(3, '0');
+
+    // Lógica para calcular Tomo y Página automáticamente
+    const tomoFinal = tomo || '1'; // Tomo por defecto es '1'
+    const paginaCalculada = String((numericMatriculaNo * 2) - 1); // Página es (NroMatricula * 2) - 1
 
     const resultado = await prisma.$transaction(async (tx) => {
       const usuario = await tx.usuario.create({
@@ -40,8 +45,8 @@ export const crearMatricula = async (req: Request, res: Response) => {
       const matricula = await tx.matricula.create({
         data: {
           matriculaNo,
-          tomo,
-          pagina,
+          tomo: tomoFinal,
+          pagina: paginaCalculada,
           apellidos: apellidos.toUpperCase(),
           nombres: nombres.toUpperCase(),
           cedula,

@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from './auth';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ExamenGradoService {
-  private api = 'https://cf-guadalupana-production.up.railway.app/api/examen-grado';
+  private api = `${environment.apiUrl}/examen-grado`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 

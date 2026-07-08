@@ -70,7 +70,7 @@ model Materia {
 
 model Matricula {
   id                  Int      @id @default(autoincrement())
-  matriculaNo         String   @unique @db.VarChar(10)
+  matriculaNo         String   @db.VarChar(10)
   tomo                String?  @db.VarChar(5)
   pagina              String?  @db.VarChar(5)
   apellidos           String   @db.VarChar(100)
@@ -109,6 +109,8 @@ model Matricula {
   examenesGrado         ExamenGrado[]
   observacionAsistencia ObservacionAsistencia?
   entregasTarea         EntregaTarea[]
+
+  @@unique([cursoId, matriculaNo])
 }
 
 model DatosPersonalesMatricula {
