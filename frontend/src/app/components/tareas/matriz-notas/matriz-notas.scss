@@ -116,6 +116,7 @@ table.matriz {
   border-collapse: separate;
   border-spacing: 0;
   width: 100%;
+  table-layout: fixed; // Estudiante/Promedio fijos; las tareas reparten el resto por igual
   font-size: 13px;
 
   thead th {
@@ -136,7 +137,7 @@ table.matriz {
 
       .tarea-nombre {
         display: block;
-        max-width: 150px;
+        max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -153,7 +154,7 @@ table.matriz {
 
   th.col-estudiante, td.col-estudiante {
     text-align: left;
-    min-width: 240px;
+    width: 200px;        // fija y angosta; el nombre se pega a la izquierda
   }
 
   // Columna de estudiante fija al hacer scroll horizontal
@@ -176,15 +177,18 @@ table.matriz {
 
   td.col-estudiante {
     display: table-cell;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.35;
     .num-matricula {
       display: inline-block;
       background: $navy;
       color: white;
       border-radius: 6px;
-      padding: 1px 7px;
+      padding: 1px 6px;
       font-size: 11px;
       font-weight: 700;
-      margin-right: 8px;
+      margin-right: 6px;
     }
     .nombre-est { font-weight: 600; color: #1e293b; }
     .faltan {
@@ -226,13 +230,16 @@ table.matriz {
     font-weight: 800;
     color: $navy;
     background: #f1f5f9;
-    min-width: 90px;
+    width: 84px;
   }
   thead th.col-promedio { background: #0d1a3e; color: white; }
+
+  // Las tareas reparten el ancho restante (layout fijo); centro mínimo legible.
+  th.col-tarea, td.celda { min-width: 56px; }
 }
 
 @media (max-width: 640px) {
   .page-wrapper { padding: 16px 12px 50px; }
   .matriz-toolbar .toolbar-content { padding: 0 14px; }
-  table.matriz th.col-estudiante, table.matriz td.col-estudiante { min-width: 180px; }
+  table.matriz th.col-estudiante, table.matriz td.col-estudiante { width: 150px; }
 }
