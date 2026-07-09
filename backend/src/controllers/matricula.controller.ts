@@ -2,6 +2,41 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
 
+// Fuente única de verdad para la numeración de una matrícula dentro de un curso:
+// el correlativo es max(matriculaNo)+1 (no un count, para no reutilizar números
+// si una matrícula fue borrada físicamente), el tomo por defecto es '1' y la
+// página se calcula como (correlativo * 2) - 1 (1, 3, 5, ... impares).
+const calcularSiguienteMatricula = async (cursoId: number, tomoActual?: string) => {
+  const existentes = await prisma.matricula.findMany({
+    where: { cursoId },
+    select: { matriculaNo: true }
+  });
+  const maxNo = existentes.reduce(
+    (max, e) => Math.max(max, parseInt(e.matriculaNo, 10) || 0),
+    0
+  );
+  const numericMatriculaNo = maxNo + 1;
+  return {
+    matriculaNo: String(numericMatriculaNo).padStart(3, '0'),
+    tomo: tomoActual || '1',
+    pagina: String((numericMatriculaNo * 2) - 1)
+  };
+};
+
+// Vista previa del próximo número de matrícula/tomo/página para un curso,
+// para que el formulario los muestre autollenados antes de guardar.
+export const siguienteMatricula = async (req: Request, res: Response) => {
+  try {
+    const cursoId = Number(req.params.cursoId);
+    if (!cursoId) return res.status(400).json({ error: 'Curso inválido' });
+    const preview = await calcularSiguienteMatricula(cursoId);
+    res.json(preview);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al calcular el número de matrícula' });
+  }
+};
+
 export const crearMatricula = async (req: Request, res: Response) => {
   const {
     tomo, pagina, apellidos, nombres, cedula, sexo,
@@ -21,22 +56,9 @@ export const crearMatricula = async (req: Request, res: Response) => {
   try {
     const hash = await bcrypt.hash(cedula, 10);
 
-    // El correlativo es el mayor matriculaNo del curso + 1 (no un count),
-    // para no reutilizar números si alguna matrícula fue borrada físicamente.
-    const existentes = await prisma.matricula.findMany({
-      where: { cursoId: Number(cursoId) },
-      select: { matriculaNo: true }
-    });
-    const maxNo = existentes.reduce(
-      (max, e) => Math.max(max, parseInt(e.matriculaNo, 10) || 0),
-      0
-    );
-    const numericMatriculaNo = maxNo + 1;
-    const matriculaNo = String(numericMatriculaNo).padStart(3, '0');
-
-    // Lógica para calcular Tomo y Página automáticamente
-    const tomoFinal = tomo || '1'; // Tomo por defecto es '1'
-    const paginaCalculada = String((numericMatriculaNo * 2) - 1); // Página es (NroMatricula * 2) - 1
+    // Numeración (correlativo, tomo, página) desde la fuente única de verdad.
+    const { matriculaNo, tomo: tomoFinal, pagina: paginaCalculada } =
+      await calcularSiguienteMatricula(Number(cursoId), tomo);
 
     const resultado = await prisma.$transaction(async (tx) => {
       const usuario = await tx.usuario.create({

@@ -56,6 +56,12 @@ export class MatriculaService {
     });
   }
 
+  getSiguienteMatricula(cursoId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/matriculas/siguiente/${cursoId}`, {
+      headers: this.getHeaders()
+    });
+  }
+
   consultarCedula(cedula: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/cedula/${cedula}`, {
       headers: this.getHeaders()

@@ -63,9 +63,27 @@ export class NuevaMatricula implements OnInit {
       next: (cursos) => {
         this.cursos = cursos;
         const cursoId = this.route.snapshot.queryParams['cursoId'];
-        if (cursoId) this.datos.cursoId = Number(cursoId);
+        if (cursoId) {
+          this.datos.cursoId = Number(cursoId);
+          this.onCursoChange();
+        }
       },
       error: () => this.snackBar.open('Error al cargar cursos', 'OK', { duration: 3000 })
+    });
+  }
+
+  // Al elegir un curso, autollenar Matrícula, Tomo y Página con el próximo
+  // correlativo calculado por el backend (fuente única de verdad). El docente
+  // solo verifica; no debe cambiar nada.
+  onCursoChange() {
+    if (!this.datos.cursoId) return;
+    this.matriculaService.getSiguienteMatricula(this.datos.cursoId).subscribe({
+      next: (p: any) => {
+        this.datos.matriculaNo = p.matriculaNo;
+        this.datos.tomo = p.tomo;
+        this.datos.pagina = p.pagina;
+      },
+      error: () => this.snackBar.open('No se pudo calcular el número de matrícula', 'OK', { duration: 3000 })
     });
   }
 
