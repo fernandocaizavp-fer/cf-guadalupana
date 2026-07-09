@@ -110,7 +110,12 @@ model Matricula {
   observacionAsistencia ObservacionAsistencia?
   entregasTarea         EntregaTarea[]
 
-  @@unique([cursoId, matriculaNo])
+  // NOTA: la unicidad de (cursoId, matriculaNo) NO se declara con @@unique
+  // porque debe ser PARCIAL (solo entre matrículas activas), y Prisma no
+  // soporta índices parciales en el schema. Se gestiona por SQL crudo en la
+  // migración 'matricula_unica_activa_por_curso' con el índice
+  // 'Matricula_cursoId_matriculaNo_activo_key' (WHERE activo = true). Esto
+  // permite reutilizar el número de un estudiante archivado (activo=false).
 }
 
 model DatosPersonalesMatricula {

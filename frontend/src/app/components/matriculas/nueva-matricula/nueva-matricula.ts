@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -54,7 +54,8 @@ export class NuevaMatricula implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
-    private titleService: Title
+    private titleService: Title,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -82,6 +83,8 @@ export class NuevaMatricula implements OnInit {
         this.datos.matriculaNo = p.matriculaNo;
         this.datos.tomo = p.tomo;
         this.datos.pagina = p.pagina;
+        // App zoneless: forzar el refresco de la vista al llegar la respuesta.
+        this.cdr.markForCheck();
       },
       error: () => this.snackBar.open('No se pudo calcular el número de matrícula', 'OK', { duration: 3000 })
     });
@@ -145,6 +148,7 @@ export class NuevaMatricula implements OnInit {
         this.datos.nombrepapa = d.nombrepapa || this.datos.nombrepapa;
         this.datos.nombremama = d.nombremama || this.datos.nombremama;
         this.consultandoCedula = false;
+        this.cdr.markForCheck();
         this.snackBar.open('Datos cargados desde el Registro Civil', 'OK', { duration: 3000 });
       },
       error: (err: any) => {

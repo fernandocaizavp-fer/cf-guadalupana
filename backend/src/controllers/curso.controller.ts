@@ -37,7 +37,8 @@ export const crearCurso = async (req: Request, res: Response) => {
 export const listarCursos = async (req: Request, res: Response) => {
   try {
     const cursos = await prisma.curso.findMany({
-      include: { materias: true, _count: { select: { matriculas: true } } }
+      // Solo cuenta matrículas activas: las archivadas (activo=false) no suman.
+      include: { materias: true, _count: { select: { matriculas: { where: { activo: true } } } } }
     });
     res.json(cursos);
   } catch (error) {
@@ -57,7 +58,8 @@ export const obtenerCurso = async (req: Request, res: Response) => {
           },
           orderBy: { id: 'asc' }
         },
-        matriculas: true
+        // Solo matrículas activas: las archivadas (activo=false) quedan ocultas.
+        matriculas: { where: { activo: true } }
       }
     });
     if (!curso) return res.status(404).json({ error: 'Curso no encontrado' });

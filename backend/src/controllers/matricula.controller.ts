@@ -7,8 +7,10 @@ import prisma from '../lib/prisma';
 // si una matrícula fue borrada físicamente), el tomo por defecto es '1' y la
 // página se calcula como (correlativo * 2) - 1 (1, 3, 5, ... impares).
 const calcularSiguienteMatricula = async (cursoId: number, tomoActual?: string) => {
+  // Solo matrículas activas: al archivar un estudiante (activo=false) su número
+  // se libera y vuelve a estar disponible (si no queda ninguno, el próximo es 001).
   const existentes = await prisma.matricula.findMany({
-    where: { cursoId },
+    where: { cursoId, activo: true },
     select: { matriculaNo: true }
   });
   const maxNo = existentes.reduce(
