@@ -27,12 +27,16 @@ export class NotasTarea implements OnInit {
   tarea: any = null;
   matriculas: any[] = [];
   loading = true;
-  guardando = false;
   notaMin = 0;
   notaMax = 10;
 
   // notas[matriculaId] = { valor, observacion }
   notas: { [key: number]: { valor: string, observacion: string } } = {};
+
+  // Guardado automático: estado del indicador y valores confirmados por estudiante.
+  estado: 'idle' | 'guardando' | 'guardado' | 'error' = 'idle';
+  private orig: { [id: number]: { valor: string, observacion: string } } = {};
+  private fadeTimer: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -69,11 +73,11 @@ export class NotasTarea implements OnInit {
                 // Inicializar notas
                 this.matriculas.forEach((m: any) => {
                   const notaExistente = this.tarea.notas?.find((n: any) => n.matriculaId === m.id);
-                  this.notas[m.id] = {
-                    valor: notaExistente?.valor !== null && notaExistente?.valor !== undefined
-                      ? String(notaExistente.valor) : '',
-                    observacion: notaExistente?.observacion || ''
-                  };
+                  const valor = notaExistente?.valor !== null && notaExistente?.valor !== undefined
+                    ? String(notaExistente.valor) : '';
+                  const observacion = notaExistente?.observacion || '';
+                  this.notas[m.id] = { valor, observacion };
+                  this.orig[m.id] = { valor, observacion }; // línea base para detectar cambios
                 });
                 this.loading = false;
                 this.cdr.detectChanges();
@@ -89,27 +93,42 @@ export class NotasTarea implements OnInit {
     });
   }
 
-  guardarNotas() {
-    this.guardando = true;
-    const notasArray = this.matriculas.map(m => ({
-      tareaId: this.tareaId,
-      matriculaId: m.id,
-      valor: this.notas[m.id]?.valor !== '' ? this.notas[m.id]?.valor : null,
-      observacion: this.notas[m.id]?.observacion || null
-    }));
+  // Guardado automático de la nota/observación de un estudiante (al salir del campo).
+  guardarUno(matriculaId: number) {
+    const n = this.notas[matriculaId];
+    if (!n) return;
+    const o = this.orig[matriculaId] || { valor: '', observacion: '' };
+    const valorStr = (n.valor === null || n.valor === undefined) ? '' : String(n.valor);
+    const obs = n.observacion || '';
+    if (valorStr === o.valor && obs === o.observacion) return; // sin cambios: no guarda
 
-    this.tareaService.guardarNotas(notasArray).subscribe({
+    this.estado = 'guardando';
+    this.cdr.detectChanges();
+    this.tareaService.guardarNotas([{
+      tareaId: this.tareaId,
+      matriculaId,
+      valor: valorStr,            // '' => el backend lo guarda como null (sin nota)
+      observacion: obs || null
+    }]).subscribe({
       next: () => {
-        this.guardando = false;
-        this.snackBar.open('Notas guardadas exitosamente', 'OK', { duration: 3000 });
-        this.cdr.detectChanges();
+        this.orig[matriculaId] = { valor: valorStr, observacion: obs };
+        this.marcarGuardado();
       },
       error: (e) => {
-        this.guardando = false;
-        this.snackBar.open(e?.error?.error || 'Error al guardar notas', 'OK', { duration: 3000 });
+        this.notas[matriculaId].valor = o.valor;
+        this.notas[matriculaId].observacion = o.observacion;
+        this.estado = 'error';
+        this.snackBar.open(e?.error?.error || 'Error al guardar la nota', 'OK', { duration: 3500 });
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private marcarGuardado() {
+    this.estado = 'guardado';
+    this.cdr.detectChanges();
+    clearTimeout(this.fadeTimer);
+    this.fadeTimer = setTimeout(() => { this.estado = 'idle'; this.cdr.detectChanges(); }, 2500);
   }
 
   volver() {

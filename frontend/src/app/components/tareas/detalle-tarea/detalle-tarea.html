@@ -10,9 +10,15 @@
       </div>
     </div>
     <span class="flex-spacer"></span>
-    <button class="calificar-top" (click)="guardarCalificaciones()" [disabled]="guardando">
-      <mat-icon>save</mat-icon> {{ guardando ? 'Guardando...' : 'Guardar calificaciones' }}
-    </button>
+    <span class="estado-guardado" [class.err]="estado === 'error'" [class.visible]="estado !== 'idle'">
+      @if (estado === 'guardando') {
+        <mat-icon class="girando">sync</mat-icon> Guardando…
+      } @else if (estado === 'guardado') {
+        <mat-icon>check_circle</mat-icon> Cambios guardados
+      } @else if (estado === 'error') {
+        <mat-icon>error</mat-icon> Error al guardar
+      }
+    </span>
   </div>
 </mat-toolbar>
 
@@ -122,10 +128,12 @@
               </span>
               <span class="col-nota">
                 <input type="number" [min]="notaMin" [max]="notaMax" step="0.1"
-                  class="nota-input" [(ngModel)]="notas[e.id].valor" placeholder="—">
+                  class="nota-input" [(ngModel)]="notas[e.id].valor" placeholder="—"
+                  (blur)="guardarUno(e.id)" (keyup.enter)="guardarUno(e.id)">
               </span>
               <span class="col-obs">
-                <input type="text" class="obs-input" [(ngModel)]="notas[e.id].observacion" placeholder="Opcional">
+                <input type="text" class="obs-input" [(ngModel)]="notas[e.id].observacion" placeholder="Opcional"
+                  (blur)="guardarUno(e.id)">
               </span>
             </div>
           }

@@ -160,3 +160,23 @@
 
   &:focus { border-color: #1a2a5e; background: white; }
 }
+// Indicador de guardado automático (en el toolbar)
+.estado-guardado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+
+  &.visible { opacity: 1; }
+  &.err { color: #ffb4a8; }
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  .girando { animation: girar 1s linear infinite; }
+}
+
+@keyframes girar { to { transform: rotate(360deg); } }
