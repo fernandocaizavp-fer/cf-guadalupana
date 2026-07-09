@@ -99,6 +99,9 @@
     </div>
     <div class="section-actions">
       <span class="section-count">{{ tareas.length }} tarea{{ tareas.length !== 1 ? 's' : '' }}</span>
+      <button mat-flat-button class="matriz-btn" (click)="irAMatriz()">
+        <mat-icon>grid_on</mat-icon> Matriz de notas
+      </button>
       <button mat-flat-button class="al14-btn" (click)="descargarAL14()">
         <mat-icon>download</mat-icon> AL14
       </button>

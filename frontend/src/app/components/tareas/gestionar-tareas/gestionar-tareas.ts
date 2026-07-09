@@ -181,6 +181,10 @@ export class GestionarTareas implements OnInit {
     this.router.navigate(['/tareas', this.materiaId, 'notas', tareaId]);
   }
 
+  irAMatriz() {
+    this.router.navigate(['/tareas', this.materiaId, 'matriz']);
+  }
+
   eliminarTarea(id: number) {
     if (confirm('¿Eliminar esta tarea y todas sus notas?')) {
       this.tareaService.eliminarTarea(id).subscribe({
