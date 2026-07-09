@@ -4,13 +4,18 @@ import { getConfiguracion, primeraNotaFueraDeRango } from '../lib/configuracion'
 
 // Crear tarea
 export const crearTarea = async (req: Request, res: Response) => {
-  const { nombre, descripcion, fecha, semestre, materiaId } = req.body;
+  const { nombre, descripcion, fechaInicio, fechaFin, fecha, semestre, materiaId } = req.body;
   try {
+    // `fecha` (campo histórico, requerido) se toma de la fecha de inicio para
+    // mantener compatibilidad con los reportes AL14 y el ordenamiento existente.
+    const inicio = fechaInicio || fecha;
     const tarea = await prisma.tarea.create({
       data: {
         nombre,
         descripcion,
-        fecha: new Date(fecha),
+        fecha: new Date(inicio),
+        fechaInicio: inicio ? new Date(inicio) : null,
+        fechaFin: fechaFin ? new Date(fechaFin) : null,
         semestre: Number(semestre),
         materiaId: Number(materiaId)
       }
@@ -138,12 +143,15 @@ export const getNotasCursoSemestre = async (req: Request, res: Response) => {
 // Actualizar tarea (nombre, descripción y fecha)
 export const actualizarTarea = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { nombre, descripcion, fecha } = req.body;
+  const { nombre, descripcion, fechaInicio, fechaFin, fecha } = req.body;
   try {
     const data: any = {};
     if (nombre !== undefined) data.nombre = nombre;
     if (descripcion !== undefined) data.descripcion = descripcion;
-    if (fecha) data.fecha = new Date(fecha);
+    // La fecha de inicio manda: actualiza también el campo histórico `fecha`.
+    const inicio = fechaInicio ?? fecha;
+    if (inicio) { data.fecha = new Date(inicio); data.fechaInicio = new Date(inicio); }
+    if (fechaFin !== undefined) data.fechaFin = fechaFin ? new Date(fechaFin) : null;
 
     const tarea = await prisma.tarea.update({
       where: { id: Number(id) },

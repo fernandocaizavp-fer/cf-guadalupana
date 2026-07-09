@@ -81,10 +81,22 @@ export class DetalleTareaEstudiante implements OnInit {
     });
   }
 
+  // El plazo vence si la tarea tiene fecha límite y ya pasó.
+  get plazoVencido(): boolean {
+    if (!this.tarea?.fechaFin) return false;
+    return new Date() > new Date(this.tarea.fechaFin);
+  }
+
   onSeleccionEntrega(event: Event) {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
     if (files.length === 0) return;
+
+    if (this.plazoVencido) {
+      this.snackBar.open('El plazo de entrega ya finalizó', 'OK', { duration: 3500 });
+      input.value = '';
+      return;
+    }
 
     const grande = files.find(f => f.size > this.MAX_BYTES);
     if (grande) {

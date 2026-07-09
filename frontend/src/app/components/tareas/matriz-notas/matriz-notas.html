@@ -30,32 +30,15 @@
     </div>
   } @else {
 
-    <!-- Barra de acciones -->
-    <div class="acciones-bar">
-      <div class="info-leyenda">
-        <mat-icon>info</mat-icon>
-        <span>Haz clic en una celda para corregir la nota. Se guarda al salir del campo, o usa «Guardar todo».</span>
-      </div>
-      <div class="acciones-derecha">
-        @if (totalPendientes() > 0) {
-          <span class="chip-pendientes">{{ totalPendientes() }} sin guardar</span>
-        }
-        <button mat-flat-button class="btn-guardar-todo" [disabled]="guardando || totalPendientes() === 0"
-                (click)="guardarTodo()">
-          @if (guardando) {
-            <mat-spinner diameter="18"></mat-spinner>
-          } @else {
-            <mat-icon>save</mat-icon>
-          }
-          Guardar todo
-        </button>
-      </div>
+    <div class="info-leyenda">
+      <mat-icon>info</mat-icon>
+      <span>Haz clic en cualquier casilla para abrir esa tarea e ingresar o corregir la nota. Las casillas vacías están resaltadas.</span>
     </div>
 
     @if (tareas.length === 0) {
       <div class="estado-centro vacio">
         <mat-icon>grid_off</mat-icon>
-        <p>No hay tareas en este semestre. Crea tareas para calificar en la matriz.</p>
+        <p>No hay tareas en este semestre. Crea tareas para calificar.</p>
       </div>
     } @else if (matriculas.length === 0) {
       <div class="estado-centro vacio">
@@ -70,8 +53,10 @@
             <tr>
               <th class="col-estudiante sticky-col">Estudiante</th>
               @for (t of tareas; track t.id) {
-                <th class="col-tarea" [matTooltip]="t.descripcion || t.nombre">
+                <th class="col-tarea" (click)="irATarea(t.id)"
+                    [matTooltip]="'Abrir: ' + t.nombre">
                   <span class="tarea-nombre">{{ t.nombre }}</span>
+                  <span class="tarea-fecha">{{ (t.fechaFin || t.fechaInicio || t.fecha) | date:'dd/MM' }}</span>
                 </th>
               }
               <th class="col-promedio">Promedio</th>
@@ -90,14 +75,10 @@
                   }
                 </td>
                 @for (t of tareas; track t.id) {
-                  <td class="celda"
-                      [class.vacia]="(valores[clave(m.id, t.id)] || '') === ''"
-                      [class.pendiente]="celdaPendiente(m.id, t.id)">
-                    <input type="number" inputmode="decimal" [min]="notaMin" [max]="notaMax" step="0.01"
-                           [value]="valores[clave(m.id, t.id)]"
-                           (input)="onCelda(m.id, t.id, $event)"
-                           (blur)="guardarCelda(m.id, t.id)"
-                           (keyup.enter)="guardarCelda(m.id, t.id)">
+                  <td class="celda" [class.vacia]="!tieneNota(m.id, t.id)"
+                      (click)="irATarea(t.id)"
+                      [matTooltip]="tieneNota(m.id, t.id) ? 'Abrir tarea para editar' : 'Sin nota — clic para ingresar'">
+                    <span class="valor">{{ getNota(m.id, t.id) || '·' }}</span>
                   </td>
                 }
                 <td class="col-promedio">{{ promedioEstudiante(m.id) }}</td>

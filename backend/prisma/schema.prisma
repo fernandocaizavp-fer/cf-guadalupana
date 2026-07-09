@@ -187,6 +187,11 @@ model Tarea {
   nombre      String   @db.VarChar(150)
   descripcion String?
   fecha       DateTime
+  // Rango de la tarea: inicio y fecha límite de entrega. Nullable para no
+  // romper tareas antiguas. `fecha` se mantiene (= fechaInicio) por compatibilidad
+  // con los reportes AL14 y el ordenamiento existente.
+  fechaInicio DateTime?
+  fechaFin    DateTime?
   semestre    Int
   materiaId   Int
   materia     Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)

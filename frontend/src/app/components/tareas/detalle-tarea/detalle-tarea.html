@@ -38,8 +38,15 @@
         <div class="info-dato">
           <mat-icon>event</mat-icon>
           <div>
-            <span class="dato-label">Fecha</span>
-            <span class="dato-valor">{{ tarea.fecha | date:'dd/MM/yyyy' }}</span>
+            <span class="dato-label">Inicio</span>
+            <span class="dato-valor">{{ (tarea.fechaInicio || tarea.fecha) | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+        <div class="info-dato">
+          <mat-icon>event_busy</mat-icon>
+          <div>
+            <span class="dato-label">Fecha límite</span>
+            <span class="dato-valor">{{ tarea.fechaFin ? (tarea.fechaFin | date:'dd/MM/yyyy') : 'Sin límite' }}</span>
           </div>
         </div>
         <div class="info-dato">
@@ -86,9 +93,6 @@
     <div class="panel">
       <div class="panel-head">
         <div class="panel-title"><mat-icon>grading</mat-icon> Estudiantes</div>
-        <button class="guardar-inline" (click)="guardarCalificaciones()" [disabled]="guardando">
-          <mat-icon>save</mat-icon> {{ guardando ? 'Guardando...' : 'Guardar' }}
-        </button>
       </div>
 
       @if (estudiantes.length > 0) {

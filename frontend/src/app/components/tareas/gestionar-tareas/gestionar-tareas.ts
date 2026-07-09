@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { DatePipe } from '@angular/common';
 import { TareaService } from '../../../services/tarea';
 import { CursoService } from '../../../services/curso';
@@ -21,7 +22,7 @@ import { Title } from '@angular/platform-browser';
   selector: 'app-gestionar-tareas',
   imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatProgressSpinnerModule, MatSnackBarModule, MatDividerModule, DatePipe],
+    MatProgressSpinnerModule, MatSnackBarModule, MatDividerModule, MatCheckboxModule, DatePipe],
   templateUrl: './gestionar-tareas.html',
   styleUrl: './gestionar-tareas.scss'
 })
@@ -33,11 +34,13 @@ export class GestionarTareas implements OnInit {
   guardando = false;
   semestreSeleccionado = 1;
   editandoId: number | null = null; // null = creando; con valor = editando esa tarea
+  mostrarAdjuntar = false; // El docente decide si adjunta documentos de apoyo
 
   nuevaTarea = {
     nombre: '',
     descripcion: '',
-    fecha: '',
+    fechaInicio: '',
+    fechaFin: '',
     semestre: 1
   };
 
@@ -110,8 +113,12 @@ export class GestionarTareas implements OnInit {
   }
 
   guardarTarea() {
-    if (!this.nuevaTarea.nombre || !this.nuevaTarea.fecha) {
-      this.snackBar.open('Nombre y fecha son obligatorios', 'OK', { duration: 3000 });
+    if (!this.nuevaTarea.nombre || !this.nuevaTarea.fechaInicio) {
+      this.snackBar.open('Nombre y fecha de inicio son obligatorios', 'OK', { duration: 3000 });
+      return;
+    }
+    if (this.nuevaTarea.fechaFin && this.nuevaTarea.fechaFin < this.nuevaTarea.fechaInicio) {
+      this.snackBar.open('La fecha límite no puede ser anterior a la de inicio', 'OK', { duration: 3500 });
       return;
     }
     this.guardando = true;
@@ -121,7 +128,8 @@ export class GestionarTareas implements OnInit {
       this.tareaService.actualizarTarea(this.editandoId, {
         nombre: this.nuevaTarea.nombre,
         descripcion: this.nuevaTarea.descripcion,
-        fecha: this.nuevaTarea.fecha
+        fechaInicio: this.nuevaTarea.fechaInicio,
+        fechaFin: this.nuevaTarea.fechaFin || null
       }).subscribe({
         next: () => {
           this.finalizarGuardado(this.editandoId!, 'Tarea actualizada exitosamente');
@@ -158,16 +166,19 @@ export class GestionarTareas implements OnInit {
     this.nuevaTarea = {
       nombre: tarea.nombre,
       descripcion: tarea.descripcion || '',
-      fecha: this.formatearFecha(tarea.fecha),
+      fechaInicio: this.formatearFecha(tarea.fechaInicio || tarea.fecha),
+      fechaFin: this.formatearFecha(tarea.fechaFin),
       semestre: tarea.semestre
     };
+    this.mostrarAdjuntar = (tarea.archivos?.length || 0) > 0;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   cancelarEdicion() {
     this.editandoId = null;
-    this.nuevaTarea = { nombre: '', descripcion: '', fecha: '', semestre: 1 };
+    this.nuevaTarea = { nombre: '', descripcion: '', fechaInicio: '', fechaFin: '', semestre: 1 };
     this.archivosNuevos = [];
+    this.mostrarAdjuntar = false;
   }
 
   // Convierte una fecha ISO a 'yyyy-MM-dd' para el input type="date"
@@ -229,8 +240,9 @@ export class GestionarTareas implements OnInit {
   private finalizarGuardado(tareaId: number, mensaje: string) {
     const terminar = () => {
       this.archivosNuevos = [];
-      this.nuevaTarea = { nombre: '', descripcion: '', fecha: '', semestre: 1 };
+      this.nuevaTarea = { nombre: '', descripcion: '', fechaInicio: '', fechaFin: '', semestre: 1 };
       this.editandoId = null;
+      this.mostrarAdjuntar = false;
       this.guardando = false;
       this.snackBar.open(mensaje, 'OK', { duration: 3000 });
       this.cargarTareas();

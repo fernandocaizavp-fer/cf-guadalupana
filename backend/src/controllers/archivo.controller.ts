@@ -74,6 +74,15 @@ export const subirEntrega = async (req: any, res: Response) => {
   }
   if (!validarTamano(req, res)) return;
   try {
+    // La fecha límite bloquea la entrega: pasado ese momento no se admiten archivos.
+    const tarea = await prisma.tarea.findUnique({
+      where: { id: Number(tareaId) },
+      select: { fechaFin: true }
+    });
+    if (tarea?.fechaFin && new Date() > tarea.fechaFin) {
+      return res.status(403).json({ error: 'El plazo de entrega ya finalizó; no se pueden subir más archivos' });
+    }
+
     const matricula = await matriculaDelUsuario(req);
     if (!matricula) return res.status(403).json({ error: 'No se encontró la matrícula del estudiante' });
 

@@ -185,3 +185,27 @@ $danger: #dc2626;
 }
 
 .vacio { color: #94a3b8; font-size: 13px; margin: 0; }
+
+// Fecha límite y estado de plazo vencido
+.info-fecha .limite {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 14px;
+  &.vencido { color: #c0392b; font-weight: 700; }
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.subir-bloqueado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #c0392b;
+  font-weight: 700;
+  font-size: 13px;
+  background: #fdecea;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  padding: 6px 12px;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}

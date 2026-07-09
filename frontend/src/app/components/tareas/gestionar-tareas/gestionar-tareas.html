@@ -43,9 +43,15 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Fecha</mat-label>
-        <input matInput type="date" [(ngModel)]="nuevaTarea.fecha">
+        <mat-label>Fecha de inicio</mat-label>
+        <input matInput type="date" [(ngModel)]="nuevaTarea.fechaInicio">
         <mat-icon matPrefix>event</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Fecha límite (entrega)</mat-label>
+        <input matInput type="date" [(ngModel)]="nuevaTarea.fechaFin" [min]="nuevaTarea.fechaInicio">
+        <mat-icon matPrefix>event_busy</mat-icon>
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-span-2">
@@ -55,14 +61,20 @@
       </mat-form-field>
     </div>
 
-    <!-- DOCUMENTOS DE LA TAREA -->
+    <!-- DOCUMENTOS DE LA TAREA (opcional, el docente decide) -->
     <div class="form-archivos">
-      <label class="adjuntar-label">
-        <mat-icon>upload_file</mat-icon>
-        Adjuntar documentos (opcional)
-        <input type="file" multiple hidden (change)="onSeleccionArchivosForm($event)">
-      </label>
-      @if (archivosNuevos.length > 0) {
+      <mat-checkbox [(ngModel)]="mostrarAdjuntar" color="primary">
+        Adjuntar documentos de apoyo
+      </mat-checkbox>
+
+      @if (mostrarAdjuntar) {
+        <label class="adjuntar-label">
+          <mat-icon>upload_file</mat-icon>
+          Seleccionar documentos
+          <input type="file" multiple hidden (change)="onSeleccionArchivosForm($event)">
+        </label>
+      }
+      @if (mostrarAdjuntar && archivosNuevos.length > 0) {
         <div class="staged-files">
           @for (f of archivosNuevos; track $index) {
             <span class="staged-chip">
@@ -129,7 +141,10 @@
               <h3>{{ tarea.nombre }}</h3>
               <p class="tarea-fecha">
                 <mat-icon>event</mat-icon>
-                {{ tarea.fecha | date:'dd/MM/yyyy' }}
+                {{ (tarea.fechaInicio || tarea.fecha) | date:'dd/MM/yyyy' }}
+                @if (tarea.fechaFin) {
+                  <span class="hasta">→ {{ tarea.fechaFin | date:'dd/MM/yyyy' }}</span>
+                }
               </p>
               <p class="tarea-desc">{{ tarea.descripcion || 'Sin descripción' }}</p>
             </div>

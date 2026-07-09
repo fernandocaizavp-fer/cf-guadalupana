@@ -91,54 +91,16 @@ $white: #ffffff;
   }
 }
 
-// ── BARRA DE ACCIONES ───────────────────────────────
-.acciones-bar {
+// ── LEYENDA ─────────────────────────────────────────
+.info-leyenda {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 16px;
 
-  .info-leyenda {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #64748b;
-    font-size: 13px;
-    max-width: 620px;
-
-    mat-icon { font-size: 18px; width: 18px; height: 18px; color: $navy; }
-  }
-
-  .acciones-derecha {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .chip-pendientes {
-    background: #fff7e6;
-    color: #a15c00;
-    border: 1px solid #f2cd80;
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .btn-guardar-todo {
-    background: $navy !important;
-    color: white !important;
-    border-radius: 10px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    &:disabled { opacity: 0.5; }
-    mat-spinner { display: inline-block; }
-  }
+  mat-icon { font-size: 18px; width: 18px; height: 18px; color: $navy; }
 }
 
 // ── TABLA MATRIZ ────────────────────────────────────
@@ -167,13 +129,25 @@ table.matriz {
     z-index: 2;
     white-space: nowrap;
 
-    &.col-tarea .tarea-nombre {
-      display: inline-block;
-      max-width: 140px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      vertical-align: middle;
+    &.col-tarea {
+      cursor: pointer;
+      transition: background 0.15s;
+      &:hover { background: #24397a; }
+
+      .tarea-nombre {
+        display: block;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .tarea-fecha {
+        display: block;
+        font-size: 10px;
+        font-weight: 600;
+        opacity: 0.7;
+        margin-top: 2px;
+      }
     }
   }
 
@@ -226,26 +200,26 @@ table.matriz {
   }
 
   td.celda {
-    padding: 4px;
-    input {
-      width: 62px;
-      padding: 7px 6px;
-      border: 1px solid $border;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: #1e293b;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    transition: background 0.15s;
 
-      &:focus { border-color: $navy; box-shadow: 0 0 0 3px rgba(26,42,94,0.12); }
+    .valor {
+      display: inline-block;
+      min-width: 42px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+      color: #1e293b;
     }
 
-    // Celda sin nota registrada: fondo suave para verlo a simple vista
-    &.vacia input { background: #fbfbfd; border-style: dashed; }
-    // Celda con cambios sin guardar
-    &.pendiente input { border-color: $gold; box-shadow: 0 0 0 3px rgba(200,168,75,0.18); }
+    &:hover { background: rgba(26,42,94,0.06); }
+
+    // Celda sin nota registrada: resaltada para verla a simple vista
+    &.vacia {
+      background: #fdecea;
+      .valor { color: #c0392b; }
+      &:hover { background: #fbddd8; }
+    }
   }
 
   td.col-promedio, th.col-promedio {
