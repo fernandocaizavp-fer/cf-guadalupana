@@ -58,7 +58,52 @@
       </div>
     </div>
 
-    <!-- SUBMATERIAS -->
+    <!-- MATERIAS DEL CURSO -->
+    <div class="section-header">
+      <h3 class="section-title">Materias del curso</h3>
+    </div>
+
+    <div class="materias-card">
+      <!-- Práctica y Teoría: principales con submaterias desplegables -->
+      @for (parent of ['Práctica', 'Teoría']; track parent) {
+        <div class="materia-row parent" (click)="toggleParent(parent)">
+          <div class="mat-main">
+            <mat-icon class="chev">{{ expandido[parent] ? 'expand_more' : 'chevron_right' }}</mat-icon>
+            <span class="mat-nombre">{{ parent }}</span>
+            <span class="tag disciplina">Disciplina</span>
+          </div>
+          <span class="mat-count">{{ getSubmateriasDe(parent).length }} submateria(s)</span>
+        </div>
+
+        @if (expandido[parent]) {
+          @for (sub of getSubmateriasDe(parent); track sub.id) {
+            <div class="materia-row child">
+              <div class="mat-main">
+                <span class="bullet">•</span>
+                <span class="mat-nombre">{{ sub.nombre }}</span>
+              </div>
+              <span class="mat-docente" [class.sin]="!sub.profesor">Docente: {{ docenteDe(sub) }}</span>
+            </div>
+          }
+          @if (getSubmateriasDe(parent).length === 0) {
+            <div class="materia-row child vacio">Sin submaterias configuradas</div>
+          }
+        }
+      }
+
+      <!-- Materias normales: estáticas -->
+      @for (m of getMateriasNormales(); track m.id) {
+        <div class="materia-row">
+          <div class="mat-main">
+            <mat-icon class="mat-ico">menu_book</mat-icon>
+            <span class="mat-nombre">{{ m.nombre }}</span>
+          </div>
+          <span class="mat-docente" [class.sin]="!m.profesor">Docente: {{ docenteDe(m) }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- SUBMATERIAS (gestión) -->
     <div class="section-header">
       <h3 class="section-title">Submaterias de Práctica y Teoría</h3>
     </div>

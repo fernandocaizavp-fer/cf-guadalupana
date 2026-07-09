@@ -443,6 +443,32 @@ getSubmateriasUnicas(): any[] {
   return subs;
 }
 
+// ── Vista organizada de materias del curso ──
+expandido: { [parent: string]: boolean } = { 'Práctica': false, 'Teoría': false };
+
+toggleParent(parent: string) {
+  this.expandido[parent] = !this.expandido[parent];
+}
+
+// Submaterias de un parent ('Práctica' | 'Teoría'), ordenadas por nombre
+getSubmateriasDe(parent: string): any[] {
+  return (this.curso?.materias?.filter((m: any) => m.esSubmateria && m.materiaParent === parent) || [])
+    .sort((a: any, b: any) => (a.nombre || '').localeCompare(b.nombre || ''));
+}
+
+// Materias normales (ni Práctica/Teoría principales ni submaterias)
+getMateriasNormales(): any[] {
+  return (this.curso?.materias?.filter((m: any) =>
+    !m.esSubmateria && m.nombre !== 'Práctica' && m.nombre !== 'Teoría') || [])
+    .sort((a: any, b: any) => (a.nombre || '').localeCompare(b.nombre || ''));
+}
+
+// Nombre del docente encargado de una materia (o 'Sin asignar')
+docenteDe(materia: any): string {
+  const d = materia?.profesor;
+  return d ? `${d.nombre} ${d.apellido}` : 'Sin asignar';
+}
+
 agregarSubmateriaDoble() {
   const nombre = this.nuevaSubmateriaUnica?.trim();
   if (!nombre) {

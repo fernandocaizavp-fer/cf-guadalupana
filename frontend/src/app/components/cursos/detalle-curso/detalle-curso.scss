@@ -375,3 +375,79 @@ table {
   &.practica { background: #e3f2fd; color: #1565c0; }
   &.teoria { background: #e8f5e9; color: #2e7d32; }
 }
+// ── MATERIAS DEL CURSO (vista organizada) ──
+.materias-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+  margin-bottom: 26px;
+
+  .materia-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 18px;
+    border-bottom: 1px solid #eef2f7;
+
+    &:last-child { border-bottom: none; }
+
+    .mat-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mat-nombre { font-weight: 700; color: #1e293b; }
+    .mat-ico { color: #1a2a5e; font-size: 20px; width: 20px; height: 20px; }
+
+    .mat-docente {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+      &.sin { color: #c0392b; font-style: italic; }
+    }
+    .mat-count { font-size: 12px; color: #64748b; font-weight: 600; }
+
+    .tag.disciplina {
+      background: rgba(200,168,75,0.18);
+      color: #8a6d1f;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+  }
+
+  // Filas principales (Práctica / Teoría): desplegables
+  .materia-row.parent {
+    cursor: pointer;
+    background: #f8fafc;
+    transition: background 0.15s;
+    &:hover { background: #f1f5f9; }
+    .chev { color: #1a2a5e; }
+    .mat-nombre { color: #1a2a5e; }
+  }
+
+  // Submaterias desplegadas
+  .materia-row.child {
+    padding-left: 44px;
+    background: #ffffff;
+    .mat-nombre { font-weight: 600; color: #334155; }
+    .bullet { color: #c8a84b; font-weight: 800; }
+    &.vacio { color: #94a3b8; font-style: italic; font-size: 13px; }
+  }
+}
+
+@media (max-width: 600px) {
+  .materias-card .materia-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    .mat-docente, .mat-count { padding-left: 30px; }
+  }
+}
