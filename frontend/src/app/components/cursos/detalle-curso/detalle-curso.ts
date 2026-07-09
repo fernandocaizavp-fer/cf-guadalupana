@@ -444,7 +444,7 @@ getSubmateriasUnicas(): any[] {
 }
 
 // ── Vista organizada de materias del curso ──
-expandido: { [parent: string]: boolean } = { 'Práctica': false, 'Teoría': false };
+expandido: { [parent: string]: boolean } = { 'disciplina': false };
 
 toggleParent(parent: string) {
   this.expandido[parent] = !this.expandido[parent];

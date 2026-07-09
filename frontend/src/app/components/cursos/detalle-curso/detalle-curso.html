@@ -64,30 +64,27 @@
     </div>
 
     <div class="materias-card">
-      <!-- Práctica y Teoría: principales con submaterias desplegables -->
-      @for (parent of ['Práctica', 'Teoría']; track parent) {
-        <div class="materia-row parent" (click)="toggleParent(parent)">
-          <div class="mat-main">
-            <mat-icon class="chev">{{ expandido[parent] ? 'expand_more' : 'chevron_right' }}</mat-icon>
-            <span class="mat-nombre">{{ parent }}</span>
-            <span class="tag disciplina">Disciplina</span>
-          </div>
-          <span class="mat-count">{{ getSubmateriasDe(parent).length }} submateria(s)</span>
+      <!-- Práctica y Teoría: una sola fila desplegable con sus submaterias -->
+      <div class="materia-row parent" (click)="toggleParent('disciplina')">
+        <div class="mat-main">
+          <mat-icon class="chev">{{ expandido['disciplina'] ? 'expand_more' : 'chevron_right' }}</mat-icon>
+          <span class="mat-nombre">Práctica y Teoría</span>
         </div>
+        <span class="mat-count">{{ getSubmateriasDe('Práctica').length }} submateria(s)</span>
+      </div>
 
-        @if (expandido[parent]) {
-          @for (sub of getSubmateriasDe(parent); track sub.id) {
-            <div class="materia-row child">
-              <div class="mat-main">
-                <span class="bullet">•</span>
-                <span class="mat-nombre">{{ sub.nombre }}</span>
-              </div>
-              <span class="mat-docente" [class.sin]="!sub.profesor">Docente: {{ docenteDe(sub) }}</span>
+      @if (expandido['disciplina']) {
+        @for (sub of getSubmateriasDe('Práctica'); track sub.id) {
+          <div class="materia-row child">
+            <div class="mat-main">
+              <span class="bullet">•</span>
+              <span class="mat-nombre">{{ sub.nombre }}</span>
             </div>
-          }
-          @if (getSubmateriasDe(parent).length === 0) {
-            <div class="materia-row child vacio">Sin submaterias configuradas</div>
-          }
+            <span class="mat-docente" [class.sin]="!sub.profesor">Docente: {{ docenteDe(sub) }}</span>
+          </div>
+        }
+        @if (getSubmateriasDe('Práctica').length === 0) {
+          <div class="materia-row child vacio">Sin submaterias configuradas</div>
         }
       }
 
