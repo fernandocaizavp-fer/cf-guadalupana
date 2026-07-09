@@ -21,10 +21,17 @@ export const crearMatricula = async (req: Request, res: Response) => {
   try {
     const hash = await bcrypt.hash(cedula, 10);
 
-    const totalMatriculas = await prisma.matricula.count({
-      where: { cursoId: Number(cursoId) }
+    // El correlativo es el mayor matriculaNo del curso + 1 (no un count),
+    // para no reutilizar números si alguna matrícula fue borrada físicamente.
+    const existentes = await prisma.matricula.findMany({
+      where: { cursoId: Number(cursoId) },
+      select: { matriculaNo: true }
     });
-    const numericMatriculaNo = totalMatriculas + 1;
+    const maxNo = existentes.reduce(
+      (max, e) => Math.max(max, parseInt(e.matriculaNo, 10) || 0),
+      0
+    );
+    const numericMatriculaNo = maxNo + 1;
     const matriculaNo = String(numericMatriculaNo).padStart(3, '0');
 
     // Lógica para calcular Tomo y Página automáticamente
@@ -129,7 +136,18 @@ export const crearMatricula = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'El estudiante ya está matriculado (cédula o correo duplicado)' });
+      const target = error.meta?.target;
+      const campos = Array.isArray(target) ? target.join(',') : String(target ?? '');
+      if (campos.includes('cedula')) {
+        return res.status(400).json({ error: 'Ya existe un estudiante matriculado con esa cédula' });
+      }
+      if (campos.includes('correo')) {
+        return res.status(400).json({ error: 'Ya existe una cuenta con ese correo' });
+      }
+      if (campos.includes('matriculaNo')) {
+        return res.status(400).json({ error: 'El número de matrícula ya existe en este curso' });
+      }
+      return res.status(400).json({ error: 'Registro duplicado' });
     }
     console.error(error);
     res.status(500).json({ error: 'Error al crear matrícula' });
