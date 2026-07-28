@@ -11,18 +11,36 @@ export const consultarCedula = async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Cédula inválida' });
   }
 
-  try {
-    const url = `https://apiconsult.zampisoft.com/api/consultar?token=${token}&identificacion=${cedula}&full=true`;
+  // Consulta un nivel de la API. full=true → "Cédula Full Data" ($0.05, con
+  // padres/dirección/instrucción); full=false → "Cédula Básica" ($0.02).
+  const consultarNivel = async (full: boolean): Promise<any> => {
+    const url = `https://apiconsult.zampisoft.com/api/consultar?token=${token}&identificacion=${cedula}&full=${full}`;
     const respuesta = await fetch(url);
-    const data: any = await respuesta.json();
+    return respuesta.json();
+  };
 
-    // El servicio respondió un error (token inválido, sin saldo, etc.)
+  try {
+    // 1) Nivel Full: trae los datos ampliados (padres, dirección, instrucción).
+    let data: any = await consultarNivel(true);
+
+    // Error real del servicio (token inválido, sin saldo, etc.): no reintentamos
+    // en Básica porque también fallaría y gastaría saldo.
     if (!data.success) {
       const detalle = data.error || data.message || 'Error del servicio de cédulas';
       return res.status(502).json({ error: `Servicio de cédulas: ${detalle}` });
     }
 
-    // La cédula no tiene datos (el servicio responde success pero sin nombre)
+    // 2) Consulta híbrida: si Full respondió pero sin datos, reintentamos en
+    //    Básica ($0.02). Algunas cédulas existen en el nivel Básico pero no en
+    //    el Full, así que este respaldo evita el falso "no encontrado".
+    if (!data.nombre) {
+      const basica: any = await consultarNivel(false);
+      if (basica.success && basica.nombre) {
+        data = basica;
+      }
+    }
+
+    // 3) Si ni Full ni Básica tienen nombre, realmente no hay datos.
     if (!data.nombre) {
       return res.status(404).json({ error: 'No se encontraron datos para esta cédula' });
     }
