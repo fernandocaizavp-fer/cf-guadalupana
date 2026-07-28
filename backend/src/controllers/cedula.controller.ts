@@ -16,7 +16,16 @@ export const consultarCedula = async (req: Request, res: Response) => {
   const consultarNivel = async (full: boolean): Promise<any> => {
     const url = `https://apiconsult.zampisoft.com/api/consultar?token=${token}&identificacion=${cedula}&full=${full}`;
     const respuesta = await fetch(url);
-    return respuesta.json();
+    // Leemos como texto y parseamos manualmente: si el proveedor devuelve algo
+    // que NO es JSON (página de error HTML, límite de peticiones, mantenimiento,
+    // gateway), capturamos el motivo real en vez de un 500 genérico.
+    const texto = await respuesta.text();
+    try {
+      return JSON.parse(texto);
+    } catch {
+      const snippet = texto.replace(/\s+/g, ' ').trim().slice(0, 200);
+      throw new Error(`El proveedor no devolvió JSON (HTTP ${respuesta.status}): ${snippet || '(respuesta vacía)'}`);
+    }
   };
 
   try {
@@ -69,9 +78,12 @@ export const consultarCedula = async (req: Request, res: Response) => {
     };
 
     res.json(resultado);
-  } catch (error) {
-    console.error('Error al consultar cédula:', error);
-    res.status(500).json({ error: 'Error al consultar la cédula' });
+  } catch (error: any) {
+    // Mensaje de diagnóstico: se muestra el motivo real del fallo (del proveedor
+    // o de red) para poder identificar la causa desde la interfaz y los logs.
+    const detalle = error?.message || String(error);
+    console.error('Error al consultar cédula:', detalle);
+    res.status(502).json({ error: `No se pudo consultar la cédula — ${detalle}` });
   }
 };
 
