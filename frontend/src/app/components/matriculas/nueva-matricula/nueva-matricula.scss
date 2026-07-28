@@ -123,28 +123,6 @@ $white: #ffffff;
 .row-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .row-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .row-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-
-.cedula-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-
-  .cedula-field { flex: 0 0 340px; max-width: 340px; }
-
-  .btn-consultar {
-    height: 56px;
-    white-space: nowrap;
-    mat-icon { margin-right: 4px; }
-  }
-}
-@media (max-width: 600px) {
-  .cedula-row {
-    flex-direction: column;
-    align-items: stretch;
-    .cedula-field { flex: 1 1 auto; max-width: none; }
-    .btn-consultar { width: 100%; }
-  }
-}
 .full-width { width: 100%; }
 
 mat-form-field {
