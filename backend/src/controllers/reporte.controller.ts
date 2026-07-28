@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import path from 'path';
 import fs from 'fs';
+import { primeraPalabra } from '../lib/curso-nombre';
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
 
@@ -51,7 +52,7 @@ export const generarAL9 = async (req: Request, res: Response) => {
       const da = m.datosAcademicos;
       const fechaNac = dp?.fechaNacimiento ? new Date(dp.fechaNacimiento) : null;
       const lugarFechaNac = fechaNac
-        ? `${formatearNombre(dp?.ciudad || dp?.canton || '')}, ${fechaNac.getDate().toString().padStart(2,'0')}/${(fechaNac.getMonth()+1).toString().padStart(2,'0')}/${fechaNac.getFullYear()}`
+        ? `${formatearNombre(dp?.parroquia || dp?.canton || '')}, ${fechaNac.getDate().toString().padStart(2,'0')}/${(fechaNac.getMonth()+1).toString().padStart(2,'0')}/${fechaNac.getFullYear()}`
         : '';
 
       return {
@@ -63,7 +64,7 @@ export const generarAL9 = async (req: Request, res: Response) => {
         lugarFechaNac,
         cedula: m.cedula || '',
         edad: calcularEdad(fechaNac),
-        sexo: m.sexo || '',
+        sexo: (m.sexo || '').charAt(0).toUpperCase(),
         provincia: (dp?.provincia || '').toUpperCase(),
         canton: (dp?.canton || '').toUpperCase(),
         plantel: formatearNombre(da?.cursoanterior || da?.unidadeducativa || ''),
@@ -85,7 +86,7 @@ export const generarAL9 = async (req: Request, res: Response) => {
     });
 
     doc.render({
-      ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
+      ramaArtesanal: primeraPalabra(curso.ramaArtesanal).toUpperCase(),
       jornada: (jornada || 'MATUTINA').toString().toUpperCase(),
       regimen: (regimen || 'SIERRA').toString().toUpperCase(),
       AF1, AF2,

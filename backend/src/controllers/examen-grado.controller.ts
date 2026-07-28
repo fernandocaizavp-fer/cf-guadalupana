@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaAnual } from '../lib/disciplina';
 import { getConfiguracion, primeraNotaFueraDeRango, ventanaExamenGradoAbierta, vigenteHasta } from '../lib/configuracion';
+import { primeraPalabra } from '../lib/curso-nombre';
 import path from 'path';
 import fs from 'fs';
 const PizZip = require('pizzip');
@@ -277,7 +278,7 @@ export const generarAL23 = async (req: Request, res: Response) => {
     });
 
     doc.render({
-      ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
+      ramaArtesanal: primeraPalabra(curso.ramaArtesanal).toUpperCase(),
       fechaInicio,
       fechaFin,
       jornada: (String(jornada || 'MATUTINA')).toUpperCase(),

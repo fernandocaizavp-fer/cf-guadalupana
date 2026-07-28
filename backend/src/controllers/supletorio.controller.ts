@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaAnual } from '../lib/disciplina';
 import { notaALetras } from '../lib/numeroALetras';
+import { primeraPalabra } from '../lib/curso-nombre';
 import { getConfiguracion, ventanaSupletorioAbierta, notaEnRango, vigenteHasta } from '../lib/configuracion';
 import path from 'path';
 import fs from 'fs';
@@ -356,7 +357,7 @@ export const generarAL15 = async (req: Request, res: Response) => {
     });
 
     doc.render({
-      ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
+      ramaArtesanal: primeraPalabra(curso.ramaArtesanal).toUpperCase(),
       anio1,
       anio2,
       jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
@@ -444,7 +445,7 @@ export const generarAL16 = async (req: Request, res: Response) => {
       AF1: anio1,
       AF2: anio2,
       jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
-      raArt: (m.curso.ramaArtesanal || '').toUpperCase(),
+      raArt: primeraPalabra(m.curso.ramaArtesanal).toUpperCase(),
 
       teoria: fmt2(teoriaPf), teoriaL: notaALetras(teoriaPf), teoE: estadoAprobacion(teoriaPf, aprob),
       practica: fmt2(practicaPf), practicaL: notaALetras(practicaPf), pracE: estadoAprobacion(practicaPf, aprob),
@@ -535,7 +536,7 @@ export const generarAL22 = async (req: Request, res: Response) => {
       jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
       AF1,
       AF2,
-      ramaArtesanal: (curso.ramaArtesanal || '').toUpperCase(),
+      ramaArtesanal: primeraPalabra(curso.ramaArtesanal).toUpperCase(),
       lugarFecha: lugarFecha || '',
       estudiantes
     };
@@ -633,7 +634,7 @@ export const generarAL19 = async (req: Request, res: Response) => {
     });
 
     doc.render({
-      ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
+      ramaArtesanal: primeraPalabra(curso.ramaArtesanal).toUpperCase(),
       jornada: (String(jornada || 'MATUTINA')).toUpperCase(),
       anio1,
       anio2,

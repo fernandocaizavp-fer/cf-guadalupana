@@ -4,6 +4,7 @@ import Docxtemplater from 'docxtemplater';
 import fs from 'fs';
 import path from 'path';
 import prisma from '../lib/prisma';
+import { primeraPalabra, terceraPalabra } from '../lib/curso-nombre';
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const mesesMayusculas = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
@@ -55,7 +56,8 @@ export const descargarMatricula = async (req: Request, res: Response) => {
       anio1, anio2,
       tomo: (matricula.tomo || '').toUpperCase(),
       pagina: (matricula.pagina || '').toUpperCase(),
-      raArt: (matricula.curso.ramaArtesanal || '').toUpperCase(),
+      raArt: primeraPalabra(matricula.curso.ramaArtesanal).toUpperCase(),
+      cursora: terceraPalabra(matricula.curso.ramaArtesanal).toUpperCase(),
       apellidos: (matricula.apellidos || '').toUpperCase(),
       nombres: (matricula.nombres || '').toUpperCase(),
       pais: (dp?.pais || '').toUpperCase(),
@@ -139,7 +141,7 @@ export const descargarCertificado = async (req: Request, res: Response) => {
       prefijo, tratamiento, elLa, matriculado,
       nombres: (matricula.nombres || '').toUpperCase(),
       apellidos: (matricula.apellidos || '').toUpperCase(),
-      raArt: formatearNombre(matricula.curso.ramaArtesanal || ''),
+      raArt: formatearNombre(primeraPalabra(matricula.curso.ramaArtesanal)),
       matriculaNo: matricula.matriculaNo || '',
       tomo: matricula.tomo || '',
       pagina: matricula.pagina || '',

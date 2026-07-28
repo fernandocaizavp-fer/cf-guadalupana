@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { calcularDisciplinaPonderada, calcularDisciplinaAnual } from '../lib/disciplina';
+import { primeraPalabra } from '../lib/curso-nombre';
 
 const formatearNota = (valor: number | string): string => {
   if (valor === '' || valor === null || valor === undefined) return '';
@@ -164,7 +165,7 @@ export const descargarAL14 = async (req: Request, res: Response) => {
     const fechaFin = `${meses[curso.fechaFin.getMonth()]} ${curso.fechaFin.getFullYear()}`;
 
     doc.render({
-      ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
+      ramaArtesanal: primeraPalabra(curso.ramaArtesanal).toUpperCase(),
       fechaInicio,
       fechaFin,
       lugarFecha: lugarFecha || '',

@@ -57,4 +57,7 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  // PID del proceso: se usa para medir CPU/RAM por PID con JMeter + PerfMon
+  // (pruebas de eficiencia ISO/IEC 25010). Ver jmeter/analizar_perfmon.py.
+  console.log(`PID del servidor: ${process.pid}`);
 });

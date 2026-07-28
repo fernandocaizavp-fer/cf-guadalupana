@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import path from 'path';
 import fs from 'fs';
+import { primeraPalabra } from '../lib/curso-nombre';
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
 
@@ -230,7 +231,7 @@ export const generarAL18 = async (req: Request, res: Response) => {
     });
 
     doc.render({
-      ramaArtesanal: curso.ramaArtesanal.toUpperCase(),
+      ramaArtesanal: primeraPalabra(curso.ramaArtesanal).toUpperCase(),
       anio1,
       anio2,
       jornada: jornada || 'MATUTINA',
