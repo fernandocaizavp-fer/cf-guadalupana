@@ -15,12 +15,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AnuncioService } from '../../../services/anuncio';
 import { AuthService } from '../../../services/auth';
 import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
+import { VisorImagen } from '../../../shared/visor-imagen/visor-imagen';
 
 @Component({
   selector: 'app-gestionar-anuncios',
   imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatFormFieldModule,
-    MatInputModule, MatSelectModule, MatCardModule, DatePipe],
+    MatInputModule, MatSelectModule, MatCardModule, DatePipe, VisorImagen],
   templateUrl: './gestionar-anuncios.html',
   styleUrl: './gestionar-anuncios.scss'
 })
@@ -184,6 +185,12 @@ export class GestionarAnuncios implements OnInit {
     this.imagenFile = null;
     this.editando = null;
     this.cdr.detectChanges();
+  }
+
+  imagenAmpliada: string | null = null;
+
+  abrirImagen(url: string): void {
+    if (url) this.imagenAmpliada = url;
   }
 
   getImagenUrl(imagen: string): string {

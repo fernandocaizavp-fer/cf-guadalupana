@@ -13,13 +13,15 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
+import { VisorImagen } from '../../../shared/visor-imagen/visor-imagen';
 
 @Component({
   selector: 'app-dashboard-profesor',
   standalone: true,
   imports: [
     MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
-    MatMenuModule, MatProgressSpinnerModule, MatSnackBarModule, MatDialogModule, DatePipe
+    MatMenuModule, MatProgressSpinnerModule, MatSnackBarModule, MatDialogModule, DatePipe,
+    VisorImagen
   ],
   templateUrl: './dashboard-profesor.html',
   styleUrl: './dashboard-profesor.scss'
@@ -30,6 +32,11 @@ export class DashboardProfesor implements OnInit {
   anuncios: any[] = [];
   loading = true;
   etiquetaAutor = etiquetaAutorAnuncio;
+  imagenAmpliada: string | null = null;
+
+  abrirImagen(url: string): void {
+    if (url) this.imagenAmpliada = url;
+  }
 
   urlImagen(imagen: string): string {
     if (!imagen) return '';

@@ -332,6 +332,7 @@
                     [src]="urlImagen(anuncio.imagen)"
                     class="announcement-image"
                     alt="{{ anuncio.titulo }}"
+                    (click)="abrirImagen(urlImagen(anuncio.imagen))"
                   >
 
                 }
@@ -377,3 +378,5 @@
   </div>
 
 </div>
+
+<app-visor-imagen [src]="imagenAmpliada" (cerrar)="imagenAmpliada = null" />

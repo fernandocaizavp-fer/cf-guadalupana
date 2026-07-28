@@ -115,7 +115,8 @@
               <div class="anuncio-card">
                 @if (anuncio.imagen) {
                   <img [src]="urlImagen(anuncio.imagen)"
-                    alt="{{ anuncio.titulo }}" class="anuncio-img">
+                    alt="{{ anuncio.titulo }}" class="anuncio-img"
+                    (click)="abrirImagen(urlImagen(anuncio.imagen))">
                 }
                 <div class="anuncio-body">
                   <div class="anuncio-fecha">
@@ -146,3 +147,5 @@
     </div>
   }
 </div>
+
+<app-visor-imagen [src]="imagenAmpliada" (cerrar)="imagenAmpliada = null" />

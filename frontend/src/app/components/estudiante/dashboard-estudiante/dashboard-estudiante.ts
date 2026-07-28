@@ -14,12 +14,14 @@ import { MatriculaService } from '../../../services/matricula';
 import { calcularDisciplinaPonderada } from '../../../services/disciplina-util';
 import { etiquetaAutorAnuncio } from '../../../services/anuncio-util';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
+import { VisorImagen } from '../../../shared/visor-imagen/visor-imagen';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard-estudiante',
   imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
-    MatProgressSpinnerModule, MatSnackBarModule, MatTableModule, MatDialogModule, DatePipe],
+    MatProgressSpinnerModule, MatSnackBarModule, MatTableModule, MatDialogModule, DatePipe,
+    VisorImagen],
   templateUrl: './dashboard-estudiante.html',
   styleUrl: './dashboard-estudiante.scss'
 })
@@ -31,6 +33,12 @@ export class DashboardEstudiante implements OnInit {
   materiasConTareas: any[] = [];
   anuncios: any[] = [];
   etiquetaAutor = etiquetaAutorAnuncio;
+
+  imagenAmpliada: string | null = null;
+
+  abrirImagen(url: string): void {
+    if (url) this.imagenAmpliada = url;
+  }
 
   urlImagen(imagen: string): string {
     if (!imagen) return '';
