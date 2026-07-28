@@ -422,9 +422,12 @@ export const generarAL16 = async (req: Request, res: Response) => {
     const legislacionPf = pf('Legislación');
     const disciplinaVal = calcularDisciplinaAnual(m.notasDisciplina || []);
 
+    // El promedio general NO incluye disciplina: solo las materias (teoría,
+    // práctica, administración, contabilidad, inglés, desarrollo TICS, proyecto,
+    // legislación). disciplina/disciplinaL se muestran aparte, sin promediarse.
     const componentes = [
       teoriaPf, practicaPf, admPf, contPf, ticsPf, inglesPf,
-      desarrolloPf, legislacionPf, proyPf, disciplinaVal
+      desarrolloPf, legislacionPf, proyPf
     ].filter(n => n !== null) as number[];
     const promedioNum = componentes.length > 0
       ? componentes.reduce((a, b) => a + b, 0) / componentes.length
