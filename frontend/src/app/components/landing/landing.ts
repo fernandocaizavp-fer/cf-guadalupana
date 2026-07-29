@@ -25,6 +25,10 @@ export class Landing implements OnInit, OnDestroy {
     { icon: 'camera_alt', nombre: 'Fotografía', desc: 'Fotografía artística y técnica digital.' },
   ];
 
+  // WhatsApp del presidente del centro (0996883085 → formato internacional 593…)
+  whatsappUrl = 'https://wa.me/593996883085?text=' +
+    encodeURIComponent('Hola, quisiera información sobre las matrículas del CFA Guadalupana.');
+
   constructor(private router: Router) {}
 
   ngOnInit() {
