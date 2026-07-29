@@ -265,6 +265,9 @@ model Anuncio {
   activo      Boolean  @default(true)
   autorRol    Rol?
   autorNombre String?  @db.VarChar(200)
+  // Dueño del anuncio: un PROFESOR solo puede editar/eliminar los suyos
+  // (el ADMIN puede gestionar todos). Nulo en anuncios creados antes de este campo.
+  autorId     Int?
   // Materia a la que se refiere el anuncio (etiqueta opcional, denormalizada).
   materiaNombre String? @db.VarChar(150)
   // Curso al que se dirige el anuncio. Null = general (lo ven todos). Con valor,

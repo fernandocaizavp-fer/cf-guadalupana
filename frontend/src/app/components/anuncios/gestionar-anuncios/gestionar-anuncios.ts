@@ -33,6 +33,7 @@ export class GestionarAnuncios implements OnInit {
   imagenPreview: string | null = null;
   imagenFile: File | null = null;
   editando: any = null;
+  usuario: any = null;
   // materias del usuario (label visible + curso al que pertenece)
   materiasOpciones: { label: string; cursoId: number }[] = [];
 
@@ -54,8 +55,15 @@ export class GestionarAnuncios implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.usuario = this.authService.getUsuario();
     this.cargarAnuncios();
     this.cargarMaterias();
+  }
+
+  // Un docente solo gestiona sus propios anuncios; el admin, todos.
+  puedeGestionar(anuncio: any): boolean {
+    if (this.usuario?.rol === 'ADMIN') return true;
+    return anuncio?.autorId != null && anuncio.autorId === this.usuario?.id;
   }
 
   cargarMaterias() {

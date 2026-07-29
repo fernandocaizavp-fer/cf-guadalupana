@@ -34,6 +34,7 @@ export const crearAnuncio = async (req: any, res: Response) => {
     const anuncio = await prisma.anuncio.create({
       data: {
         titulo, contenido, imagen, autorRol, autorNombre,
+        autorId: req.usuario?.id ?? null,
         materiaNombre: materiaNombre || null,
         cursoId: cursoId ? Number(cursoId) : null
       }
@@ -83,10 +84,16 @@ export const listarTodosAnuncios = async (req: Request, res: Response) => {
   }
 };
 
-export const actualizarAnuncio = async (req: Request, res: Response) => {
+export const actualizarAnuncio = async (req: any, res: Response) => {
   const { id } = req.params;
   const { titulo, contenido, activo, materiaNombre, cursoId } = req.body;
   try {
+    const existente = await prisma.anuncio.findUnique({ where: { id: Number(id) } });
+    if (!existente) return res.status(404).json({ error: 'Anuncio no encontrado' });
+    // Un PROFESOR solo puede editar sus propios anuncios; el ADMIN, todos.
+    if (req.usuario?.rol !== 'ADMIN' && existente.autorId !== req.usuario?.id) {
+      return res.status(403).json({ error: 'No puedes modificar un anuncio que no es tuyo' });
+    }
     const data: any = {
       titulo,
       contenido,
@@ -108,8 +115,14 @@ export const actualizarAnuncio = async (req: Request, res: Response) => {
   }
 };
 
-export const eliminarAnuncio = async (req: Request, res: Response) => {
+export const eliminarAnuncio = async (req: any, res: Response) => {
   try {
+    const existente = await prisma.anuncio.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existente) return res.status(404).json({ error: 'Anuncio no encontrado' });
+    // Un PROFESOR solo puede eliminar sus propios anuncios; el ADMIN, todos.
+    if (req.usuario?.rol !== 'ADMIN' && existente.autorId !== req.usuario?.id) {
+      return res.status(403).json({ error: 'No puedes eliminar un anuncio que no es tuyo' });
+    }
     await prisma.anuncio.delete({ where: { id: Number(req.params.id) } });
     res.json({ message: 'Anuncio eliminado' });
   } catch (error) {
