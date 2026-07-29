@@ -159,6 +159,19 @@ export class NuevaMatricula implements OnInit {
     });
   }
 
+  // Copia nombre y ocupación del padre o de la madre al representante.
+  // El domicilio del representante no se toca (puede ser distinto).
+  usarRepresentante(quien: 'padre' | 'madre'): void {
+    if (quien === 'padre') {
+      this.datos.nombrerepresentante = this.datos.nombrepapa || this.datos.nombrerepresentante;
+      this.datos.ocupacionrepresentante = this.datos.ocupacionpapa || this.datos.ocupacionrepresentante;
+    } else {
+      this.datos.nombrerepresentante = this.datos.nombremama || this.datos.nombrerepresentante;
+      this.datos.ocupacionrepresentante = this.datos.ocupacionmama || this.datos.ocupacionrepresentante;
+    }
+    this.cdr.markForCheck();
+  }
+
   descargarDocumentos(id: number) {
     this.matriculaService.descargarMatricula(id).subscribe({
       next: (blob) => {

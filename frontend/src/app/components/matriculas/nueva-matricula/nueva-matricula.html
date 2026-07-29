@@ -264,7 +264,18 @@
           </mat-form-field>
         </div>
 
-        <p class="sub-label">Datos del Representante</p>
+        <div class="rep-header">
+          <p class="sub-label">Datos del Representante</p>
+          <div class="rep-actions">
+            <span class="rep-hint">Copiar datos de:</span>
+            <button mat-stroked-button type="button" class="rep-btn" (click)="usarRepresentante('padre')">
+              <mat-icon>man</mat-icon> Padre
+            </button>
+            <button mat-stroked-button type="button" class="rep-btn" (click)="usarRepresentante('madre')">
+              <mat-icon>woman</mat-icon> Madre
+            </button>
+          </div>
+        </div>
         <div class="row-grid-4">
           <mat-form-field appearance="outline">
             <mat-label>Nombre del Representante</mat-label>

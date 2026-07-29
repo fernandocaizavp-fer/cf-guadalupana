@@ -85,13 +85,13 @@ $white: #ffffff;
 }
 
 .form-section {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 
   .section-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 
     mat-icon {
       width: 36px; height: 36px;
@@ -109,13 +109,62 @@ $white: #ffffff;
     font-weight: 800;
     color: $gold;
     text-transform: uppercase;
-    margin: 25px 0 15px;
+    margin: 18px 0 12px;
     letter-spacing: 2px;
     display: flex;
     align-items: center;
     gap: 10px;
-    
+
     &::after { content: ''; flex: 1; height: 1px; background: #eee; }
+  }
+
+  // Encabezado del representante: título + botones "Padre / Madre" a la derecha
+  .rep-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 18px 0 12px;
+
+    .sub-label {
+      margin: 0;
+      &::after { display: none; }
+    }
+
+    .rep-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .rep-hint {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .rep-btn {
+        min-width: 0;
+        height: 34px;
+        line-height: 34px;
+        padding: 0 14px !important;
+        border-radius: 8px;
+        font-weight: 600;
+        border-color: $border !important;
+        color: $navy;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          margin-right: 4px;
+        }
+
+        &:hover { background: rgba($navy, 0.05); }
+      }
+    }
   }
 }
 
@@ -130,7 +179,7 @@ mat-form-field {
   ::ng-deep .mat-mdc-text-field-wrapper { background: #fdfdfd; border-radius: 8px; }
 }
 
-mat-divider { margin: 35px 0 !important; border-color: #f1f1f1 !important; }
+mat-divider { margin: 22px 0 !important; border-color: #f1f1f1 !important; }
 
 .form-actions {
   padding: 0 40px 40px !important;
