@@ -139,25 +139,35 @@ export class NuevaMatricula implements OnInit {
 
     this.ultimaCedulaConsultada = this.datos.cedula;
     this.consultandoCedula = true;
+    // Se limpia ANTES de consultar: si la segunda persona no tiene un dato, no
+    // debe quedar visible el de la primera.
+    this.limpiarDatosConsultaCedula();
+
     this.matriculaService.consultarCedula(this.datos.cedula).subscribe({
       next: (d: any) => {
-        this.datos.cedula = d.cedula || this.datos.cedula;
-        this.datos.apellidos = d.apellidos || this.datos.apellidos;
-        this.datos.nombres = d.nombres || this.datos.nombres;
-        this.datos.sexo = d.sexo || this.datos.sexo;
-        this.datos.fechaNacimiento = d.fechaNacimiento || this.datos.fechaNacimiento;
-        this.datos.nacionalidad = d.nacionalidad || this.datos.nacionalidad;
-        this.datos.pais = d.pais || this.datos.pais;
-        this.datos.provincia = d.provincia || this.datos.provincia;
-        this.datos.canton = d.canton || this.datos.canton;
-        this.datos.parroquia = d.parroquia || this.datos.parroquia;
-        this.datos.calle = d.calle || this.datos.calle;
-        this.datos.num = d.num || this.datos.num;
-        this.datos.telefono = d.telefono || this.datos.telefono;
-        this.datos.correoestudiante = d.correo || this.datos.correoestudiante;
-        this.datos.nivelEstudio = d.nivelEstudio || this.datos.nivelEstudio;
-        this.datos.nombrepapa = d.nombrepapa || this.datos.nombrepapa;
-        this.datos.nombremama = d.nombremama || this.datos.nombremama;
+        const { nivelEstudio, tipoBachiller } = this.mapearInstruccion(d.instruccion);
+        // Se asignan TODOS los campos, con '' cuando la respuesta no los trae.
+        // Usar `d.x || this.datos.x` dejaría residuos de la cédula anterior.
+        this.datos.cedula = d.cedula ?? this.datos.cedula;
+        this.datos.apellidos = d.apellidos ?? '';
+        this.datos.nombres = d.nombres ?? '';
+        this.datos.sexo = d.sexo ?? '';
+        this.datos.fechaNacimiento = d.fechaNacimiento ?? '';
+        this.datos.pais = d.pais ?? 'ECUADOR';
+        this.datos.nacionalidad = d.nacionalidad ?? '';
+        this.datos.provincia = d.provincia ?? '';
+        this.datos.canton = d.canton ?? '';
+        this.datos.parroquia = d.parroquia ?? '';
+        this.datos.ciudad = d.ciudad ?? '';
+        this.datos.calle = d.calle ?? '';
+        this.datos.num = d.num ?? '';
+        this.datos.transversal = d.transversal ?? '';
+        this.datos.telefono = d.telefono ?? '';
+        this.datos.correoestudiante = d.correo ?? '';
+        this.datos.nivelEstudio = nivelEstudio;
+        this.datos.tipoBachiller = tipoBachiller;
+        this.datos.nombrepapa = d.nombrepapa ?? '';
+        this.datos.nombremama = d.nombremama ?? '';
         this.consultandoCedula = false;
         this.cdr.markForCheck();
         this.snackBar.open('Datos cargados desde el Registro Civil', 'OK', { duration: 3000 });
@@ -165,9 +175,76 @@ export class NuevaMatricula implements OnInit {
       error: (err: any) => {
         this.consultandoCedula = false;
         this.ultimaCedulaConsultada = '';
+        // Si la consulta falla, tampoco deben quedar datos viejos a la vista.
+        this.limpiarDatosConsultaCedula();
+        this.cdr.markForCheck();
         this.snackBar.open(err.error?.error || 'No se pudieron cargar los datos', 'OK', { duration: 3000 });
       }
     });
+  }
+
+  // Al editar la cédula tras una consulta previa, los datos mostrados dejan de
+  // corresponder a esa persona: se borran para no mezclar dos identidades.
+  onCedulaChange(): void {
+    if (!this.ultimaCedulaConsultada) return;
+    if (this.datos.cedula === this.ultimaCedulaConsultada) return;
+    this.ultimaCedulaConsultada = '';
+    this.limpiarDatosConsultaCedula();
+    this.cdr.markForCheck();
+  }
+
+  // Limpia SOLO los campos que llena la consulta de cédula. No toca matrícula,
+  // tomo, página, curso ni ningún otro dato administrativo, porque esos no
+  // pertenecen a la persona consultada.
+  private limpiarDatosConsultaCedula(): void {
+    this.datos.apellidos = '';
+    this.datos.nombres = '';
+    this.datos.sexo = '';
+    this.datos.fechaNacimiento = '';
+    this.datos.pais = 'ECUADOR';
+    this.datos.nacionalidad = '';
+    this.datos.provincia = '';
+    this.datos.canton = '';
+    this.datos.parroquia = '';
+    this.datos.ciudad = '';
+    this.datos.calle = '';
+    this.datos.num = '';
+    this.datos.transversal = '';
+    this.datos.telefono = '';
+    this.datos.correoestudiante = '';
+    this.datos.nivelEstudio = '';
+    this.datos.tipoBachiller = '';
+    this.datos.nombrepapa = '';
+    this.datos.nombremama = '';
+  }
+
+  // Traduce el texto libre de instrucción del Registro Civil a los valores
+  // reales del desplegable ('a1' | 'a2' | 'a4') y del tipo de título
+  // ('Bachiller' | 'Superior' | 'Otro'). Si el valor no es identificable con
+  // certeza no se selecciona nada: es preferible un campo vacío que un dato
+  // inventado en un documento oficial.
+  private mapearInstruccion(instruccion: string): { nivelEstudio: string; tipoBachiller: string } {
+    const v = (instruccion || '')
+      .trim()
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, ''); // tolera tildes: "BÁSICA" → "BASICA"
+
+    if (!v) return { nivelEstudio: '', tipoBachiller: '' };
+
+    if (v.includes('PRIMARIA')) return { nivelEstudio: 'a1', tipoBachiller: '' };
+    if (v.includes('CICLO BASICO') || v.includes('EDUCACION BASICA') || v.includes('BASICA')) {
+      return { nivelEstudio: 'a2', tipoBachiller: '' };
+    }
+    if (v.includes('BACHILLER') || v.includes('SECUNDARIA COMPLETA')) {
+      return { nivelEstudio: 'a4', tipoBachiller: 'Bachiller' };
+    }
+    if (v.includes('SUPERIOR') || v.includes('UNIVERSITARI') || v.includes('TERCER NIVEL')) {
+      return { nivelEstudio: 'a4', tipoBachiller: 'Superior' };
+    }
+    if (v.includes('OTRO')) return { nivelEstudio: 'a4', tipoBachiller: 'Otro' };
+
+    return { nivelEstudio: '', tipoBachiller: '' };
   }
 
   // Copia nombre y ocupación del padre o de la madre al representante.

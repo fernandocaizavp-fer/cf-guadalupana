@@ -85,6 +85,17 @@ export const consultarCedula = async (req: Request, res: Response) => {
     // Solo se usa como respaldo si el objeto `direccion` no vino.
     const partesDomicilio = texto_(persona.lugarDomicilio).split('/').map((s: string) => s.trim());
 
+    // Dirección: se prioriza que la API entregue calle y transversal separadas.
+    // Si solo llega un campo con ';' dentro, se parte por ese separador.
+    const calleCruda = texto_(direccion.calle) || texto_(persona.calleDomicilio);
+    const transversalApi =
+      texto_(direccion.transversal) ||
+      texto_(direccion.calleSecundaria) ||
+      texto_(persona.transversal);
+    const dir = transversalApi
+      ? { calle: calleCruda, transversal: transversalApi }
+      : separarDireccion(calleCruda);
+
     const resultado = {
       cedula: texto_(persona.cedula) || texto_(data?.cedula) || cedula,
       apellidos: extraerApellidos(persona, nombreCompleto),
@@ -100,12 +111,14 @@ export const consultarCedula = async (req: Request, res: Response) => {
       // el cantón NO equivale a la ciudad y asumirlo introduciría datos falsos
       // en un documento oficial.
       ciudad: '',
-      calle: texto_(direccion.calle) || texto_(persona.calleDomicilio),
+      calle: dir.calle,
       num: texto_(direccion.numeroCasa) || texto_(persona.numeracionDomicilio),
-      transversal: '',
+      transversal: dir.transversal,
       telefono: texto_(persona.celular),
       correo: texto_(persona.email),
-      nivelEstudio: texto_(persona.instruccion),
+      // Texto crudo de la API ("BACHILLER", "SUPERIOR"...). El frontend lo
+      // traduce a los valores del desplegable (a1/a2/a4), que son suyos.
+      instruccion: texto_(persona.instruccion),
       nombrepapa: texto_(persona.nombrePadre),
       nombremama: texto_(persona.nombreMadre)
     };
@@ -145,6 +158,29 @@ function traducirEstadoHttp(status: number, detalle: string): { estado: number; 
 
 function texto_(valor: any): string {
   return valor == null ? '' : String(valor).trim();
+}
+
+/**
+ * Separa una dirección que llega en un solo campo.
+ *
+ * La API entrega a veces "DIEGO DE RODRIGUEZ ISIDRO BARR; AV DIEGO DE ROBLES",
+ * donde el ';' separa la calle principal de la transversal. Sin ';' no hay
+ * forma fiable de dividirla: NO se corta por longitud ni por la letra "Y",
+ * porque "Y" puede formar parte del nombre real de una calle
+ * ("JUAN Y MARIA"). En ese caso todo queda como calle principal.
+ */
+function separarDireccion(valor: string): { calle: string; transversal: string } {
+  const texto = texto_(valor);
+  if (!texto) return { calle: '', transversal: '' };
+
+  const partes = texto
+    .split(';')
+    .map(parte => parte.trim())
+    .filter(Boolean);
+
+  if (partes.length <= 1) return { calle: texto, transversal: '' };
+  // Con más de un ';', el resto se reagrupa como transversal sin perder nada.
+  return { calle: partes[0], transversal: partes.slice(1).join('; ') };
 }
 
 // LIMITACIÓN CONOCIDA: si la API entrega apellidos/nombres por separado se usan
