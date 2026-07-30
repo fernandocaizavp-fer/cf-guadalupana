@@ -121,16 +121,27 @@ export class NuevaMatricula implements OnInit {
     });
   }
 
+  // Cada consulta cuesta $0.05, así que una acción del usuario debe producir
+  // exactamente una petición: se bloquea mientras hay una en curso y se ignora
+  // la misma cédula ya consultada. La consulta se dispara solo desde el botón
+  // "Consultar" o con Enter; nunca de forma automática al escribir.
   buscarPorCedula() {
-    if (!this.datos.cedula || this.datos.cedula.length !== 10) return;
-    // Evita consultar la misma cédula varias veces o mientras ya está consultando
-    if (this.datos.cedula === this.ultimaCedulaConsultada) return;
     if (this.consultandoCedula) return;
+    if (!this.datos.cedula || this.datos.cedula.length !== 10) {
+      this.snackBar.open('Ingrese una cédula de 10 dígitos', 'OK', { duration: 3000 });
+      return;
+    }
+    if (this.datos.cedula === this.ultimaCedulaConsultada) {
+      // Sin este aviso el clic parecería no hacer nada.
+      this.snackBar.open('Esta cédula ya fue consultada', 'OK', { duration: 3000 });
+      return;
+    }
 
     this.ultimaCedulaConsultada = this.datos.cedula;
     this.consultandoCedula = true;
     this.matriculaService.consultarCedula(this.datos.cedula).subscribe({
       next: (d: any) => {
+        this.datos.cedula = d.cedula || this.datos.cedula;
         this.datos.apellidos = d.apellidos || this.datos.apellidos;
         this.datos.nombres = d.nombres || this.datos.nombres;
         this.datos.sexo = d.sexo || this.datos.sexo;
