@@ -89,11 +89,63 @@ export const actualizarCurso = async (req: Request, res: Response) => {
   }
 };
 
+// Elimina un curso.
+//
+// La relación Matricula -> Curso NO usa onDelete: Cascade (a diferencia de
+// Materia y ObservacionAsistencia): es deliberado, porque borrar un curso en
+// cascada arrastraría datos personales, notas, asistencias y supletorios del
+// estudiante de forma irreversible. Por eso la FK es Restrict y el borrado se
+// controla aquí, de forma explícita y en dos pasos:
+//
+//   - Matrículas ACTIVAS  -> 409, nunca se borra.
+//   - Matrículas ARCHIVADAS (activo=false) -> 409 con requiereConfirmacion:
+//     el cliente debe reintentar con ?forzar=true. Ojo: 'archivada' es un
+//     borrado lógico, la fila sigue existiendo y por eso la FK bloquea aunque
+//     el curso se vea vacío en el listado.
+//   - Sin matrículas -> se borra directamente.
 export const eliminarCurso = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const forzar = req.query.forzar === 'true';
   try {
-    await prisma.curso.delete({ where: { id: Number(req.params.id) } });
+    const [activas, archivadas] = await Promise.all([
+      prisma.matricula.count({ where: { cursoId: id, activo: true } }),
+      prisma.matricula.count({ where: { cursoId: id, activo: false } })
+    ]);
+
+    if (activas > 0) {
+      return res.status(409).json({
+        error:
+          `No se puede eliminar: el curso tiene ${activas} estudiante(s) matriculado(s). ` +
+          'Retire primero las matrículas.'
+      });
+    }
+
+    if (archivadas > 0 && !forzar) {
+      return res.status(409).json({
+        requiereConfirmacion: true,
+        matriculasArchivadas: archivadas,
+        error:
+          `El curso tiene ${archivadas} matrícula(s) archivada(s). Al eliminarlo se borrarán ` +
+          'también sus notas, asistencias y supletorios de forma irreversible.'
+      });
+    }
+
+    // Transacción: las matrículas archivadas deben desaparecer antes que el
+    // curso o la FK aborta el DELETE. Sus tablas satélite sí van en cascada.
+    await prisma.$transaction([
+      prisma.matricula.deleteMany({ where: { cursoId: id } }),
+      prisma.curso.delete({ where: { id } })
+    ]);
     res.json({ message: 'Curso eliminado' });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error al eliminar curso', id, error);
+    // Red de seguridad: cualquier otra FK que apunte al curso y no esté
+    // contemplada arriba llega aquí como P2003 en vez de un 500 opaco.
+    if (error?.code === 'P2003') {
+      return res.status(409).json({
+        error: 'No se puede eliminar el curso porque tiene registros asociados.'
+      });
+    }
     res.status(500).json({ error: 'Error al eliminar curso' });
   }
 };

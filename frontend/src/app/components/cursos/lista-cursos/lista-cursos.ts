@@ -56,14 +56,30 @@ export class ListaCursos implements OnInit {
   eliminar(event: Event, id: number) {
     event.stopPropagation();
     if (confirm('¿Estás seguro de eliminar este curso?')) {
-      this.cursoService.eliminarCurso(id).subscribe({
-        next: () => {
-          this.cursos = this.cursos.filter(c => c.id !== id);
-          this.cdr.detectChanges();
-        },
-        error: () => alert('Error al eliminar el curso')
-      });
+      this.borrar(id, false);
     }
+  }
+
+  // El backend responde 409 con requiereConfirmacion cuando el curso solo tiene
+  // matrículas archivadas: se pide una segunda confirmación y se reintenta con
+  // forzar=true. Cualquier otro error muestra el mensaje real del backend.
+  private borrar(id: number, forzar: boolean) {
+    this.cursoService.eliminarCurso(id, forzar).subscribe({
+      next: () => {
+        this.cursos = this.cursos.filter(c => c.id !== id);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        const cuerpo = err?.error;
+        if (cuerpo?.requiereConfirmacion && !forzar) {
+          if (confirm(`${cuerpo.error}\n\n¿Eliminar el curso de todos modos?`)) {
+            this.borrar(id, true);
+          }
+          return;
+        }
+        alert(cuerpo?.error || 'Error al eliminar el curso');
+      }
+    });
   }
 
   volver() {

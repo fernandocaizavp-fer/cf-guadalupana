@@ -53,8 +53,10 @@ agregarSubmateria(cursoId: number, nombre: string): Observable<any> {
       headers: this.getHeaders()
     });
   }
-  eliminarCurso(id: number): Observable<any> {
-  return this.http.delete(`${this.apiUrl}/cursos/${id}`, {
+  // forzar=true solo se envía tras la segunda confirmación del usuario: borra
+  // también las matrículas archivadas del curso (ver eliminarCurso en el backend).
+  eliminarCurso(id: number, forzar = false): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/cursos/${id}${forzar ? '?forzar=true' : ''}`, {
     headers: this.getHeaders()
   });
 }
