@@ -195,6 +195,7 @@ export const generarAL15 = async (req: Request, res: Response) => {
           orderBy: { id: 'asc' }
         },
         matriculas: {
+          where: { activo: true },
           include: {
             notasTarea: {
               include: { tarea: { include: { materia: true } } }
@@ -504,6 +505,7 @@ export const generarAL22 = async (req: Request, res: Response) => {
       where: { id: Number(cursoId) },
       include: {
         matriculas: {
+          where: { activo: true },
           orderBy: { apellidos: 'asc' },
           include: {
             notasTarea: { include: { tarea: { include: { materia: true } } } },
@@ -576,6 +578,7 @@ export const generarAL19 = async (req: Request, res: Response) => {
       where: { id: Number(cursoId) },
       include: {
         matriculas: {
+          where: { activo: true },
           include: {
             notasTarea: {
               include: { tarea: { include: { materia: true } } }

@@ -26,13 +26,35 @@ export const login = async (req: Request, res: Response) => {
 
 export const crearAdmin = async (req: Request, res: Response) => {
   const { nombre, apellido, correo, password } = req.body;
+
+  if (!nombre || !apellido || !correo) {
+    return res.status(400).json({ error: 'Nombre, apellido y correo son obligatorios' });
+  }
+  // Mismas reglas que cambiarPassword: un admin tiene control total del sistema.
+  if (!password || password.length < 8) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+  }
+  if (!/[A-Z]/.test(password)) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos una mayúscula' });
+  }
+  if (!/[0-9]/.test(password)) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos un número' });
+  }
+
   try {
     const hash = await bcrypt.hash(password, 10);
     const usuario = await prisma.usuario.create({
-      data: { nombre, apellido, correo, password: hash, rol: 'ADMIN', debeCambiarPassword: false }
+      data: {
+        nombre, apellido,
+        correo: String(correo).trim(),
+        password: hash, rol: 'ADMIN', debeCambiarPassword: false
+      }
     });
     res.json({ message: 'Admin creado', usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo } });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return res.status(400).json({ error: 'Ya existe una cuenta con ese correo' });
+    }
     res.status(500).json({ error: 'Error al crear admin' });
   }
 };

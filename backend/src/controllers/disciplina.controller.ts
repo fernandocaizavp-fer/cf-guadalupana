@@ -100,7 +100,7 @@ export const getNotasDisciplinaPorCurso = async (req: Request, res: Response) =>
   const { semestre } = req.query;
   try {
     const matriculas = await prisma.matricula.findMany({
-      where: { cursoId: Number(cursoId) },
+      where: { cursoId: Number(cursoId), activo: true },
       include: {
         notasDisciplina: {
           where: semestre ? { semestre: Number(semestre) } : undefined,
@@ -138,7 +138,7 @@ export const getEstudiantesPorMateria = async (req: Request, res: Response) => {
       include: {
         curso: {
           include: {
-            matriculas: { orderBy: { apellidos: 'asc' } }
+            matriculas: { where: { activo: true }, orderBy: { apellidos: 'asc' } }
           }
         }
       }

@@ -116,7 +116,7 @@ export const getNotasCursoSemestre = async (req: Request, res: Response) => {
 
     // Matrículas con notas de tareas y disciplina
     const matriculas = await prisma.matricula.findMany({
-      where: { cursoId: Number(cursoId) },
+      where: { cursoId: Number(cursoId), activo: true },
       include: {
         notasTarea: {
           include: {

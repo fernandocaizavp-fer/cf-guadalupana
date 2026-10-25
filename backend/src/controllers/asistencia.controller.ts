@@ -63,7 +63,7 @@ export const getResumenAsistenciaCurso = async (req: Request, res: Response) => 
   const { cursoId } = req.params;
   try {
     const matriculas = await prisma.matricula.findMany({
-      where: { cursoId: Number(cursoId) },
+      where: { cursoId: Number(cursoId), activo: true },
       include: {
         observacionAsistencia: true,
         asistenciaDetalles: {
@@ -190,7 +190,7 @@ export const generarAL18 = async (req: Request, res: Response) => {
     if (!curso) return res.status(404).json({ error: 'Curso no encontrado' });
 
     const matriculas = await prisma.matricula.findMany({
-      where: { cursoId: Number(cursoId) },
+      where: { cursoId: Number(cursoId), activo: true },
       include: {
         observacionAsistencia: true,
         asistenciaDetalles: true
