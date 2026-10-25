@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Confirmacion } from '../../../shared/confirm-dialog/confirmacion';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -24,6 +25,7 @@ import { CursoService } from '../../../services/curso';
   styleUrl: './gestion-docentes.scss'
 })
 export class GestionDocentes implements OnInit {
+  private confirmacion = inject(Confirmacion);
   docentes: any[] = [];
   cursos: any[] = [];
   loading = true;
@@ -196,18 +198,21 @@ getMateriasDocente(docente: any): any[] {
 // ── Quitar asignaciones (libera la materia para reasignarla) ──
 
 quitarMateria(item: any) {
-  if (!confirm(`¿Quitar "${item.nombre}" (${item.cursoNombre}) de este docente?`)) return;
-  this.usuarioService.desasignarProfesor(item.id).subscribe({
-    next: () => {
-      this.snackBar.open('Materia liberada', 'OK', { duration: 3000 });
-      this.cargarDocentes();
-    },
-    error: () => this.snackBar.open('Error al quitar la materia', 'OK', { duration: 3000 })
+  this.confirmacion.eliminar('Quitar materia', `¿Deseas quitar "${item.nombre}" (${item.cursoNombre}) de este docente?`, 'Quitar').subscribe(ok => {
+    if (!ok) return;
+    this.usuarioService.desasignarProfesor(item.id).subscribe({
+      next: () => {
+        this.snackBar.open('Materia liberada correctamente', 'OK', { duration: 3000 });
+        this.cargarDocentes();
+      },
+      error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo quitar la materia', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
+    });
   });
 }
 
 quitarSubmateriaGrupo(item: any) {
-  if (!confirm(`¿Quitar las submaterias de "${item.cursoNombre}" de este docente?`)) return;
+  this.confirmacion.eliminar('Quitar submaterias', `¿Deseas quitar las submaterias de "${item.cursoNombre}" de este docente?`, 'Quitar').subscribe(ok => {
+  if (!ok) return;
   const ids: number[] = item.ids || [];
   let completados = 0;
   let huboError = false;
@@ -222,33 +227,37 @@ quitarSubmateriaGrupo(item: any) {
     error: () => {
       if (!huboError) {
         huboError = true;
-        this.snackBar.open('Error al quitar las submaterias', 'OK', { duration: 3000 });
+        this.snackBar.open('No se pudieron quitar las submaterias', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] });
       }
     }
   }));
+  });
 }
 
 quitarPrincipal(item: any) {
-  if (!confirm(`¿Quitar el rol de docente principal de "${item.cursoNombre}"?`)) return;
-  this.usuarioService.desasignarProfesorPrincipal(item.cursoId).subscribe({
-    next: () => {
-      this.snackBar.open('Rol de docente principal quitado', 'OK', { duration: 3000 });
-      this.cargarDocentes();
-    },
-    error: () => this.snackBar.open('Error al quitar el rol principal', 'OK', { duration: 3000 })
+  this.confirmacion.eliminar('Quitar docente principal', `¿Deseas quitar el rol de docente principal de "${item.cursoNombre}"?`, 'Quitar').subscribe(ok => {
+    if (!ok) return;
+    this.usuarioService.desasignarProfesorPrincipal(item.cursoId).subscribe({
+      next: () => {
+        this.snackBar.open('Rol de docente principal quitado correctamente', 'OK', { duration: 3000 });
+        this.cargarDocentes();
+      },
+      error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo quitar el rol principal', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
+    });
   });
 }
 
   eliminarDocente(id: number) {
-    if (confirm('¿Eliminar este docente?')) {
+    this.confirmacion.eliminar('Eliminar docente', '¿Deseas eliminar este docente? Esta acción no se puede deshacer.').subscribe(ok => {
+      if (!ok) return;
       this.usuarioService.eliminarDocente(id).subscribe({
         next: () => {
-          this.snackBar.open('Docente eliminado', 'OK', { duration: 3000 });
+          this.snackBar.open('Docente eliminado correctamente', 'OK', { duration: 3000 });
           this.cargarDocentes();
         },
-        error: () => this.snackBar.open('Error al eliminar', 'OK', { duration: 3000 })
+        error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo eliminar el docente', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
       });
-    }
+    });
   }
 
   // MATERIAS NORMALES

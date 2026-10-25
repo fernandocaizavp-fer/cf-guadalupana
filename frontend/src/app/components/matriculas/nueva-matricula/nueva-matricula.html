@@ -38,7 +38,10 @@
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Tomo</mat-label>
-            <input matInput [(ngModel)]="datos.tomo" placeholder="Ej. 1">
+            <input matInput [maxlength]="max('tomo')" [(ngModel)]="datos.tomo" placeholder="Ej. 1">
+            @if (cercaDelLimite('tomo')) {
+              <mat-hint align="end" [class.hint-excede]="excede('tomo')">{{ largo('tomo') }}/{{ max('tomo') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Página</mat-label>
@@ -68,6 +71,11 @@
             <mat-label>Cédula / Pasaporte</mat-label>
             <input matInput [(ngModel)]="datos.cedula" (ngModelChange)="onCedulaChange()"
               (keyup.enter)="buscarPorCedula()" maxlength="10">
+            @if (errorCedula(); as error) {
+              <mat-hint class="hint-excede">{{ error }}</mat-hint>
+            } @else if (confirmacionCedula(); as ok) {
+              <mat-hint class="hint-ok">{{ ok }}</mat-hint>
+            }
             @if (consultandoCedula) {
               <mat-spinner matSuffix diameter="20"></mat-spinner>
             } @else {
@@ -79,11 +87,17 @@
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Apellidos</mat-label>
-            <input matInput [(ngModel)]="datos.apellidos">
+            <input matInput [maxlength]="max('apellidos')" [(ngModel)]="datos.apellidos">
+            @if (cercaDelLimite('apellidos')) {
+              <mat-hint align="end" [class.hint-excede]="excede('apellidos')">{{ largo('apellidos') }}/{{ max('apellidos') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Nombres</mat-label>
-            <input matInput [(ngModel)]="datos.nombres">
+            <input matInput [maxlength]="max('nombres')" [(ngModel)]="datos.nombres">
+            @if (cercaDelLimite('nombres')) {
+              <mat-hint align="end" [class.hint-excede]="excede('nombres')">{{ largo('nombres') }}/{{ max('nombres') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Sexo</mat-label>
@@ -102,40 +116,64 @@
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>País</mat-label>
-            <input matInput [(ngModel)]="datos.pais">
+            <input matInput [maxlength]="max('pais')" [(ngModel)]="datos.pais">
+            @if (cercaDelLimite('pais')) {
+              <mat-hint align="end" [class.hint-excede]="excede('pais')">{{ largo('pais') }}/{{ max('pais') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Provincia</mat-label>
-            <input matInput [(ngModel)]="datos.provincia">
+            <input matInput [maxlength]="max('provincia')" [(ngModel)]="datos.provincia">
+            @if (cercaDelLimite('provincia')) {
+              <mat-hint align="end" [class.hint-excede]="excede('provincia')">{{ largo('provincia') }}/{{ max('provincia') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Cantón</mat-label>
-            <input matInput [(ngModel)]="datos.canton">
+            <input matInput [maxlength]="max('canton')" [(ngModel)]="datos.canton">
+            @if (cercaDelLimite('canton')) {
+              <mat-hint align="end" [class.hint-excede]="excede('canton')">{{ largo('canton') }}/{{ max('canton') }}</mat-hint>
+            }
           </mat-form-field>
         </div>
 
         <div class="row-grid-4">
           <mat-form-field appearance="outline">
             <mat-label>Parroquia</mat-label>
-            <input matInput [(ngModel)]="datos.parroquia">
+            <input matInput [maxlength]="max('parroquia')" [(ngModel)]="datos.parroquia">
+            @if (cercaDelLimite('parroquia')) {
+              <mat-hint align="end" [class.hint-excede]="excede('parroquia')">{{ largo('parroquia') }}/{{ max('parroquia') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Ciudad</mat-label>
-            <input matInput [(ngModel)]="datos.ciudad">
+            <input matInput [maxlength]="max('ciudad')" [(ngModel)]="datos.ciudad">
+            @if (cercaDelLimite('ciudad')) {
+              <mat-hint align="end" [class.hint-excede]="excede('ciudad')">{{ largo('ciudad') }}/{{ max('ciudad') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Nacionalidad</mat-label>
-            <input matInput [(ngModel)]="datos.nacionalidad">
+            <input matInput [maxlength]="max('nacionalidad')" [(ngModel)]="datos.nacionalidad">
+            @if (cercaDelLimite('nacionalidad')) {
+              <mat-hint align="end" [class.hint-excede]="excede('nacionalidad')">{{ largo('nacionalidad') }}/{{ max('nacionalidad') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Teléfono</mat-label>
-            <input matInput [(ngModel)]="datos.telefono">
+            <input matInput [maxlength]="max('telefono')" [(ngModel)]="datos.telefono">
+            @if (cercaDelLimite('telefono')) {
+              <mat-hint align="end" [class.hint-excede]="excede('telefono')">{{ largo('telefono') }}/{{ max('telefono') }}</mat-hint>
+            }
           </mat-form-field>
         </div>
         
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Correo Electrónico del Estudiante</mat-label>
-          <input matInput [(ngModel)]="datos.correoestudiante">
+          <input matInput [maxlength]="max('correoestudiante')" [(ngModel)]="datos.correoestudiante">
+          @if (cercaDelLimite('correoestudiante')) {
+            <mat-hint align="end" [class.hint-excede]="excede('correoestudiante')">{{ largo('correoestudiante') }}/{{ max('correoestudiante') }}</mat-hint>
+          }
           <mat-icon matPrefix>mail_outline</mat-icon>
         </mat-form-field>
       </div>
@@ -150,15 +188,24 @@
         <div class="row-grid-3">
           <mat-form-field appearance="outline">
             <mat-label>Calle Principal</mat-label>
-            <input matInput [(ngModel)]="datos.calle">
+            <input matInput [maxlength]="max('calle')" [(ngModel)]="datos.calle">
+            @if (cercaDelLimite('calle')) {
+              <mat-hint align="end" [class.hint-excede]="excede('calle')">{{ largo('calle') }}/{{ max('calle') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Número</mat-label>
-            <input matInput [(ngModel)]="datos.num">
+            <input matInput [maxlength]="max('num')" [(ngModel)]="datos.num">
+            @if (cercaDelLimite('num')) {
+              <mat-hint align="end" [class.hint-excede]="excede('num')">{{ largo('num') }}/{{ max('num') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Transversal</mat-label>
-            <input matInput [(ngModel)]="datos.transversal">
+            <input matInput [maxlength]="max('transversal')" [(ngModel)]="datos.transversal">
+            @if (cercaDelLimite('transversal')) {
+              <mat-hint align="end" [class.hint-excede]="excede('transversal')">{{ largo('transversal') }}/{{ max('transversal') }}</mat-hint>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -181,25 +228,37 @@
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Curso Anterior</mat-label>
-            <input matInput [(ngModel)]="datos.cursoanterior">
+            <input matInput [maxlength]="max('cursoanterior')" [(ngModel)]="datos.cursoanterior">
+            @if (cercaDelLimite('cursoanterior')) {
+              <mat-hint align="end" [class.hint-excede]="excede('cursoanterior')">{{ largo('cursoanterior') }}/{{ max('cursoanterior') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Centro de Formación Anterior</mat-label>
-            <input matInput [(ngModel)]="datos.centroformacionanterior">
+            <input matInput [maxlength]="max('centroformacionanterior')" [(ngModel)]="datos.centroformacionanterior">
+            @if (cercaDelLimite('centroformacionanterior')) {
+              <mat-hint align="end" [class.hint-excede]="excede('centroformacionanterior')">{{ largo('centroformacionanterior') }}/{{ max('centroformacionanterior') }}</mat-hint>
+            }
           </mat-form-field>
         </div>
 
         @if (datos.nivelEstudio === 'a1') {
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Conferido por (Establecimiento A.1)</mat-label>
-            <input matInput [(ngModel)]="datos.conferidoPorA1">
+            <input matInput [maxlength]="max('conferidoPorA1')" [(ngModel)]="datos.conferidoPorA1">
+            @if (cercaDelLimite('conferidoPorA1')) {
+              <mat-hint align="end" [class.hint-excede]="excede('conferidoPorA1')">{{ largo('conferidoPorA1') }}/{{ max('conferidoPorA1') }}</mat-hint>
+            }
           </mat-form-field>
         }
 
         @if (datos.nivelEstudio === 'a2') {
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Conferido por (Establecimiento A.2)</mat-label>
-            <input matInput [(ngModel)]="datos.conferidoPorA2">
+            <input matInput [maxlength]="max('conferidoPorA2')" [(ngModel)]="datos.conferidoPorA2">
+            @if (cercaDelLimite('conferidoPorA2')) {
+              <mat-hint align="end" [class.hint-excede]="excede('conferidoPorA2')">{{ largo('conferidoPorA2') }}/{{ max('conferidoPorA2') }}</mat-hint>
+            }
           </mat-form-field>
         }
 
@@ -215,11 +274,17 @@
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Especialidad</mat-label>
-              <input matInput [(ngModel)]="datos.especialidad">
+              <input matInput [maxlength]="max('especialidad')" [(ngModel)]="datos.especialidad">
+              @if (cercaDelLimite('especialidad')) {
+                <mat-hint align="end" [class.hint-excede]="excede('especialidad')">{{ largo('especialidad') }}/{{ max('especialidad') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Unidad Educativa (Conferido por)</mat-label>
-              <input matInput [(ngModel)]="datos.unidadeducativa">
+              <input matInput [maxlength]="max('unidadeducativa')" [(ngModel)]="datos.unidadeducativa">
+              @if (cercaDelLimite('unidadeducativa')) {
+                <mat-hint align="end" [class.hint-excede]="excede('unidadeducativa')">{{ largo('unidadeducativa') }}/{{ max('unidadeducativa') }}</mat-hint>
+              }
             </mat-form-field>
           </div>
         }
@@ -237,15 +302,24 @@
         <div class="row-grid-3">
           <mat-form-field appearance="outline">
             <mat-label>Nombre Completo</mat-label>
-            <input matInput [(ngModel)]="datos.nombrepapa">
+            <input matInput [maxlength]="max('nombrepapa')" [(ngModel)]="datos.nombrepapa">
+            @if (cercaDelLimite('nombrepapa')) {
+              <mat-hint align="end" [class.hint-excede]="excede('nombrepapa')">{{ largo('nombrepapa') }}/{{ max('nombrepapa') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Profesión</mat-label>
-            <input matInput [(ngModel)]="datos.profesionpapa">
+            <input matInput [maxlength]="max('profesionpapa')" [(ngModel)]="datos.profesionpapa">
+            @if (cercaDelLimite('profesionpapa')) {
+              <mat-hint align="end" [class.hint-excede]="excede('profesionpapa')">{{ largo('profesionpapa') }}/{{ max('profesionpapa') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Ocupación</mat-label>
-            <input matInput [(ngModel)]="datos.ocupacionpapa">
+            <input matInput [maxlength]="max('ocupacionpapa')" [(ngModel)]="datos.ocupacionpapa">
+            @if (cercaDelLimite('ocupacionpapa')) {
+              <mat-hint align="end" [class.hint-excede]="excede('ocupacionpapa')">{{ largo('ocupacionpapa') }}/{{ max('ocupacionpapa') }}</mat-hint>
+            }
           </mat-form-field>
         </div>
 
@@ -253,15 +327,24 @@
         <div class="row-grid-3">
           <mat-form-field appearance="outline">
             <mat-label>Nombre Completo</mat-label>
-            <input matInput [(ngModel)]="datos.nombremama">
+            <input matInput [maxlength]="max('nombremama')" [(ngModel)]="datos.nombremama">
+            @if (cercaDelLimite('nombremama')) {
+              <mat-hint align="end" [class.hint-excede]="excede('nombremama')">{{ largo('nombremama') }}/{{ max('nombremama') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Profesión</mat-label>
-            <input matInput [(ngModel)]="datos.profesionmama">
+            <input matInput [maxlength]="max('profesionmama')" [(ngModel)]="datos.profesionmama">
+            @if (cercaDelLimite('profesionmama')) {
+              <mat-hint align="end" [class.hint-excede]="excede('profesionmama')">{{ largo('profesionmama') }}/{{ max('profesionmama') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Ocupación</mat-label>
-            <input matInput [(ngModel)]="datos.ocupacionmama">
+            <input matInput [maxlength]="max('ocupacionmama')" [(ngModel)]="datos.ocupacionmama">
+            @if (cercaDelLimite('ocupacionmama')) {
+              <mat-hint align="end" [class.hint-excede]="excede('ocupacionmama')">{{ largo('ocupacionmama') }}/{{ max('ocupacionmama') }}</mat-hint>
+            }
           </mat-form-field>
         </div>
 
@@ -280,19 +363,31 @@
         <div class="row-grid-4">
           <mat-form-field appearance="outline">
             <mat-label>Nombre del Representante</mat-label>
-            <input matInput [(ngModel)]="datos.nombrerepresentante">
+            <input matInput [maxlength]="max('nombrerepresentante')" [(ngModel)]="datos.nombrerepresentante">
+            @if (cercaDelLimite('nombrerepresentante')) {
+              <mat-hint align="end" [class.hint-excede]="excede('nombrerepresentante')">{{ largo('nombrerepresentante') }}/{{ max('nombrerepresentante') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Ocupación</mat-label>
-            <input matInput [(ngModel)]="datos.ocupacionrepresentante">
+            <input matInput [maxlength]="max('ocupacionrepresentante')" [(ngModel)]="datos.ocupacionrepresentante">
+            @if (cercaDelLimite('ocupacionrepresentante')) {
+              <mat-hint align="end" [class.hint-excede]="excede('ocupacionrepresentante')">{{ largo('ocupacionrepresentante') }}/{{ max('ocupacionrepresentante') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Domicilio</mat-label>
-            <input matInput [(ngModel)]="datos.domiciliorepresentante">
+            <input matInput [maxlength]="max('domiciliorepresentante')" [(ngModel)]="datos.domiciliorepresentante">
+            @if (cercaDelLimite('domiciliorepresentante')) {
+              <mat-hint align="end" [class.hint-excede]="excede('domiciliorepresentante')">{{ largo('domiciliorepresentante') }}/{{ max('domiciliorepresentante') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Teléfono</mat-label>
-            <input matInput [(ngModel)]="datos.telefonorepresentante">
+            <input matInput [maxlength]="max('telefonorepresentante')" [(ngModel)]="datos.telefonorepresentante">
+            @if (cercaDelLimite('telefonorepresentante')) {
+              <mat-hint align="end" [class.hint-excede]="excede('telefonorepresentante')">{{ largo('telefonorepresentante') }}/{{ max('telefonorepresentante') }}</mat-hint>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -307,11 +402,17 @@
         <div class="row-grid-2">
           <mat-form-field appearance="outline">
             <mat-label>Lugar y Fecha de Matrícula</mat-label>
-            <input matInput [(ngModel)]="datos.lugarfechamatricula" placeholder="Ej. Riobamba, 03 de marzo del 2026">
+            <input matInput [maxlength]="max('lugarfechamatricula')" [(ngModel)]="datos.lugarfechamatricula" placeholder="Ej. Riobamba, 03 de marzo del 2026">
+            @if (cercaDelLimite('lugarfechamatricula')) {
+              <mat-hint align="end" [class.hint-excede]="excede('lugarfechamatricula')">{{ largo('lugarfechamatricula') }}/{{ max('lugarfechamatricula') }}</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Lugar y Fecha de Certificado</mat-label>
-            <input matInput [(ngModel)]="datos.lugarfechacertificado" placeholder="Ej. Riobamba, 03 de marzo del 2026">
+            <input matInput [maxlength]="max('lugarfechacertificado')" [(ngModel)]="datos.lugarfechacertificado" placeholder="Ej. Riobamba, 03 de marzo del 2026">
+            @if (cercaDelLimite('lugarfechacertificado')) {
+              <mat-hint align="end" [class.hint-excede]="excede('lugarfechacertificado')">{{ largo('lugarfechacertificado') }}/{{ max('lugarfechacertificado') }}</mat-hint>
+            }
           </mat-form-field>
         </div>
       </div>

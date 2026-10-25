@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { EstadoVacio } from '../../../shared/estado-vacio/estado-vacio';
 import { Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,7 +20,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard-estudiante',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
+  imports: [EstadoVacio, MatToolbarModule, MatButtonModule, MatIconModule, MatCardModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatTableModule, MatDialogModule, DatePipe,
     VisorImagen],
   templateUrl: './dashboard-estudiante.html',

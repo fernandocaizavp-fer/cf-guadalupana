@@ -226,3 +226,14 @@ mat-divider { margin: 22px 0 !important; border-color: #f1f1f1 !important; }
   .page-wrapper { padding: 15px; }
   .enrollment-card mat-card-content { padding: 20px !important; }
 }
+// Contador de caracteres: rojo cuando el texto supera el máximo de la base de datos.
+.hint-excede {
+  color: #dc2626 !important;
+  font-weight: 700;
+}
+
+// Confirmación verde bajo la cédula cuando pasa la validación del Registro Civil.
+.hint-ok {
+  color: #15803d !important;
+  font-weight: 600;
+}

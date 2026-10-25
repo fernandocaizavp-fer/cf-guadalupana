@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, Inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Inject, inject } from '@angular/core';
+import { Confirmacion } from '../../../shared/confirm-dialog/confirmacion';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -16,6 +17,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { DatePipe } from '@angular/common';
 import { CursoService } from '../../../services/curso';
 import { MatriculaService } from '../../../services/matricula';
+import { LIMITES_MATRICULA, camposExcedidos } from '../../../services/matricula-limites';
+import { validarIdentificacion } from '../../../services/cedula-util';
 
 @Component({
   selector: 'app-editar-matricula-dialog',
@@ -43,17 +46,26 @@ import { MatriculaService } from '../../../services/matricula';
           <div class="row">
             <mat-form-field appearance="outline">
               <mat-label>Apellidos</mat-label>
-              <input matInput [(ngModel)]="datos.apellidos">
+              <input matInput [maxlength]="max('apellidos')" [(ngModel)]="datos.apellidos">
+              @if (cercaDelLimite('apellidos')) {
+                <mat-hint align="end" [class.hint-excede]="excede('apellidos')">{{ largo('apellidos') }}/{{ max('apellidos') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Nombres</mat-label>
-              <input matInput [(ngModel)]="datos.nombres">
+              <input matInput [maxlength]="max('nombres')" [(ngModel)]="datos.nombres">
+              @if (cercaDelLimite('nombres')) {
+                <mat-hint align="end" [class.hint-excede]="excede('nombres')">{{ largo('nombres') }}/{{ max('nombres') }}</mat-hint>
+              }
             </mat-form-field>
           </div>
           <div class="row row-3">
             <mat-form-field appearance="outline">
-              <mat-label>Cédula</mat-label>
-              <input matInput [(ngModel)]="datos.cedula">
+              <mat-label>Cédula / Pasaporte</mat-label>
+              <input matInput [(ngModel)]="datos.cedula" maxlength="10">
+              @if (errorCedula(); as error) {
+                <mat-hint class="hint-excede">{{ error }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Sexo</mat-label>
@@ -71,11 +83,17 @@ import { MatriculaService } from '../../../services/matricula';
           <div class="row">
             <mat-form-field appearance="outline">
               <mat-label>Correo Electrónico</mat-label>
-              <input matInput [(ngModel)]="datos.correoestudiante">
+              <input matInput [maxlength]="max('correoestudiante')" [(ngModel)]="datos.correoestudiante">
+              @if (cercaDelLimite('correoestudiante')) {
+                <mat-hint align="end" [class.hint-excede]="excede('correoestudiante')">{{ largo('correoestudiante') }}/{{ max('correoestudiante') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Teléfono</mat-label>
-              <input matInput [(ngModel)]="datos.telefono">
+              <input matInput [maxlength]="max('telefono')" [(ngModel)]="datos.telefono">
+              @if (cercaDelLimite('telefono')) {
+                <mat-hint align="end" [class.hint-excede]="excede('telefono')">{{ largo('telefono') }}/{{ max('telefono') }}</mat-hint>
+              }
             </mat-form-field>
           </div>
 
@@ -86,29 +104,47 @@ import { MatriculaService } from '../../../services/matricula';
           <div class="row row-3">
             <mat-form-field appearance="outline">
               <mat-label>País</mat-label>
-              <input matInput [(ngModel)]="datos.pais">
+              <input matInput [maxlength]="max('pais')" [(ngModel)]="datos.pais">
+              @if (cercaDelLimite('pais')) {
+                <mat-hint align="end" [class.hint-excede]="excede('pais')">{{ largo('pais') }}/{{ max('pais') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Provincia</mat-label>
-              <input matInput [(ngModel)]="datos.provincia">
+              <input matInput [maxlength]="max('provincia')" [(ngModel)]="datos.provincia">
+              @if (cercaDelLimite('provincia')) {
+                <mat-hint align="end" [class.hint-excede]="excede('provincia')">{{ largo('provincia') }}/{{ max('provincia') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Cantón</mat-label>
-              <input matInput [(ngModel)]="datos.canton">
+              <input matInput [maxlength]="max('canton')" [(ngModel)]="datos.canton">
+              @if (cercaDelLimite('canton')) {
+                <mat-hint align="end" [class.hint-excede]="excede('canton')">{{ largo('canton') }}/{{ max('canton') }}</mat-hint>
+              }
             </mat-form-field>
           </div>
           <div class="row row-3">
             <mat-form-field appearance="outline">
               <mat-label>Calle Principal</mat-label>
-              <input matInput [(ngModel)]="datos.calle">
+              <input matInput [maxlength]="max('calle')" [(ngModel)]="datos.calle">
+              @if (cercaDelLimite('calle')) {
+                <mat-hint align="end" [class.hint-excede]="excede('calle')">{{ largo('calle') }}/{{ max('calle') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Número</mat-label>
-              <input matInput [(ngModel)]="datos.num">
+              <input matInput [maxlength]="max('num')" [(ngModel)]="datos.num">
+              @if (cercaDelLimite('num')) {
+                <mat-hint align="end" [class.hint-excede]="excede('num')">{{ largo('num') }}/{{ max('num') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Transversal</mat-label>
-              <input matInput [(ngModel)]="datos.transversal">
+              <input matInput [maxlength]="max('transversal')" [(ngModel)]="datos.transversal">
+              @if (cercaDelLimite('transversal')) {
+                <mat-hint align="end" [class.hint-excede]="excede('transversal')">{{ largo('transversal') }}/{{ max('transversal') }}</mat-hint>
+              }
             </mat-form-field>
           </div>
 
@@ -131,7 +167,10 @@ import { MatriculaService } from '../../../services/matricula';
             <div class="row">
               <mat-form-field appearance="outline">
                 <mat-label>Conferido por (Establecimiento A.1)</mat-label>
-                <input matInput [(ngModel)]="datos.conferidoPorA1">
+                <input matInput [maxlength]="max('conferidoPorA1')" [(ngModel)]="datos.conferidoPorA1">
+                @if (cercaDelLimite('conferidoPorA1')) {
+                  <mat-hint align="end" [class.hint-excede]="excede('conferidoPorA1')">{{ largo('conferidoPorA1') }}/{{ max('conferidoPorA1') }}</mat-hint>
+                }
               </mat-form-field>
             </div>
           }
@@ -140,7 +179,10 @@ import { MatriculaService } from '../../../services/matricula';
             <div class="row">
               <mat-form-field appearance="outline">
                 <mat-label>Conferido por (Establecimiento A.2)</mat-label>
-                <input matInput [(ngModel)]="datos.conferidoPorA2">
+                <input matInput [maxlength]="max('conferidoPorA2')" [(ngModel)]="datos.conferidoPorA2">
+                @if (cercaDelLimite('conferidoPorA2')) {
+                  <mat-hint align="end" [class.hint-excede]="excede('conferidoPorA2')">{{ largo('conferidoPorA2') }}/{{ max('conferidoPorA2') }}</mat-hint>
+                }
               </mat-form-field>
             </div>
           }
@@ -157,11 +199,17 @@ import { MatriculaService } from '../../../services/matricula';
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Especialidad</mat-label>
-                <input matInput [(ngModel)]="datos.especialidad">
+                <input matInput [maxlength]="max('especialidad')" [(ngModel)]="datos.especialidad">
+                @if (cercaDelLimite('especialidad')) {
+                  <mat-hint align="end" [class.hint-excede]="excede('especialidad')">{{ largo('especialidad') }}/{{ max('especialidad') }}</mat-hint>
+                }
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Unidad Educativa (Conferido por)</mat-label>
-                <input matInput [(ngModel)]="datos.unidadeducativa">
+                <input matInput [maxlength]="max('unidadeducativa')" [(ngModel)]="datos.unidadeducativa">
+                @if (cercaDelLimite('unidadeducativa')) {
+                  <mat-hint align="end" [class.hint-excede]="excede('unidadeducativa')">{{ largo('unidadeducativa') }}/{{ max('unidadeducativa') }}</mat-hint>
+                }
               </mat-form-field>
             </div>
           }
@@ -173,31 +221,49 @@ import { MatriculaService } from '../../../services/matricula';
           <div class="row">
             <mat-form-field appearance="outline">
               <mat-label>Nombre del Padre</mat-label>
-              <input matInput [(ngModel)]="datos.nombrepapa">
+              <input matInput [maxlength]="max('nombrepapa')" [(ngModel)]="datos.nombrepapa">
+              @if (cercaDelLimite('nombrepapa')) {
+                <mat-hint align="end" [class.hint-excede]="excede('nombrepapa')">{{ largo('nombrepapa') }}/{{ max('nombrepapa') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Nombre de la Madre</mat-label>
-              <input matInput [(ngModel)]="datos.nombremama">
+              <input matInput [maxlength]="max('nombremama')" [(ngModel)]="datos.nombremama">
+              @if (cercaDelLimite('nombremama')) {
+                <mat-hint align="end" [class.hint-excede]="excede('nombremama')">{{ largo('nombremama') }}/{{ max('nombremama') }}</mat-hint>
+              }
             </mat-form-field>
           </div>
           <div class="row">
             <mat-form-field appearance="outline">
               <mat-label>Representante Legal</mat-label>
-              <input matInput [(ngModel)]="datos.nombrerepresentante">
+              <input matInput [maxlength]="max('nombrerepresentante')" [(ngModel)]="datos.nombrerepresentante">
+              @if (cercaDelLimite('nombrerepresentante')) {
+                <mat-hint align="end" [class.hint-excede]="excede('nombrerepresentante')">{{ largo('nombrerepresentante') }}/{{ max('nombrerepresentante') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Teléfono Representante</mat-label>
-              <input matInput [(ngModel)]="datos.telefonorepresentante">
+              <input matInput [maxlength]="max('telefonorepresentante')" [(ngModel)]="datos.telefonorepresentante">
+              @if (cercaDelLimite('telefonorepresentante')) {
+                <mat-hint align="end" [class.hint-excede]="excede('telefonorepresentante')">{{ largo('telefonorepresentante') }}/{{ max('telefonorepresentante') }}</mat-hint>
+              }
             </mat-form-field>
           </div>
           <div class="row">
             <mat-form-field appearance="outline">
               <mat-label>Domicilio Representante</mat-label>
-              <input matInput [(ngModel)]="datos.domiciliorepresentante">
+              <input matInput [maxlength]="max('domiciliorepresentante')" [(ngModel)]="datos.domiciliorepresentante">
+              @if (cercaDelLimite('domiciliorepresentante')) {
+                <mat-hint align="end" [class.hint-excede]="excede('domiciliorepresentante')">{{ largo('domiciliorepresentante') }}/{{ max('domiciliorepresentante') }}</mat-hint>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Lugar y Fecha Certificado</mat-label>
-              <input matInput [(ngModel)]="datos.lugarfechacertificado">
+              <input matInput [maxlength]="max('lugarfechacertificado')" [(ngModel)]="datos.lugarfechacertificado">
+              @if (cercaDelLimite('lugarfechacertificado')) {
+                <mat-hint align="end" [class.hint-excede]="excede('lugarfechacertificado')">{{ largo('lugarfechacertificado') }}/{{ max('lugarfechacertificado') }}</mat-hint>
+              }
             </mat-form-field>
           </div>
 
@@ -206,13 +272,15 @@ import { MatriculaService } from '../../../services/matricula';
 
       <mat-dialog-actions align="end">
         <button mat-button (click)="dialogRef.close()" class="btn-cancelar">CANCELAR</button>
-        <button mat-raised-button (click)="dialogRef.close(datos)" class="btn-guardar">
+        <button mat-raised-button (click)="guardar()" class="btn-guardar">
           <mat-icon>save</mat-icon> GUARDAR CAMBIOS
         </button>
       </mat-dialog-actions>
     </div>
   `,
   styles: [`
+    .hint-excede { color: #dc2626 !important; font-weight: 700; }
+
     .dialog-container {
       display: flex;
       flex-direction: column;
@@ -297,11 +365,59 @@ import { MatriculaService } from '../../../services/matricula';
 export class EditarMatriculaDialog {
   datos: any;
 
+  // Límites de longitud (ver services/matricula-limites.ts)
+  lim = LIMITES_MATRICULA;
+
   constructor(
     public dialogRef: MatDialogRef<EditarMatriculaDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private snackBar: MatSnackBar
   ) {
     this.datos = { ...data };
+  }
+
+  max(campo: string): number {
+    return this.lim[campo].max;
+  }
+
+  largo(campo: string): number {
+    return String(this.datos?.[campo] ?? '').length;
+  }
+
+  // El contador aparece desde el 80 % del máximo, para no recargar el formulario.
+  cercaDelLimite(campo: string): boolean {
+    return this.largo(campo) >= this.max(campo) * 0.8;
+  }
+
+  excede(campo: string): boolean {
+    return this.largo(campo) > this.max(campo);
+  }
+
+  // Solo cierra (y guarda) si ningún campo supera el máximo de la base de datos.
+  guardar() {
+    const excedidos = camposExcedidos(this.datos);
+    if (excedidos.length) {
+      this.snackBar.open(
+        `Hay campos demasiado largos: ${excedidos.join(', ')}`,
+        'OK',
+        { duration: 7000, panelClass: ['app-snackbar', 'app-snackbar-error'] }
+      );
+      return;
+    }
+    const errorCedula = this.errorCedula();
+    if (errorCedula) {
+      this.snackBar.open(errorCedula, 'OK', { duration: 5000, panelClass: ['app-snackbar', 'app-snackbar-error'] });
+      return;
+    }
+    this.dialogRef.close(this.datos);
+  }
+
+  // Igual que el backend: solo se valida si la cédula cambió, para no bloquear
+  // la edición de registros antiguos que ya tenían una cédula mal ingresada.
+  errorCedula(): string | null {
+    const id = String(this.datos.cedula ?? '').trim();
+    if (id === String(this.data.cedula ?? '').trim()) return null;
+    return validarIdentificacion(id);
   }
 
   onNivelChange() {
@@ -324,6 +440,7 @@ export class EditarMatriculaDialog {
   styleUrl: './detalle-curso.scss'
 })
 export class DetalleCurso implements OnInit {
+  private confirmacion = inject(Confirmacion);
   curso: any = null;
   loading = true;
   descargando: number | null = null;
@@ -376,25 +493,30 @@ export class DetalleCurso implements OnInit {
       if (result) {
         this.matriculaService.actualizarMatricula(matricula.id, result).subscribe({
           next: () => {
-            this.snackBar.open('Estudiante actualizado', 'OK', { duration: 3000 });
+            this.snackBar.open('Datos del estudiante actualizados correctamente', 'OK', { duration: 3000 });
             this.ngOnInit();
           },
-          error: () => this.snackBar.open('Error al actualizar', 'OK', { duration: 3000 })
+          error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo actualizar al estudiante', 'OK',
+            { duration: 5000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
         });
       }
     });
   }
 
   eliminarEstudiante(matricula: any) {
-    if (confirm(`¿Eliminar a ${matricula.nombres} ${matricula.apellidos}?`)) {
+    this.confirmacion.eliminar(
+      'Eliminar estudiante',
+      `¿Deseas eliminar a ${matricula.nombres} ${matricula.apellidos} de este curso?`
+    ).subscribe(ok => {
+      if (!ok) return;
       this.matriculaService.eliminarMatricula(matricula.id).subscribe({
         next: () => {
-          this.snackBar.open('Estudiante eliminado', 'OK', { duration: 3000 });
+          this.snackBar.open(`${matricula.nombres} ${matricula.apellidos} fue eliminado del curso`, 'OK', { duration: 3000 });
           this.ngOnInit();
         },
-        error: () => this.snackBar.open('Error al eliminar', 'OK', { duration: 3000 })
+        error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo eliminar al estudiante', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
       });
-    }
+    });
   }
 
   descargarMatricula(matricula: any) {
@@ -486,7 +608,8 @@ agregarSubmateriaDoble() {
 }
 
 eliminarSubmateriaDoble(nombre: string) {
-  if (confirm(`¿Eliminar "${nombre}" de Práctica y Teoría?`)) {
+  this.confirmacion.eliminar('Eliminar submateria', `¿Deseas eliminar "${nombre}" de Práctica y Teoría?`).subscribe(ok => {
+    if (!ok) return;
     const subs = this.curso?.materias?.filter((m: any) => m.esSubmateria && m.nombre === nombre) || [];
     const deletes = subs.map((s: any) => this.cursoService.eliminarSubmateria(s.id));
     let completados = 0;
@@ -494,13 +617,13 @@ eliminarSubmateriaDoble(nombre: string) {
       next: () => {
         completados++;
         if (completados === deletes.length) {
-          this.snackBar.open('Submateria eliminada', 'OK', { duration: 3000 });
+          this.snackBar.open(`Submateria "${nombre}" eliminada correctamente`, 'OK', { duration: 3000 });
           this.ngOnInit();
         }
       },
-      error: () => this.snackBar.open('Error al eliminar', 'OK', { duration: 3000 })
+      error: (e: any) => this.snackBar.open(e?.error?.error || 'No se pudo eliminar la submateria', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
     }));
-  }
+  });
 }
 
   volver() {

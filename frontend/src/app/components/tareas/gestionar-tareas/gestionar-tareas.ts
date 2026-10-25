@@ -1,4 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { EstadoVacio } from '../../../shared/estado-vacio/estado-vacio';
+import { Confirmacion } from '../../../shared/confirm-dialog/confirmacion';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -20,13 +22,14 @@ import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-gestionar-tareas',
-  imports: [FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
+  imports: [EstadoVacio, FormsModule, MatToolbarModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatDividerModule, MatCheckboxModule, DatePipe],
   templateUrl: './gestionar-tareas.html',
   styleUrl: './gestionar-tareas.scss'
 })
 export class GestionarTareas implements OnInit {
+  private confirmacion = inject(Confirmacion);
   materiaId = 0;
   materia: any = null;
   tareas: any[] = [];
@@ -197,15 +200,16 @@ export class GestionarTareas implements OnInit {
   }
 
   eliminarTarea(id: number) {
-    if (confirm('¿Eliminar esta tarea y todas sus notas?')) {
+    this.confirmacion.eliminar('Eliminar tarea', '¿Deseas eliminar esta tarea?\nTambién se eliminarán todas sus notas.').subscribe(ok => {
+      if (!ok) return;
       this.tareaService.eliminarTarea(id).subscribe({
         next: () => {
-          this.snackBar.open('Tarea eliminada', 'OK', { duration: 3000 });
+          this.snackBar.open('Tarea eliminada correctamente', 'OK', { duration: 3000 });
           this.cargarTareas();
         },
-        error: () => this.snackBar.open('Error al eliminar', 'OK', { duration: 3000 })
+        error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo eliminar la tarea', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
       });
-    }
+    });
   }
 
   calcularPromedioTarea(tarea: any): string {

@@ -15,6 +15,14 @@ const upload = multer({
 
 export const subirArchivos = upload.array('archivos');
 
+// Multer decodifica el nombre del archivo como latin1; lo reinterpretamos como
+// UTF-8 para conservar bien las tildes y la ñ (p. ej. "rúbrica evaluación").
+// NFC une la letra y su tilde en un solo carácter: los archivos que vienen de
+// macOS o del celular traen "e" + "´" por separado y se ven desalineados.
+export function nombreUtf8(nombre: string): string {
+  return Buffer.from(nombre, 'latin1').toString('utf8').normalize('NFC');
+}
+
 /**
  * Valida la regla de 10 MB por archivo y devuelve un mensaje claro con el
  * nombre del archivo que se pasa. Llamar después de `subirArchivos`.
@@ -25,7 +33,7 @@ export function validarTamano(req: Request, res: Response): boolean {
   for (const archivo of archivos) {
     if (archivo.size > LIMITE_BYTES) {
       res.status(400).json({
-        error: `El archivo ${archivo.originalname} supera el tamaño máximo de 10 MB`
+        error: `El archivo ${nombreUtf8(archivo.originalname)} supera el tamaño máximo de 10 MB`
       });
       return false;
     }

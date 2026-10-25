@@ -11,6 +11,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatriculaService } from '../../../services/matricula';
+import { LIMITES_MATRICULA, camposExcedidos } from '../../../services/matricula-limites';
+import { validarIdentificacion, motivoCedulaInvalida } from '../../../services/cedula-util';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 
@@ -100,9 +102,58 @@ export class NuevaMatricula implements OnInit {
           this.datos.sexo === 'Femenino' ? 'Srta.' : '';
   }
 
+  // Aviso bajo el campo de cédula. Mientras se escriben dígitos no se molesta:
+  // solo se evalúa al completar los 10 o si el valor tiene letras (pasaporte).
+  errorCedula(): string | null {
+    const id = String(this.datos.cedula ?? '').trim();
+    if (!id || (/^\d+$/.test(id) && id.length < 10)) return null;
+    return validarIdentificacion(id);
+  }
+
+  confirmacionCedula(): string | null {
+    const id = String(this.datos.cedula ?? '').trim();
+    if (!id || this.errorCedula()) return null;
+    if (/^\d{10}$/.test(id)) return 'Cédula válida';
+    return /^\d+$/.test(id) ? null : 'Pasaporte';
+  }
+
+  // ── Límites de longitud (ver services/matricula-limites.ts) ──
+  lim = LIMITES_MATRICULA;
+
+  max(campo: string): number {
+    return this.lim[campo].max;
+  }
+
+  largo(campo: string): number {
+    return String(this.datos?.[campo] ?? '').length;
+  }
+
+  // El contador aparece desde el 80 % del máximo, para no recargar el formulario.
+  cercaDelLimite(campo: string): boolean {
+    return this.largo(campo) >= this.max(campo) * 0.8;
+  }
+
+  excede(campo: string): boolean {
+    return this.largo(campo) > this.max(campo);
+  }
+
   guardar() {
     if (!this.datos.cursoId) {
       this.snackBar.open('Selecciona un curso', 'OK', { duration: 3000 });
+      return;
+    }
+    const errorCedula = validarIdentificacion(this.datos.cedula);
+    if (errorCedula) {
+      this.snackBar.open(errorCedula, 'OK', { duration: 5000, panelClass: ['app-snackbar', 'app-snackbar-error'] });
+      return;
+    }
+    const excedidos = camposExcedidos(this.datos);
+    if (excedidos.length) {
+      this.snackBar.open(
+        `Hay campos demasiado largos: ${excedidos.join(', ')}`,
+        'OK',
+        { duration: 7000, panelClass: ['app-snackbar', 'app-snackbar-error'] }
+      );
       return;
     }
     this.loading = true;
@@ -127,8 +178,10 @@ export class NuevaMatricula implements OnInit {
   // "Consultar" o con Enter; nunca de forma automática al escribir.
   buscarPorCedula() {
     if (this.consultandoCedula) return;
-    if (!this.datos.cedula || this.datos.cedula.length !== 10) {
-      this.snackBar.open('Ingrese una cédula de 10 dígitos', 'OK', { duration: 3000 });
+    // Validar antes de consultar: la API cobra aunque la cédula no exista.
+    const motivo = motivoCedulaInvalida(String(this.datos.cedula ?? '').trim());
+    if (motivo) {
+      this.snackBar.open(`Cédula inválida: ${motivo}`, 'OK', { duration: 5000, panelClass: ['app-snackbar', 'app-snackbar-error'] });
       return;
     }
     if (this.datos.cedula === this.ultimaCedulaConsultada) {

@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { EstadoVacio } from '../../../shared/estado-vacio/estado-vacio';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,7 +11,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-detalle-materia',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [EstadoVacio, MatToolbarModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './detalle-materia.html',
   styleUrl: './detalle-materia.scss'
 })

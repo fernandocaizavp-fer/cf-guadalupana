@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Confirmacion } from '../../../shared/confirm-dialog/confirmacion';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -20,6 +21,7 @@ import { Title } from '@angular/platform-browser';
   styleUrl: './registrar-asistencia.scss'
 })
 export class RegistrarAsistencia implements OnInit {
+  private confirmacion = inject(Confirmacion);
   materiaId = 0;
   materia: any = null;
   matriculas: any[] = [];
@@ -193,15 +195,16 @@ export class RegistrarAsistencia implements OnInit {
   }
 
   eliminarAsistencia(id: number) {
-    if (confirm('¿Eliminar este registro de asistencia?')) {
+    this.confirmacion.eliminar('Eliminar asistencia', '¿Deseas eliminar este registro de asistencia? Esta acción no se puede deshacer.').subscribe(ok => {
+      if (!ok) return;
       this.asistenciaService.eliminarAsistencia(id).subscribe({
         next: () => {
-          this.snackBar.open('Registro eliminado', 'OK', { duration: 3000 });
+          this.snackBar.open('Registro de asistencia eliminado correctamente', 'OK', { duration: 3000 });
           this.cargarAsistencias();
         },
-        error: () => this.snackBar.open('Error al eliminar', 'OK', { duration: 3000 })
+        error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo eliminar el registro', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
       });
-    }
+    });
   }
 
   contarPresentes(asistencia: any): number {

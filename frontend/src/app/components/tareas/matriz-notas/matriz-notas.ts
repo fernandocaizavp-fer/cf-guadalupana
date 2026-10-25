@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { EstadoVacio } from '../../../shared/estado-vacio/estado-vacio';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,7 +14,7 @@ import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-matriz-notas',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule,
+  imports: [EstadoVacio, MatToolbarModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatTooltipModule, DatePipe],
   templateUrl: './matriz-notas.html',
   styleUrl: './matriz-notas.scss'

@@ -60,3 +60,16 @@ body {
     font-weight: 800 !important;
   }
 }
+
+// Variante de error: misma forma, fondo rojo. Uso: panelClass: ['app-snackbar', 'app-snackbar-error']
+.app-snackbar-error {
+  .mdc-snackbar__surface {
+    background: linear-gradient(135deg, #b91c1c, #dc2626) !important;
+    box-shadow: 0 10px 30px rgba(185, 28, 28, 0.35) !important;
+  }
+
+  .mat-mdc-snack-bar-action,
+  .mat-mdc-snack-bar-action .mdc-button__label {
+    color: #ffffff !important;
+  }
+}

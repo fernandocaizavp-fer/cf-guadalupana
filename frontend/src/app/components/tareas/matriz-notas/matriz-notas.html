@@ -36,15 +36,17 @@
     </div>
 
     @if (tareas.length === 0) {
-      <div class="estado-centro vacio">
-        <mat-icon>grid_off</mat-icon>
-        <p>No hay tareas en este semestre. Crea tareas para calificar.</p>
-      </div>
+      <app-estado-vacio
+        icono="grid_off"
+        titulo="Aún no hay tareas"
+        mensaje="No hay tareas en este semestre. Crea tareas para poder calificar desde la matriz.">
+      </app-estado-vacio>
     } @else if (matriculas.length === 0) {
-      <div class="estado-centro vacio">
-        <mat-icon>person_off</mat-icon>
-        <p>No hay estudiantes matriculados en este curso.</p>
-      </div>
+      <app-estado-vacio
+        icono="person_off"
+        titulo="Sin estudiantes"
+        mensaje="No hay estudiantes matriculados en este curso.">
+      </app-estado-vacio>
     } @else {
 
       <div class="tabla-scroll">

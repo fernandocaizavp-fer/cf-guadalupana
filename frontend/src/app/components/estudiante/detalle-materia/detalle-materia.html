@@ -31,10 +31,11 @@
       <p>Cargando notas...</p>
     </div>
   } @else if (tareas.length === 0) {
-    <div class="empty-state">
-      <mat-icon>assignment_late</mat-icon>
-      <p>No hay tareas registradas en este semestre.</p>
-    </div>
+    <app-estado-vacio
+      icono="assignment"
+      titulo="Aún no hay tareas"
+      [mensaje]="'Tu docente todavía no ha registrado tareas en el semestre ' + semestre + '. Cuando lo haga, aparecerán aquí con tus calificaciones.'">
+    </app-estado-vacio>
   } @else {
     <div class="tareas-wrapper">
       <div class="tareas-list">

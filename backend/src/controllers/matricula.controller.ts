@@ -1,6 +1,42 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
+import { validarIdentificacion } from '../lib/cedula';
+
+// Nombre legible de cada columna, para explicar el error P2000 de Prisma
+// ("valor demasiado largo para la columna") en vez de un 500 genérico.
+// El frontend valida lo mismo antes de enviar (services/matricula-limites.ts);
+// esto es el respaldo si algo llega igual (p. ej. un cliente desactualizado).
+const ETIQUETAS_CAMPOS: Record<string, string> = {
+  tomo: 'Tomo', apellidos: 'Apellidos', nombres: 'Nombres', apellido: 'Apellidos',
+  nombre: 'Nombres', cedula: 'Cédula', sexo: 'Sexo', nivelEstudio: 'Nivel de estudio',
+  pais: 'País', provincia: 'Provincia', canton: 'Cantón', parroquia: 'Parroquia',
+  ciudad: 'Ciudad', nacionalidad: 'Nacionalidad', telefono: 'Teléfono',
+  correo: 'Correo', correoestudiante: 'Correo del estudiante', calle: 'Calle',
+  num: 'Número de casa', transversal: 'Transversal', cursoanterior: 'Curso anterior',
+  centroformacionanterior: 'Centro de formación anterior', tipoBachiller: 'Tipo de título',
+  conferidoPorA1: 'Conferido por (A.1)', conferidoPorA2: 'Conferido por (A.2)',
+  especialidad: 'Especialidad', unidadeducativa: 'Unidad educativa',
+  nombrepapa: 'Nombre del padre', profesionpapa: 'Profesión del padre',
+  ocupacionpapa: 'Ocupación del padre', nombremama: 'Nombre de la madre',
+  profesionmama: 'Profesión de la madre', ocupacionmama: 'Ocupación de la madre',
+  nombrerepresentante: 'Nombre del representante',
+  ocupacionrepresentante: 'Ocupación del representante',
+  domiciliorepresentante: 'Domicilio del representante',
+  telefonorepresentante: 'Teléfono del representante',
+  lugarfechamatricula: 'Lugar y fecha de matrícula',
+  lugarfechacertificado: 'Lugar y fecha del certificado'
+};
+
+// Devuelve el mensaje para un P2000, o null si el error es de otro tipo.
+const mensajeCampoLargo = (error: any): string | null => {
+  if (error?.code !== 'P2000') return null;
+  const columna = String(error.meta?.column_name ?? error.meta?.target ?? '');
+  const etiqueta = ETIQUETAS_CAMPOS[columna];
+  return etiqueta
+    ? `El campo "${etiqueta}" es demasiado largo. Acórtalo e inténtalo de nuevo.`
+    : 'Uno de los campos es demasiado largo. Revisa los datos e inténtalo de nuevo.';
+};
 
 // Fuente única de verdad para la numeración de una matrícula dentro de un curso:
 // el correlativo es max(matriculaNo)+1 (no un count, para no reutilizar números
@@ -54,6 +90,9 @@ export const crearMatricula = async (req: Request, res: Response) => {
     correoestudiante, lugarfechamatricula,
     especialidad, lugarfechacertificado, cursoId
   } = req.body;
+
+  const errorCedula = validarIdentificacion(cedula);
+  if (errorCedula) return res.status(400).json({ error: errorCedula });
 
   try {
     const hash = await bcrypt.hash(cedula, 10);
@@ -173,6 +212,8 @@ export const crearMatricula = async (req: Request, res: Response) => {
       }
       return res.status(400).json({ error: 'Registro duplicado' });
     }
+    const campoLargo = mensajeCampoLargo(error);
+    if (campoLargo) return res.status(400).json({ error: campoLargo });
     console.error(error);
     res.status(500).json({ error: 'Error al crear matrícula' });
   }
@@ -196,6 +237,19 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
   } = req.body;
 
   try {
+    // Solo se valida si la cédula cambia: registros antiguos con una cédula mal
+    // ingresada deben poder editarse en sus otros campos sin quedar bloqueados.
+    if (cedula !== undefined) {
+      const actual = await prisma.matricula.findUnique({
+        where: { id: Number(id) },
+        select: { cedula: true }
+      });
+      if (actual && String(cedula).trim() !== actual.cedula) {
+        const errorCedula = validarIdentificacion(cedula);
+        if (errorCedula) return res.status(400).json({ error: errorCedula });
+      }
+    }
+
     const matricula = await prisma.matricula.update({
       where: { id: Number(id) },
       data: {
@@ -301,6 +355,8 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
     });
     res.json({ message: 'Matrícula actualizada', matricula });
   } catch (error) {
+    const campoLargo = mensajeCampoLargo(error);
+    if (campoLargo) return res.status(400).json({ error: campoLargo });
     console.error(error);
     res.status(500).json({ error: 'Error al actualizar matrícula' });
   }

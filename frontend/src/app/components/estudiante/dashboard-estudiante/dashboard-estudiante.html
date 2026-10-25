@@ -57,10 +57,11 @@
         <h2 class="section-title">Mis Calificaciones — Semestre {{ semestreSeleccionado }}</h2>
 
         @if (materiasConTareas.length === 0) {
-          <div class="center">
-            <mat-icon class="empty-icon">grade</mat-icon>
-            <p>No hay tareas registradas en el semestre {{ semestreSeleccionado }}</p>
-          </div>
+          <app-estado-vacio
+            icono="grade"
+            titulo="Aún no hay calificaciones"
+            [mensaje]="'Todavía no hay tareas registradas en el semestre ' + semestreSeleccionado + '.'">
+          </app-estado-vacio>
         }
 
         @if (materiasConTareas.length > 0) {

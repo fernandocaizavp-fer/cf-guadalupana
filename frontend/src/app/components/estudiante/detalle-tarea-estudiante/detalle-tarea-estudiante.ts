@@ -1,4 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { descargarConNombre } from '../../../shared/descargar-archivo';
+import { Confirmacion } from '../../../shared/confirm-dialog/confirmacion';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,6 +20,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   styleUrl: './detalle-tarea-estudiante.scss'
 })
 export class DetalleTareaEstudiante implements OnInit {
+  private confirmacion = inject(Confirmacion);
   materiaId = 0;
   tareaId = 0;
   semestre = 1;
@@ -123,16 +126,25 @@ export class DetalleTareaEstudiante implements OnInit {
   }
 
   eliminarArchivoEntrega(archivo: any) {
-    if (!confirm(`¿Eliminar "${archivo.nombreOriginal}"?`)) return;
-    this.tareaService.eliminarArchivoEntrega(archivo.id).subscribe({
-      next: () => {
-        if (this.miEntrega?.archivos) {
-          this.miEntrega.archivos = this.miEntrega.archivos.filter((a: any) => a.id !== archivo.id);
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => this.snackBar.open('Error al eliminar archivo', 'OK', { duration: 3000 })
+    this.confirmacion.eliminar('Eliminar archivo', `¿Deseas eliminar "${archivo.nombreOriginal}" de tu entrega?`).subscribe(ok => {
+      if (!ok) return;
+      this.tareaService.eliminarArchivoEntrega(archivo.id).subscribe({
+        next: () => {
+          if (this.miEntrega?.archivos) {
+            this.miEntrega.archivos = this.miEntrega.archivos.filter((a: any) => a.id !== archivo.id);
+          }
+          this.snackBar.open('Archivo eliminado correctamente', 'OK', { duration: 3000 });
+          this.cdr.detectChanges();
+        },
+        error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo eliminar el archivo', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
+      });
     });
+  }
+
+  // Descarga con el nombre original (tildes incluidas) en vez del que pone Cloudinary.
+  descargar(event: Event, archivo: any) {
+    event.preventDefault();
+    descargarConNombre(archivo.url, archivo.nombreOriginal);
   }
 
   volver() {

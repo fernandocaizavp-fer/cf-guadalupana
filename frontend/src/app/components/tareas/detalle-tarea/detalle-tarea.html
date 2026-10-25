@@ -80,7 +80,7 @@
         <div class="files-grid">
           @for (a of tarea.archivos; track a.id) {
             <div class="file-chip">
-              <a [href]="a.url" target="_blank" rel="noopener" class="file-link">
+              <a [href]="a.url" target="_blank" rel="noopener" (click)="descargar($event, a)" class="file-link">
                 <mat-icon>description</mat-icon>
                 <span class="file-name">{{ a.nombreOriginal }}</span>
               </a>
@@ -116,7 +116,7 @@
                 @if (e.entrega?.archivos?.length > 0) {
                   <div class="entrega-files">
                     @for (a of e.entrega.archivos; track a.id) {
-                      <a [href]="a.url" target="_blank" rel="noopener" class="entrega-file">
+                      <a [href]="a.url" target="_blank" rel="noopener" (click)="descargar($event, a)" class="entrega-file">
                         <mat-icon>insert_drive_file</mat-icon>
                         <span class="file-name">{{ a.nombreOriginal }}</span>
                       </a>

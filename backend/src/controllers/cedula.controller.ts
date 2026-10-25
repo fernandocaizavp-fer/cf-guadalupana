@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { motivoCedulaInvalida } from '../lib/cedula';
 
 const API_BASE = 'https://apiconsult.zampisoft.com/api/consultar';
 
@@ -18,8 +19,12 @@ export const consultarCedula = async (req: Request, res: Response) => {
   if (!token) {
     return res.status(500).json({ error: 'Token de la API no configurado' });
   }
-  if (!cedula || !/^\d{10}$/.test(cedula)) {
-    return res.status(400).json({ error: 'Cédula inválida' });
+  // Se valida con el algoritmo del Registro Civil ANTES de llamar a la API:
+  // cada consulta cuesta aunque la cédula no exista, así que no se gasta
+  // crédito en un número inventado.
+  const motivo = motivoCedulaInvalida(cedula);
+  if (motivo) {
+    return res.status(400).json({ error: `Cédula inválida: ${motivo}` });
   }
 
   // Nunca debe salir el token en una respuesta ni en un log, ni siquiera dentro

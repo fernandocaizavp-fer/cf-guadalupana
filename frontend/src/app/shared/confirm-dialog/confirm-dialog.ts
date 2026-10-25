@@ -9,13 +9,15 @@ export interface ConfirmData {
   confirmText?: string;
   cancelText?: string;
   icon?: string;
+  // Variante roja para acciones destructivas (eliminar, quitar).
+  peligro?: boolean;
 }
 
 @Component({
   selector: 'app-confirm-dialog',
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
   template: `
-    <div class="confirm-dialog">
+    <div class="confirm-dialog" [class.peligro]="data.peligro">
       <div class="confirm-header">
         <div class="confirm-icon">
           <mat-icon>{{ data.icon || 'help_outline' }}</mat-icon>
@@ -73,7 +75,7 @@ export interface ConfirmData {
       padding: 4px 28px 20px;
       text-align: center;
 
-      p { margin: 0; color: #475569; font-size: 14px; line-height: 1.5; }
+      p { margin: 0; color: #475569; font-size: 14px; line-height: 1.5; white-space: pre-line; }
     }
 
     .confirm-actions {
@@ -92,6 +94,14 @@ export interface ConfirmData {
       color: white !important;
 
       mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
+    }
+
+    .peligro {
+      .confirm-icon {
+        background: linear-gradient(135deg, #b91c1c, #ef4444);
+        mat-icon { color: #ffffff; }
+      }
+      .btn-confirmar { background: linear-gradient(135deg, #b91c1c, #dc2626) !important; }
     }
   `]
 })

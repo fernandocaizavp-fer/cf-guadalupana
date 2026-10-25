@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Confirmacion } from '../../../shared/confirm-dialog/confirmacion';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -26,6 +27,7 @@ import { VisorImagen } from '../../../shared/visor-imagen/visor-imagen';
   styleUrl: './gestionar-anuncios.scss'
 })
 export class GestionarAnuncios implements OnInit {
+  private confirmacion = inject(Confirmacion);
   anuncios: any[] = [];
   loading = true;
   guardando = false;
@@ -176,15 +178,16 @@ export class GestionarAnuncios implements OnInit {
   }
 
   eliminar(id: number) {
-    if (confirm('¿Eliminar este anuncio?')) {
+    this.confirmacion.eliminar('Eliminar anuncio', '¿Deseas eliminar este anuncio? Esta acción no se puede deshacer.').subscribe(ok => {
+      if (!ok) return;
       this.anuncioService.eliminarAnuncio(id).subscribe({
         next: () => {
-          this.snackBar.open('Anuncio eliminado', 'OK', { duration: 3000 });
+          this.snackBar.open('Anuncio eliminado correctamente', 'OK', { duration: 3000 });
           this.cargarAnuncios();
         },
-        error: () => this.snackBar.open('Error al eliminar', 'OK', { duration: 3000 })
+        error: (e) => this.snackBar.open(e?.error?.error || 'No se pudo eliminar el anuncio', 'OK', { duration: 4000, panelClass: ['app-snackbar', 'app-snackbar-error'] })
       });
-    }
+    });
   }
 
   resetForm() {

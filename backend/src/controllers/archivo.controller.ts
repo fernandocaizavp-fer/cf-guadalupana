@@ -1,13 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { subirArchivo, eliminarArchivo } from '../lib/cloudinary';
-import { validarTamano } from '../middlewares/upload.middleware';
-
-// Multer decodifica el nombre del archivo como latin1; lo reinterpretamos como
-// UTF-8 para conservar bien las tildes y la ñ (p. ej. "rúbrica evaluación").
-function nombreUtf8(nombre: string): string {
-  return Buffer.from(nombre, 'latin1').toString('utf8');
-}
+import { validarTamano, nombreUtf8 } from '../middlewares/upload.middleware';
 
 // Busca la matrícula del usuario autenticado (estudiante).
 async function matriculaDelUsuario(req: any) {
