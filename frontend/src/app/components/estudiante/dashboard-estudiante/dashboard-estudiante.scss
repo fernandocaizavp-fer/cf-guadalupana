@@ -435,3 +435,68 @@
 
   mat-icon { font-size: 14px; width: 14px; height: 14px; }
 }
+
+/* ===== RESPONSIVE ===== */
+// Los anuncios pasan debajo de las calificaciones cuando no caben al lado.
+@media (max-width: 900px) {
+  .main-layout { grid-template-columns: 1fr; }
+  .columna-anuncios { position: static; }
+  .anuncios-list { max-height: none; }
+}
+
+@media (max-width: 768px) {
+  // Barra: logo + título + salir en la 1ra fila, semestres en la 2da.
+  .est-toolbar {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    font-size: 16px;
+
+    .semestre-tabs {
+      order: 10;
+      width: 100%;
+      margin: 6px 0 4px;
+    }
+
+    .tab-btn { flex: 1; padding: 8px 10px; }
+  }
+
+  .usuario-nombre {
+    margin: 0 4px !important;
+    font-size: 13px !important;
+    max-width: 38vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .content { padding: 16px 12px; }
+
+  .estudiante-header {
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .header-actions { width: 100%; }
+  .doc-card { box-sizing: border-box; width: 100%; }
+
+  .materia-row {
+    gap: 12px;
+    padding: 14px;
+
+    &:hover { transform: none; }
+  }
+
+  .materia-promedio {
+    padding: 8px 12px;
+    .prom-valor { font-size: 18px; }
+  }
+}
+
+@media (max-width: 480px) {
+  .avatar { width: 48px; height: 48px; }
+  .estudiante-info h1 { font-size: 17px; }
+  .materia-icon,
+  .arrow,
+  .arrow-placeholder { display: none; }
+}

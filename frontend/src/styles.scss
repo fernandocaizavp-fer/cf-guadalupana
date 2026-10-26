@@ -73,3 +73,44 @@ body {
     color: #ffffff !important;
   }
 }
+
+/* ===== Responsive: celular y tablet =====
+   Puntos de corte del sistema: 768px (tablet) y 480px (celular).
+   Todo lo de aquí solo aplica en pantallas pequeñas: la vista de escritorio no cambia.
+   Cada pantalla agrega sus propios ajustes en su .scss (los estilos de Angular
+   están encapsulados por componente, así que no basta con reglas globales). */
+@media (max-width: 768px) {
+  // Ningún elemento debe generar scroll horizontal en toda la página.
+  // `clip` (y no `hidden`) para no romper los encabezados `position: sticky`.
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+  }
+
+  // Diálogos (editar estudiante, confirmaciones...): casi a pantalla completa.
+  .cdk-overlay-pane.mat-mdc-dialog-panel {
+    max-width: 95vw !important;
+  }
+
+  .mat-mdc-dialog-content {
+    max-height: 75vh !important;
+  }
+
+  // Snackbars al ancho del celular, sin pegarse a los bordes.
+  .mat-mdc-snack-bar-container {
+    margin: 8px !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  // Las barras superiores de Material tienen altura fija; en celular el
+  // contenido (título + botones) puede necesitar dos filas.
+  .mat-toolbar {
+    height: auto !important;
+    min-height: 56px;
+  }
+}

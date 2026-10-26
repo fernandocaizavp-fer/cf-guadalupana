@@ -334,3 +334,49 @@ $border: #e2e8f0;
 }
 
 @keyframes girar { to { transform: rotate(360deg); } }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  // Barra superior: altura libre para que título y acciones puedan ir en 2 filas.
+  .tareas-toolbar {
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px !important;
+
+    .toolbar-content { flex-wrap: wrap; gap: 10px; padding: 0 !important; }
+    .nav-group { flex: 1 1 220px; gap: 10px; min-width: 0; }
+
+    .title-meta {
+      min-width: 0;
+      h1 { font-size: 17px; line-height: 1.25; white-space: normal; }
+      span { font-size: 11px; white-space: normal; }
+    }
+  }
+
+  .flex-spacer { display: none; }
+  .calificar-top { width: 100%; justify-content: center; padding: 12px; }
+
+  .page-wrapper { padding: 16px 12px; }
+  .panel { padding: 16px; }
+  .panel-head { flex-wrap: wrap; gap: 10px; }
+
+  .info-panel .info-main,
+  .info-panel .info-side { min-width: 0; width: 100%; }
+
+  .file-chip { box-sizing: border-box; max-width: 100%; }
+  .file-link .file-name { max-width: 60vw; }
+
+  .entregas-grid { grid-template-columns: 1fr; }
+
+  // Cada estudiante como tarjeta: nombre, entregas, nota y observación apilados.
+  .alumno-row {
+    gap: 8px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .entrega-file .file-name { max-width: 60vw; }
+
+  .nota-input { min-height: 40px; }
+  .obs-input { min-height: 40px; }
+}

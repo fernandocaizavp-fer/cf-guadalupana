@@ -209,3 +209,38 @@ $danger: #dc2626;
   padding: 6px 12px;
   mat-icon { font-size: 16px; width: 16px; height: 16px; }
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  // Barra superior: altura libre para que título y acciones puedan ir en 2 filas.
+  .tarea-toolbar {
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px !important;
+
+    .toolbar-content { flex-wrap: wrap; gap: 10px; padding: 0 !important; }
+    .nav-group { flex: 1 1 220px; gap: 10px; min-width: 0; }
+
+    .title-meta {
+      min-width: 0;
+      h1 { font-size: 17px; line-height: 1.25; white-space: normal; }
+      span { font-size: 11px; white-space: normal; }
+    }
+  }
+
+  .flex-spacer { display: none; }
+  .nota-box { padding: 6px 14px; .nota-valor { font-size: 19px; } }
+
+  .page-wrapper { padding: 16px 12px; }
+  .panel { padding: 16px; }
+  .panel-head { flex-wrap: wrap; gap: 10px; }
+
+  // Los archivos ocupan todo el ancho; el nombre se recorta con "…".
+  .file-chip,
+  .file-link { max-width: 100%; }
+  .file-chip { box-sizing: border-box; width: 100%; }
+  .file-chip .file-name,
+  .file-link .file-name { max-width: none; flex: 1; min-width: 0; }
+
+  .subir-label { padding: 10px 14px; }
+}

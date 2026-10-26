@@ -254,3 +254,39 @@ $warning: #f59e0b;
   &:hover { background: #f9f1dc; }
   mat-icon { font-size: 16px; width: 16px; height: 16px; }
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  // Barra superior: altura libre para que título y acciones puedan ir en 2 filas.
+  .subject-toolbar {
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px !important;
+
+    .toolbar-content { flex-wrap: wrap; gap: 10px; padding: 0 !important; }
+    .nav-group { flex: 1 1 220px; gap: 10px; min-width: 0; }
+
+    .title-group {
+      min-width: 0;
+      h1 { font-size: 17px; line-height: 1.25; white-space: normal; }
+      span { font-size: 11px; white-space: normal; }
+    }
+  }
+
+  .spacer { display: none; }
+  .promedio-box { padding: 6px 14px; .p-info .p-valor { font-size: 20px; } }
+
+  .content { padding: 16px 12px; }
+  .tarea-card .card-body { gap: 12px; padding: 14px; }
+}
+
+@media (max-width: 480px) {
+  .card-index,
+  .abrir-arrow { display: none; }
+
+  .card-score {
+    width: 54px;
+    height: 54px;
+    .val { font-size: 18px; }
+  }
+}

@@ -613,3 +613,59 @@ $white: #ffffff;
   }
 }
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  // Barra superior: altura libre para que título y acciones puedan ir en 2 filas.
+  .tareas-toolbar {
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px !important;
+
+    .toolbar-content { flex-wrap: wrap; gap: 10px; padding: 0 !important; }
+    .nav-group { flex: 1 1 220px; gap: 10px; min-width: 0; }
+
+    .title-meta {
+      min-width: 0;
+      h1 { font-size: 17px; line-height: 1.25; white-space: normal; }
+      span { font-size: 11px; white-space: normal; }
+    }
+  }
+
+  .flex-spacer { display: none; }
+  .semestre-tabs { width: 100%; }
+  .semestre-tabs .tab-btn { flex: 1; padding: 8px 10px; }
+
+  .page-wrapper { padding: 16px 12px; }
+
+  .card-header { padding: 16px; }
+
+  // Formulario de nueva tarea en una sola columna.
+  .form-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    .col-span-2 { grid-column: auto; }
+  }
+
+  .card-footer {
+    padding: 12px 16px 16px;
+    .crear-btn { width: 100%; }
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .section-header .section-actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .tareas-grid { grid-template-columns: 1fr; }
+  .tarea-card-top { padding: 16px; }
+  .tarea-footer { padding: 12px 16px; }
+
+  .staged-chip .staged-name { max-width: 55vw; }
+}

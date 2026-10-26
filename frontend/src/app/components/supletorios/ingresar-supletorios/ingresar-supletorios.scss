@@ -155,3 +155,29 @@
     &:focus { border-color: #1a2a5e; }
   }
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  // Barra superior: altura libre para que título y acciones puedan ir en 2 filas.
+  .page-toolbar {
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px !important;
+
+    .toolbar-content { flex-wrap: wrap; gap: 10px; padding: 0 !important; }
+    .nav-group { flex: 1 1 220px; gap: 10px; min-width: 0; }
+
+    .title-meta {
+      min-width: 0;
+      h1 { font-size: 17px; line-height: 1.25; white-space: normal; }
+      span { font-size: 11px; white-space: normal; }
+    }
+  }
+
+  .page-toolbar .flex-spacer { display: none; }
+
+  .content { padding: 16px 12px; }
+  .descarga-card { padding: 22px 16px; margin-top: 12px; }
+
+  .form-row { flex-direction: column; gap: 12px; }
+}

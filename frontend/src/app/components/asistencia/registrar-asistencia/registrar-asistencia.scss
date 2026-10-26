@@ -490,3 +490,60 @@ $rojo-border: #fca5a5;
     background: $rojo-bg !important;
   }
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  // Barra superior: altura libre para que título y acciones puedan ir en 2 filas.
+  .asistencia-toolbar {
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px !important;
+
+    .toolbar-content { flex-wrap: wrap; gap: 10px; padding: 0 !important; }
+    .nav-group { flex: 1 1 220px; gap: 10px; min-width: 0; }
+
+    .title-meta {
+      min-width: 0;
+      h1 { font-size: 17px; line-height: 1.25; white-space: normal; }
+      span { font-size: 11px; white-space: normal; }
+    }
+  }
+
+  .flex-spacer { display: none; }
+  .stats-chips { flex-wrap: wrap; width: 100%; gap: 8px; }
+  .stats-chips .stat-chip { flex: 1; justify-content: center; padding: 8px 10px; }
+
+  .page-wrapper { padding: 16px 12px; }
+  .registro-card { padding: 16px; }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .fecha-row { width: 100%; box-sizing: border-box; }
+  .fecha-input { flex: 1; min-width: 0; }
+
+  .acciones-masivas { flex-wrap: wrap; }
+  .acciones-masivas .accion-btn { flex: 1; }
+
+  // Fila de estudiante: más alta para tocar cómodamente presente/ausente.
+  .estudiante-row { gap: 10px; padding: 14px 12px; min-height: 52px; }
+  .row-nombre { min-width: 0; overflow-wrap: anywhere; }
+
+  .guardar-row { flex-direction: column-reverse; }
+  .guardar-row .cancelar-btn,
+  .guardar-row .guardar-btn { width: 100%; }
+
+  .section-header { flex-wrap: wrap; gap: 10px; }
+
+  .historial-item {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .historial-fecha { min-width: 0; }
+  .historial-stats { flex-wrap: wrap; }
+}
