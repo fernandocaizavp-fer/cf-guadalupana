@@ -462,3 +462,66 @@ table {
     .mat-docente, .mat-count { flex: 0 0 auto; padding-left: 30px; }
   }
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1000px) {
+  .info-cards { grid-template-columns: repeat(2, 1fr); }
+  .submaterias-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  // Barra: volver + nombre del curso arriba, botones de acción debajo.
+  .toolbar {
+    flex-wrap: wrap;
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .toolbar-title {
+    flex: 1;
+    min-width: 0;
+    .titulo { font-size: 16px; white-space: normal; line-height: 1.25; }
+  }
+
+  .toolbar .spacer { display: none; }
+
+  .toolbar-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+
+    button { width: 100%; height: 40px !important; }
+    button:last-child { grid-column: span 2; }
+  }
+
+  .content { padding: 16px 12px; }
+
+  .section-header { flex-wrap: wrap; gap: 10px; }
+
+  // Tabla de estudiantes con scroll horizontal; el nombre queda fijo.
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table { min-width: 640px; }
+
+  table ::ng-deep .mat-column-nombres {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+  table ::ng-deep .mat-mdc-cell.mat-column-nombres { background: #fff; }
+  table ::ng-deep .mat-mdc-header-cell.mat-column-nombres { background: #1a2a5e; }
+
+  .btn-action { width: 40px; height: 40px !important; line-height: 40px !important; }
+
+  .agregar-submateria { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .info-cards { grid-template-columns: 1fr; }
+}

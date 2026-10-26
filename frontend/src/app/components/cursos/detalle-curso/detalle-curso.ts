@@ -360,6 +360,13 @@ import { validarIdentificacion } from '../../../services/cedula-util';
     }
 
     .btn-cancelar { color: #666 !important; }
+
+    /* Celular: formulario en una columna y botones a todo el ancho */
+    @media (max-width: 768px) {
+      .dialog-header { padding: 12px 16px; }
+      .custom-content { padding: 16px !important; }
+      .row, .row-3 { grid-template-columns: 1fr; }
+    }
   `]
 })
 export class EditarMatriculaDialog {

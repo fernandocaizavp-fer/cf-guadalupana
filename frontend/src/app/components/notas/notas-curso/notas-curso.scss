@@ -170,3 +170,44 @@
 .td-nombre { text-align: left !important; padding: 10px 12px !important; font-weight: 500; color: #1a2a5e; }
 .td-nota { color: #333; }
 .td-promedio { font-weight: 700; color: #1a2a5e; background: #fff8e1 !important; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  // Barra superior: altura libre para que título y acciones puedan ir en 2 filas.
+  .page-toolbar {
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px !important;
+
+    .toolbar-content { flex-wrap: wrap; gap: 10px; padding: 0 !important; }
+    .nav-group { flex: 1 1 220px; gap: 10px; min-width: 0; }
+
+    .title-meta {
+      min-width: 0;
+      h1 { font-size: 17px; line-height: 1.25; white-space: normal; }
+      span { font-size: 11px; white-space: normal; }
+    }
+  }
+
+  .page-toolbar .flex-spacer { display: none; }
+  .semestre-tabs { width: 100%; }
+  .semestre-tabs .tab-btn { flex: 1; padding: 8px 10px; }
+
+  .lugar-fecha { width: 100%; }
+
+  .content { padding: 16px 12px; }
+  .info-bar { flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
+
+  .table-wrapper { -webkit-overflow-scrolling: touch; }
+  .th-nombre { width: 150px; }
+
+  // Nombre fijo a la izquierda al desplazar la tabla.
+  .notas-table .td-nombre {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 150px;
+    background: #fff;
+  }
+  .notas-table th.th-nombre { position: sticky; left: 0; z-index: 2; background: #1a2a5e; }
+}

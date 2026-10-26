@@ -237,3 +237,42 @@ mat-divider { margin: 22px 0 !important; border-color: #f1f1f1 !important; }
   color: #15803d !important;
   font-weight: 600;
 }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  // Barra superior: altura libre para que título y acciones puedan ir en 2 filas.
+  .admin-toolbar {
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px !important;
+
+    .toolbar-content { flex-wrap: wrap; gap: 10px; padding: 0 !important; }
+    .nav-group { flex: 1 1 220px; gap: 10px; min-width: 0; }
+
+    .title-meta {
+      min-width: 0;
+      h1 { font-size: 17px; line-height: 1.25; white-space: normal; }
+      span { font-size: 11px; white-space: normal; }
+    }
+  }
+
+  .flex-spacer { display: none; }
+  .admin-toolbar .toolbar-hint { display: none; }
+
+  .page-wrapper { padding: 12px; }
+  .enrollment-card .main-card-header { padding: 16px !important; }
+  .enrollment-card mat-card-content { padding: 16px !important; }
+
+  .row-grid-2,
+  .row-grid-3,
+  .row-grid-4 { gap: 0 12px; }
+
+  // Guardar arriba, cancelar abajo; ambos a todo el ancho.
+  .form-actions {
+    flex-direction: column-reverse;
+    padding: 0 16px 20px !important;
+
+    .btn-cancel,
+    .btn-submit { width: 100%; }
+  }
+}
