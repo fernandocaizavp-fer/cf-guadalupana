@@ -6,11 +6,20 @@ import prisma from '../lib/prisma';
 export const login = async (req: Request, res: Response) => {
   const { correo, password } = req.body;
   try {
-    const usuario = await prisma.usuario.findUnique({ where: { correo } });
+    const usuario = await prisma.usuario.findUnique({
+      where: { correo },
+      include: { matricula: { select: { activo: true } } }
+    });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
     const valido = await bcrypt.compare(password, usuario.password);
     if (!valido) return res.status(401).json({ error: 'Contraseña incorrecta' });
+
+    // Cuenta desactivada, o estudiante cuya matrícula fue eliminada (incluye a
+    // los eliminados antes de que eliminarMatricula también desactivara la cuenta).
+    if (!usuario.activo || usuario.matricula?.activo === false) {
+      return res.status(403).json({ error: 'Tu cuenta está desactivada. Comunícate con la administración del centro.' });
+    }
 
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol },

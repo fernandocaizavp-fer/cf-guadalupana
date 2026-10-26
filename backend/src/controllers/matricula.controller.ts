@@ -88,25 +88,149 @@ export const crearMatricula = async (req: Request, res: Response) => {
     nombrerepresentante, ocupacionrepresentante,
     domiciliorepresentante, telefonorepresentante,
     correoestudiante, lugarfechamatricula,
-    especialidad, lugarfechacertificado, cursoId
+    especialidad, lugarfechacertificado, cursoId, reactivar
   } = req.body;
 
   const errorCedula = validarIdentificacion(cedula);
   if (errorCedula) return res.status(400).json({ error: errorCedula });
 
   try {
+    // ¿Esa cédula ya tuvo una matrícula? Matricula.cedula es única en toda la
+    // tabla (incluye archivadas), así que un estudiante eliminado no se puede
+    // volver a crear: se REACTIVA su registro, previa confirmación del usuario.
+    const existente = await prisma.matricula.findUnique({
+      where: { cedula },
+      include: { curso: { select: { ramaArtesanal: true } } }
+    });
+
+    if (existente?.activo) {
+      return res.status(400).json({ error: 'Ya existe un estudiante matriculado con esa cédula' });
+    }
+
+    if (existente && !reactivar) {
+      return res.status(409).json({
+        requiereConfirmacion: true,
+        reactivable: true,
+        error: `${existente.apellidos} ${existente.nombres} estuvo matriculado en "${existente.curso?.ramaArtesanal ?? 'otro curso'}" y fue eliminado. ¿Deseas reactivarlo y matricularlo en este curso?`
+      });
+    }
+
     const hash = await bcrypt.hash(cedula, 10);
 
     // Numeración (correlativo, tomo, página) desde la fuente única de verdad.
     const { matriculaNo, tomo: tomoFinal, pagina: paginaCalculada } =
       await calcularSiguienteMatricula(Number(cursoId), tomo);
 
+    const correoFinal = (correoestudiante || correo).toLowerCase();
+
+    const datosMatricula = {
+      matriculaNo,
+      tomo: tomoFinal,
+      pagina: paginaCalculada,
+      apellidos: apellidos.toUpperCase(),
+      nombres: nombres.toUpperCase(),
+      cedula,
+      sexo,
+      nivelEstudio,
+      lugarfechamatricula: lugarfechamatricula?.toUpperCase(),
+      cursoId: Number(cursoId)
+    };
+
+    // Datos personales en tabla separada
+    const personales = {
+      fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+      anioNacimiento,
+      mesNacimiento,
+      diaNacimiento,
+      pais: pais?.toUpperCase(),
+      provincia: provincia?.toUpperCase(),
+      canton: canton?.toUpperCase(),
+      parroquia: parroquia?.toUpperCase(),
+      ciudad: ciudad?.toUpperCase(),
+      nacionalidad: nacionalidad?.toUpperCase(),
+      calle: calle?.toUpperCase(),
+      num,
+      transversal,
+      telefono,
+      correo: correoFinal
+    };
+
+    // Datos familiares en tabla separada
+    const familiares = {
+      nombrepapa: nombrepapa?.toUpperCase(),
+      profesionpapa: profesionpapa?.toUpperCase(),
+      ocupacionpapa: ocupacionpapa?.toUpperCase(),
+      nombremama: nombremama?.toUpperCase(),
+      profesionmama: profesionmama?.toUpperCase(),
+      ocupacionmama: ocupacionmama?.toUpperCase(),
+      nombrerepresentante: nombrerepresentante?.toUpperCase(),
+      ocupacionrepresentante: ocupacionrepresentante?.toUpperCase(),
+      domiciliorepresentante: domiciliorepresentante?.toUpperCase(),
+      telefonorepresentante,
+      correoestudiante: correoFinal
+    };
+
+    // Datos académicos en tabla separada
+    const academicos = {
+      cursoanterior: cursoanterior?.toUpperCase(),
+      unidadeducativa: unidadeducativa?.toUpperCase(),
+      centroformacionanterior: centroformacionanterior?.toUpperCase(),
+      tipoBachiller,
+      conferidoPorA1: conferidoPorA1?.toUpperCase(),
+      conferidoPorA2: conferidoPorA2?.toUpperCase(),
+      especialidad: especialidad?.toUpperCase(),
+      lugarfechacertificado: lugarfechacertificado?.toUpperCase()
+    };
+
+    const incluir = {
+      curso: true,
+      datosPersonales: true,
+      datosFamiliares: true,
+      datosAcademicos: true
+    };
+
     const resultado = await prisma.$transaction(async (tx) => {
+      if (existente) {
+        // Reactivación: misma persona, mismo usuario. Se restaura como una
+        // matrícula nueva: contraseña = cédula y debe cambiarla al ingresar.
+        const usuario = await tx.usuario.update({
+          where: { id: existente.usuarioId },
+          data: {
+            nombre: nombres.toUpperCase(),
+            apellido: apellidos.toUpperCase(),
+            correo: correoFinal,
+            password: hash,
+            rol: 'ESTUDIANTE',
+            activo: true,
+            debeCambiarPassword: true
+          }
+        });
+
+        const matricula = await tx.matricula.update({
+          where: { id: existente.id },
+          data: {
+            ...datosMatricula,
+            activo: true,
+            // Los permisos especiales eran de la matrícula anterior.
+            supletorioHabilitadoHasta: null,
+            supletorioMotivo: null,
+            examenGradoHabilitadoHasta: null,
+            examenGradoMotivo: null,
+            datosPersonales: { upsert: { create: personales, update: personales } },
+            datosFamiliares: { upsert: { create: familiares, update: familiares } },
+            datosAcademicos: { upsert: { create: academicos, update: academicos } }
+          },
+          include: incluir
+        });
+
+        return { usuario, matricula };
+      }
+
       const usuario = await tx.usuario.create({
         data: {
           nombre: nombres.toUpperCase(),
           apellido: apellidos.toUpperCase(),
-          correo: (correoestudiante || correo).toLowerCase(),
+          correo: correoFinal,
           password: hash,
           rol: 'ESTUDIANTE'
         }
@@ -114,83 +238,21 @@ export const crearMatricula = async (req: Request, res: Response) => {
 
       const matricula = await tx.matricula.create({
         data: {
-          matriculaNo,
-          tomo: tomoFinal,
-          pagina: paginaCalculada,
-          apellidos: apellidos.toUpperCase(),
-          nombres: nombres.toUpperCase(),
-          cedula,
-          sexo,
-          nivelEstudio,
-          lugarfechamatricula: lugarfechamatricula?.toUpperCase(),
-          cursoId: Number(cursoId),
+          ...datosMatricula,
           usuarioId: usuario.id,
-
-          // Datos personales en tabla separada
-          datosPersonales: {
-            create: {
-              fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
-              anioNacimiento,
-              mesNacimiento,
-              diaNacimiento,
-              pais: pais?.toUpperCase(),
-              provincia: provincia?.toUpperCase(),
-              canton: canton?.toUpperCase(),
-              parroquia: parroquia?.toUpperCase(),
-              ciudad: ciudad?.toUpperCase(),
-              nacionalidad: nacionalidad?.toUpperCase(),
-              calle: calle?.toUpperCase(),
-              num,
-              transversal,
-              telefono,
-              correo: (correoestudiante || correo)?.toLowerCase()
-            }
-          },
-
-          // Datos familiares en tabla separada
-          datosFamiliares: {
-            create: {
-              nombrepapa: nombrepapa?.toUpperCase(),
-              profesionpapa: profesionpapa?.toUpperCase(),
-              ocupacionpapa: ocupacionpapa?.toUpperCase(),
-              nombremama: nombremama?.toUpperCase(),
-              profesionmama: profesionmama?.toUpperCase(),
-              ocupacionmama: ocupacionmama?.toUpperCase(),
-              nombrerepresentante: nombrerepresentante?.toUpperCase(),
-              ocupacionrepresentante: ocupacionrepresentante?.toUpperCase(),
-              domiciliorepresentante: domiciliorepresentante?.toUpperCase(),
-              telefonorepresentante,
-              correoestudiante: (correoestudiante || correo)?.toLowerCase()
-            }
-          },
-
-          // Datos académicos en tabla separada
-          datosAcademicos: {
-            create: {
-              cursoanterior: cursoanterior?.toUpperCase(),
-              unidadeducativa: unidadeducativa?.toUpperCase(),
-              centroformacionanterior: centroformacionanterior?.toUpperCase(),
-              tipoBachiller,
-              conferidoPorA1: conferidoPorA1?.toUpperCase(),
-              conferidoPorA2: conferidoPorA2?.toUpperCase(),
-              especialidad: especialidad?.toUpperCase(),
-              lugarfechacertificado: lugarfechacertificado?.toUpperCase()
-            }
-          }
+          datosPersonales: { create: personales },
+          datosFamiliares: { create: familiares },
+          datosAcademicos: { create: academicos }
         },
-        include: {
-          curso: true,
-          datosPersonales: true,
-          datosFamiliares: true,
-          datosAcademicos: true
-        }
+        include: incluir
       });
 
       return { usuario, matricula };
     });
 
     res.json({
-      message: 'Matrícula creada exitosamente',
+      message: existente ? 'Estudiante reactivado y matriculado' : 'Matrícula creada exitosamente',
+      reactivado: !!existente,
       matricula: resultado.matricula,
       credenciales: {
         correo: resultado.usuario.correo,
@@ -365,9 +427,17 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
 export const eliminarMatricula = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    await prisma.matricula.update({
-      where: { id: Number(id) },
-      data: { activo: false }
+    // Borrado lógico de la matrícula Y de la cuenta, en una sola transacción:
+    // el estudiante eliminado ya no puede iniciar sesión.
+    await prisma.$transaction(async (tx) => {
+      const matricula = await tx.matricula.update({
+        where: { id: Number(id) },
+        data: { activo: false }
+      });
+      await tx.usuario.update({
+        where: { id: matricula.usuarioId },
+        data: { activo: false }
+      });
     });
     res.json({ message: 'Matrícula eliminada' });
   } catch (error) {

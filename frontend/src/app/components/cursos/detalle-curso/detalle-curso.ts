@@ -513,7 +513,8 @@ export class DetalleCurso implements OnInit {
   eliminarEstudiante(matricula: any) {
     this.confirmacion.eliminar(
       'Eliminar estudiante',
-      `¿Deseas eliminar a ${matricula.nombres} ${matricula.apellidos} de este curso?`
+      `¿Deseas eliminar a ${matricula.nombres} ${matricula.apellidos} de este curso?
+Ya no podrá iniciar sesión en el sistema.`
     ).subscribe(ok => {
       if (!ok) return;
       this.matriculaService.eliminarMatricula(matricula.id).subscribe({

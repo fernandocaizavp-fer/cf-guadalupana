@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Confirmacion } from '../../../shared/confirm-dialog/confirmacion';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,6 +28,7 @@ import { Title } from '@angular/platform-browser';
   styleUrl: './nueva-matricula.scss'
 })
 export class NuevaMatricula implements OnInit {
+  private confirmacion = inject(Confirmacion);
   loading = false;
   consultandoCedula = false;
   ultimaCedulaConsultada = '';
@@ -156,18 +158,45 @@ export class NuevaMatricula implements OnInit {
       );
       return;
     }
+    this.enviarMatricula(false);
+  }
+
+  // Si la cédula pertenece a un estudiante eliminado (matrícula archivada), el
+  // backend responde 409 con `reactivable`: se pide confirmación y se reintenta
+  // con reactivar=true, que restaura su registro y su cuenta en este curso.
+  private enviarMatricula(reactivar: boolean) {
     this.loading = true;
-    this.matriculaService.crearMatricula(this.datos).subscribe({
-      next: () => {
+    this.matriculaService.crearMatricula({ ...this.datos, reactivar }).subscribe({
+      next: (resp: any) => {
         this.loading = false;
-        this.snackBar.open('Matrícula guardada exitosamente', 'OK', { duration: 3000 });
+        this.snackBar.open(
+          resp?.reactivado
+            ? 'Estudiante reactivado. Su contraseña vuelve a ser su cédula.'
+            : 'Matrícula guardada exitosamente',
+          'OK',
+          { duration: 4000 }
+        );
         // Vuelve al detalle del curso, donde ya aparece el nuevo estudiante.
         // La matrícula se puede descargar después desde ahí.
         this.router.navigate(['/cursos', this.datos.cursoId]);
       },
       error: (err) => {
         this.loading = false;
-        this.snackBar.open(err.error?.error || 'Error al crear matrícula', 'OK', { duration: 4000 });
+        this.cdr.detectChanges();
+        if (err.status === 409 && err.error?.reactivable && !reactivar) {
+          this.confirmacion.preguntar({
+            titulo: 'Estudiante eliminado anteriormente',
+            mensaje: err.error.error,
+            confirmText: 'Reactivar y matricular',
+            cancelText: 'Cancelar',
+            icon: 'restore'
+          }).subscribe(ok => {
+            if (ok) this.enviarMatricula(true);
+          });
+          return;
+        }
+        this.snackBar.open(err.error?.error || 'Error al crear matrícula', 'OK',
+          { duration: 5000, panelClass: ['app-snackbar', 'app-snackbar-error'] });
       }
     });
   }
