@@ -41,7 +41,7 @@ export interface ConfirmData {
     </div>
   `,
   styles: [`
-    .confirm-dialog { min-width: 320px; }
+    .confirm-dialog { min-width: min(320px, 100%); }
 
     .confirm-header {
       display: flex;
@@ -85,6 +85,13 @@ export interface ConfirmData {
       padding: 16px 24px 24px;
 
       button { min-width: 120px; }
+    }
+
+    @media (max-width: 480px) {
+      .confirm-actions {
+        flex-direction: column-reverse;
+        button { width: 100%; }
+      }
     }
 
     .btn-cancelar { color: #64748b !important; border-color: #cbd5e1 !important; }

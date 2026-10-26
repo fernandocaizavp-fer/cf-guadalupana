@@ -559,3 +559,52 @@
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ===== RESPONSIVE (página pública) ===== */
+@media (max-width: 1000px) {
+  .about-grid,
+  .why-grid { grid-template-columns: 1fr; gap: 40px; }
+
+  .esp-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .navbar { padding: 10px 14px; }
+  .navbar .nav-brand .nav-logo { height: 36px; }
+  .navbar .nav-brand .nav-text .nav-title { font-size: 13px; }
+  .navbar .nav-brand .nav-text .nav-sub { display: none; }
+  .btn-login { padding: 8px 14px; font-size: 13px; }
+
+  // Portada: texto más pequeño y con margen lateral de celular.
+  .hero { height: 88vh; height: 88svh; }
+  .slide-overlay { padding: 0 20px; }
+  .slide-content {
+    h1 { font-size: 32px; }
+    p { font-size: 16px; margin-bottom: 24px; }
+  }
+  .btn-hero { padding: 12px 24px; }
+
+  .about,
+  .especialidades,
+  .why { padding: 56px 18px; }
+  .contact { padding: 20px 18px 48px; }
+
+  .about-text h2,
+  .section-header h2,
+  .why-text h2 { font-size: 26px; }
+
+  .about-stats { flex-wrap: wrap; gap: 16px; }
+  .stat .stat-number { font-size: 26px; }
+
+  .about-img img { height: 280px; }
+  .about-badge { left: 10px; bottom: -14px; padding: 12px 16px; }
+  .why-img img { height: 300px; }
+
+  .esp-grid,
+  .contact-grid { grid-template-columns: 1fr; }
+  .esp-card { padding: 28px 22px; }
+  .contact-card { padding: 28px 20px; }
+
+  .footer { padding: 32px 18px; }
+  .footer-content { flex-direction: column; align-items: flex-start; gap: 18px; }
+}

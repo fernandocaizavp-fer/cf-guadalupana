@@ -73,6 +73,10 @@ import { MatIconModule } from '@angular/material/icon';
       color: #64748b;
     }
 
+    @media (max-width: 768px) {
+      .estado-vacio { margin: 16px auto; padding: 28px 18px; }
+    }
+
     @keyframes ev-aparecer {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
