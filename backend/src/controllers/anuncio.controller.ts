@@ -46,6 +46,26 @@ export const crearAnuncio = async (req: any, res: Response) => {
   }
 };
 
+// autorNombre se guarda como copia al crear el anuncio, así que si luego se
+// edita el nombre del docente el anuncio seguía mostrando el antiguo. Al listar
+// se toma el nombre ACTUAL del usuario (por autorId); la copia guardada solo se
+// usa para anuncios antiguos sin autorId o si el autor ya no existe.
+const conNombreActual = async <T extends { autorId: number | null; autorNombre: string | null }>(
+  anuncios: T[]
+): Promise<T[]> => {
+  const ids = [...new Set(anuncios.map(a => a.autorId).filter((id): id is number => id !== null))];
+  if (ids.length === 0) return anuncios;
+  const autores = await prisma.usuario.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, nombre: true, apellido: true }
+  });
+  const nombres = new Map(autores.map(u => [u.id, `${u.nombre} ${u.apellido}`.trim()]));
+  return anuncios.map(a => ({
+    ...a,
+    autorNombre: (a.autorId !== null && nombres.get(a.autorId)) || a.autorNombre
+  }));
+};
+
 export const listarAnuncios = async (req: any, res: Response) => {
   try {
     // Los estudiantes solo ven los anuncios de su curso + los generales (sin
@@ -65,7 +85,7 @@ export const listarAnuncios = async (req: any, res: Response) => {
       where,
       orderBy: { createdAt: 'desc' }
     });
-    res.json(anuncios);
+    res.json(await conNombreActual(anuncios));
   } catch (error) {
     console.error('[anuncio] listarAnuncios falló:', error);
     res.status(500).json({ error: 'Error al listar anuncios' });
@@ -77,7 +97,7 @@ export const listarTodosAnuncios = async (req: Request, res: Response) => {
     const anuncios = await prisma.anuncio.findMany({
       orderBy: { createdAt: 'desc' }
     });
-    res.json(anuncios);
+    res.json(await conNombreActual(anuncios));
   } catch (error) {
     console.error('[anuncio] listarTodosAnuncios falló:', error);
     res.status(500).json({ error: 'Error al listar anuncios' });
