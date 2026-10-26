@@ -16,7 +16,9 @@ export const crearDocente = async (req: Request, res: Response) => {
         rol: 'PROFESOR'
       }
     });
-    res.json({ message: 'Docente creado', usuario });
+    // Nunca devolver el hash de la contraseña al cliente.
+    const { password: _omitido, ...sinPassword } = usuario;
+    res.json({ message: 'Docente creado', usuario: sinPassword });
   } catch (error: any) {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'El correo o cédula ya está registrado' });
@@ -48,9 +50,14 @@ export const actualizarDocente = async (req: Request, res: Response) => {
       correo: correo?.toLowerCase(),
       cedula
     };
-    if (cedula) data.password = await bcrypt.hash(cedula, 10);
+    // La contraseña NO se toca al editar: antes se re-hasheaba la cédula en cada
+    // guardado y el docente volvía a la contraseña por defecto, perdiendo la que
+    // él mismo había cambiado. La contraseña solo cambia desde cambiarPassword o
+    // la recuperación por correo.
     const usuario = await prisma.usuario.update({ where: { id: Number(id) }, data });
-    res.json({ message: 'Docente actualizado', usuario });
+    // Nunca devolver el hash de la contraseña al cliente.
+    const { password: _omitido, ...sinPassword } = usuario;
+    res.json({ message: 'Docente actualizado', usuario: sinPassword });
   } catch (error: any) {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'El correo o cédula ya está registrado' });
