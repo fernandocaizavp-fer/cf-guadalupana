@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-import emailjs from '@emailjs/browser';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -27,11 +26,6 @@ export class RecuperarPassword {
   exito = '';
   loading = false;
 
-  // Datos de EmailJS
-  private readonly SERVICE_ID = 'service_z7zewvc';
-  private readonly TEMPLATE_ID = 'template_s3ktec8';
-  private readonly PUBLIC_KEY = 'ENzKszL5IxzmsSt26';
-
   constructor(private authService: AuthService, private router: Router) {}
 
   // Validaciones visuales
@@ -43,8 +37,8 @@ export class RecuperarPassword {
     return this.tieneLongitud && this.tieneMayuscula && this.tieneNumero && this.coinciden;
   }
 
-  // PASO 1: solicitar el código y enviarlo por correo
-  // PASO 1: solicitar el código y enviarlo por correo
+  // PASO 1: solicitar el código. El servidor lo genera y lo envía al correo;
+  // el código nunca llega al navegador.
   enviarCodigo() {
     if (this.loading) return;
     this.error = '';
@@ -58,27 +52,12 @@ export class RecuperarPassword {
     this.loading = true;
     this.authService.solicitarRecuperacion(this.correo).subscribe({
       next: (res) => {
-        console.log("Respuesta del backend exitosa:", res); // Para confirmar que el backend sí responde
-        
-        // El backend devuelve el código y el nombre; los enviamos por EmailJS
-        emailjs.send(this.SERVICE_ID, this.TEMPLATE_ID, {
-          correo: this.correo,
-          nombre: res.nombre,
-          codigo: res.codigo
-        }, this.PUBLIC_KEY).then((response) => {
-          console.log("EmailJS enviado correctamente:", response);
-          this.exito = 'Se envió un código a su correo';
-          this.loading = false;
-          this.paso = 2;
-        }).catch((err) => {
-          console.error("Error exacto de EmailJS:", err); // Aquí veremos si sigue el error 412 de Gmail
-          this.error = 'No se pudo enviar el correo. Intente de nuevo';
-          this.loading = false;
-        });
+        this.exito = res.message || 'Si el correo está registrado, recibirá un código de recuperación';
+        this.loading = false;
+        this.paso = 2;
       },
       error: (err) => {
-        console.error("Error devuelto por el backend:", err); // Aquí veremos si la API falla o si es problema de CORS
-        this.error = err.error?.error || 'No existe una cuenta con ese correo';
+        this.error = err.error?.error || 'No se pudo enviar el correo. Intente de nuevo';
         this.loading = false;
       }
     });

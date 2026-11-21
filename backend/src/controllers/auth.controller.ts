@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
+import { randomInt } from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma';
+import { enviarCodigoRecuperacion } from '../lib/correo';
 
 export const login = async (req: Request, res: Response) => {
   const { correo, password } = req.body;
@@ -101,26 +103,35 @@ export const cambiarPassword = async (req: Request, res: Response) => {
   }
 };
 
-export const solicitarRecuperacion = async (req: Request, res: Response) => {
-  const { correo } = req.body;
-  try {
-    const usuario = await prisma.usuario.findUnique({ where: { correo: correo.toLowerCase() } });
-    if (!usuario) return res.status(404).json({ error: 'No existe una cuenta con ese correo' });
+// Misma respuesta exista o no la cuenta, para no revelar qué correos están registrados.
+const MENSAJE_RECUPERACION = 'Si el correo está registrado, recibirá un código de recuperación';
 
-    // Genera código de 6 dígitos
-    const codigo = String(Math.floor(100000 + Math.random() * 900000));
+export const solicitarRecuperacion = async (req: Request, res: Response) => {
+  const correo = typeof req.body?.correo === 'string' ? req.body.correo.trim().toLowerCase() : '';
+  if (!correo) return res.status(400).json({ error: 'Ingrese su correo electrónico' });
+
+  try {
+    const usuario = await prisma.usuario.findUnique({ where: { correo } });
+    if (!usuario) return res.json({ message: MENSAJE_RECUPERACION });
+
+    // Código de 6 dígitos con un generador criptográficamente seguro
+    const codigo = String(randomInt(100000, 1000000));
     const expira = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
 
-    await prisma.recuperacionPassword.create({
-      data: { correo: correo.toLowerCase(), codigo, expira }
-    });
+    // Un código nuevo deja sin efecto a los anteriores que no se usaron
+    await prisma.recuperacionPassword.updateMany({ where: { correo, usado: false }, data: { usado: true } });
+    const registro = await prisma.recuperacionPassword.create({ data: { correo, codigo, expira } });
 
-    // Devuelve el código y el nombre para que el frontend lo envíe por EmailJS
-    res.json({
-      message: 'Código generado',
-      codigo,
-      nombre: usuario.nombre
-    });
+    // El correo se envía desde el servidor: el código nunca llega al navegador
+    try {
+      await enviarCodigoRecuperacion({ correo, nombre: usuario.nombre, codigo });
+    } catch (errorEnvio) {
+      console.error('No se pudo enviar el código de recuperación:', errorEnvio);
+      await prisma.recuperacionPassword.delete({ where: { id: registro.id } });
+      return res.status(502).json({ error: 'No se pudo enviar el correo. Intente de nuevo más tarde' });
+    }
+
+    res.json({ message: MENSAJE_RECUPERACION });
   } catch (error) {
     res.status(500).json({ error: 'Error al solicitar recuperación' });
   }
