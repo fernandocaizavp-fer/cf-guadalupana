@@ -48,6 +48,7 @@ async function main() {
     create: {
       nombre: 'Matricula', apellido: 'Prueba',
       correo: 'matricula.prueba@local.test',
+      cedula: '0000000001', // la misma de su matrícula de prueba
       password: hash, rol: 'ESTUDIANTE'
     }
   });

@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
+import { validarIdentificacion } from '../lib/cedula';
 
 export const crearDocente = async (req: Request, res: Response) => {
   const { nombre, apellido, correo, cedula } = req.body;
+  const errorCedula = validarIdentificacion(cedula);
+  if (errorCedula) return res.status(400).json({ error: errorCedula });
   try {
     const hash = await bcrypt.hash(cedula, 10);
     const usuario = await prisma.usuario.create({
@@ -44,6 +47,16 @@ export const actualizarDocente = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { nombre, apellido, correo, cedula } = req.body;
   try {
+    // La cédula es obligatoria: si cambia, debe ser válida (no se puede vaciar).
+    // Igual que en la matrícula, solo se valida al cambiar, para no bloquear la
+    // edición de otros campos en registros antiguos.
+    if (cedula !== undefined) {
+      const actual = await prisma.usuario.findUnique({ where: { id: Number(id) }, select: { cedula: true } });
+      if (actual && String(cedula).trim() !== actual.cedula) {
+        const errorCedula = validarIdentificacion(cedula);
+        if (errorCedula) return res.status(400).json({ error: errorCedula });
+      }
+    }
     const data: any = {
       nombre: nombre?.toUpperCase(),
       apellido: apellido?.toUpperCase(),

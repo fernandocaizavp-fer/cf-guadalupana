@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import prisma from './lib/prisma';
+import { validarIdentificacion } from './lib/cedula';
 
 /**
  * Seed de bootstrap del primer administrador.
@@ -18,11 +19,17 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD;
   const nombre = process.env.ADMIN_NOMBRE?.trim() || 'Admin';
   const apellido = process.env.ADMIN_APELLIDO?.trim() || 'Principal';
+  const cedula = process.env.ADMIN_CEDULA?.trim();
 
-  if (!correo || !password) {
+  if (!correo || !password || !cedula) {
     console.warn(
-      '[seed] ADMIN_CORREO y/o ADMIN_PASSWORD no están definidos. Se omite la creación del admin de bootstrap.'
+      '[seed] ADMIN_CORREO, ADMIN_PASSWORD y/o ADMIN_CEDULA no están definidos. Se omite la creación del admin de bootstrap.'
     );
+    return;
+  }
+  const errorCedula = validarIdentificacion(cedula);
+  if (errorCedula) {
+    console.warn(`[seed] ADMIN_CEDULA no es válida (${errorCedula}). Se omite la creación del admin de bootstrap.`);
     return;
   }
 
@@ -38,6 +45,7 @@ async function main() {
       nombre,
       apellido,
       correo,
+      cedula,
       password: hash,
       rol: 'ADMIN',
       debeCambiarPassword: false,

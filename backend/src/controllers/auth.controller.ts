@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma';
 import { enviarCodigoRecuperacion } from '../lib/correo';
+import { validarIdentificacion } from '../lib/cedula';
 
 export const login = async (req: Request, res: Response) => {
   const { correo, password } = req.body;
@@ -36,11 +37,13 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const crearAdmin = async (req: Request, res: Response) => {
-  const { nombre, apellido, correo, password } = req.body;
+  const { nombre, apellido, correo, password, cedula } = req.body;
 
   if (!nombre || !apellido || !correo) {
     return res.status(400).json({ error: 'Nombre, apellido y correo son obligatorios' });
   }
+  const errorCedula = validarIdentificacion(cedula);
+  if (errorCedula) return res.status(400).json({ error: errorCedula });
   // Mismas reglas que cambiarPassword: un admin tiene control total del sistema.
   if (!password || password.length < 8) {
     return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
@@ -58,13 +61,14 @@ export const crearAdmin = async (req: Request, res: Response) => {
       data: {
         nombre, apellido,
         correo: String(correo).trim(),
+        cedula: String(cedula).trim(),
         password: hash, rol: 'ADMIN', debeCambiarPassword: false
       }
     });
     res.json({ message: 'Admin creado', usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo } });
   } catch (error: any) {
     if (error?.code === 'P2002') {
-      return res.status(400).json({ error: 'Ya existe una cuenta con ese correo' });
+      return res.status(400).json({ error: 'Ya existe una cuenta con ese correo o cédula' });
     }
     res.status(500).json({ error: 'Error al crear admin' });
   }

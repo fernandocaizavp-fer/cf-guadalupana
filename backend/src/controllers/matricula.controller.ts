@@ -199,6 +199,7 @@ export const crearMatricula = async (req: Request, res: Response) => {
             nombre: nombres.toUpperCase(),
             apellido: apellidos.toUpperCase(),
             correo: correoFinal,
+            cedula,
             password: hash,
             rol: 'ESTUDIANTE',
             activo: true,
@@ -231,6 +232,7 @@ export const crearMatricula = async (req: Request, res: Response) => {
           nombre: nombres.toUpperCase(),
           apellido: apellidos.toUpperCase(),
           correo: correoFinal,
+          cedula,
           password: hash,
           rol: 'ESTUDIANTE'
         }
@@ -264,7 +266,7 @@ export const crearMatricula = async (req: Request, res: Response) => {
       const target = error.meta?.target;
       const campos = Array.isArray(target) ? target.join(',') : String(target ?? '');
       if (campos.includes('cedula')) {
-        return res.status(400).json({ error: 'Ya existe un estudiante matriculado con esa cédula' });
+        return res.status(400).json({ error: 'Ya existe otra cuenta o matrícula con esa cédula' });
       }
       if (campos.includes('correo')) {
         return res.status(400).json({ error: 'Ya existe una cuenta con ese correo' });
@@ -301,18 +303,29 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
   try {
     // Solo se valida si la cédula cambia: registros antiguos con una cédula mal
     // ingresada deben poder editarse en sus otros campos sin quedar bloqueados.
+    let cedulaNueva: string | null = null;
+    let usuarioId: number | null = null;
     if (cedula !== undefined) {
       const actual = await prisma.matricula.findUnique({
         where: { id: Number(id) },
-        select: { cedula: true }
+        select: { cedula: true, usuarioId: true }
       });
       if (actual && String(cedula).trim() !== actual.cedula) {
         const errorCedula = validarIdentificacion(cedula);
         if (errorCedula) return res.status(400).json({ error: errorCedula });
+        cedulaNueva = String(cedula).trim();
+        usuarioId = actual.usuarioId;
       }
     }
 
-    const matricula = await prisma.matricula.update({
+    const matricula = await prisma.$transaction(async (tx) => {
+    // Si la cédula cambia, también se actualiza en la cuenta del estudiante
+    // (Usuario.cedula es obligatoria y debe coincidir con la de la matrícula).
+    if (cedulaNueva && usuarioId) {
+      await tx.usuario.update({ where: { id: usuarioId }, data: { cedula: cedulaNueva } });
+    }
+
+    return tx.matricula.update({
       where: { id: Number(id) },
       data: {
         tomo, pagina,
@@ -415,8 +428,12 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
         datosAcademicos: true
       }
     });
+    });
     res.json({ message: 'Matrícula actualizada', matricula });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return res.status(400).json({ error: 'Ya existe otra cuenta o matrícula con esa cédula' });
+    }
     const campoLargo = mensajeCampoLargo(error);
     if (campoLargo) return res.status(400).json({ error: campoLargo });
     console.error(error);
