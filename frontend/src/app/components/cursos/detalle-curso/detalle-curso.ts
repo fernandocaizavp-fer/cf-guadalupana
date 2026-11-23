@@ -19,10 +19,11 @@ import { CursoService } from '../../../services/curso';
 import { MatriculaService } from '../../../services/matricula';
 import { LIMITES_MATRICULA, camposExcedidos } from '../../../services/matricula-limites';
 import { validarIdentificacion } from '../../../services/cedula-util';
+import { BotonCalendario } from '../../../shared/lugar-fecha/lugar-fecha';
 
 @Component({
   selector: 'app-editar-matricula-dialog',
-  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule,
+  imports: [BotonCalendario, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule,
     MatDialogModule, MatDividerModule, MatIconModule, MatSelectModule],
   template: `
     <div class="dialog-container">
@@ -60,7 +61,8 @@ import { validarIdentificacion } from '../../../services/cedula-util';
             </mat-form-field>
           </div>
           <div class="row row-3">
-            <mat-form-field appearance="outline">
+            <!-- dynamic: la pista (válida/inválida) empuja la fila siguiente en vez de montarse sobre ella -->
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Cédula / Pasaporte</mat-label>
               <input matInput [(ngModel)]="datos.cedula" maxlength="10">
               @if (errorCedula(); as error) {
@@ -261,6 +263,7 @@ import { validarIdentificacion } from '../../../services/cedula-util';
             <mat-form-field appearance="outline">
               <mat-label>Lugar y Fecha Certificado</mat-label>
               <input matInput [maxlength]="max('lugarfechacertificado')" [(ngModel)]="datos.lugarfechacertificado">
+              <app-boton-calendario matSuffix [(valor)]="datos.lugarfechacertificado" />
               @if (cercaDelLimite('lugarfechacertificado')) {
                 <mat-hint align="end" [class.hint-excede]="excede('lugarfechacertificado')">{{ largo('lugarfechacertificado') }}/{{ max('lugarfechacertificado') }}</mat-hint>
               }

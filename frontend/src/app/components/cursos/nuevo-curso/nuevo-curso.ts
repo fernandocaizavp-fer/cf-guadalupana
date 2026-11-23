@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -31,7 +31,8 @@ export class NuevoCurso implements OnInit {
     private cursoService: CursoService,
     private router: Router,
     private route: ActivatedRoute,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -51,6 +52,9 @@ export class NuevoCurso implements OnInit {
           fechaInicio: this.formatearFecha(curso.fechaInicio),
           fechaFin: this.formatearFecha(curso.fechaFin)
         };
+        // Se refresca la pantalla al llegar los datos: antes los campos aparecían
+        // vacíos hasta que el usuario hacía clic en uno de ellos.
+        this.cdr.detectChanges();
       },
       error: () => this.snackBar.open('Error al cargar el curso', 'OK', { duration: 3000 })
     });

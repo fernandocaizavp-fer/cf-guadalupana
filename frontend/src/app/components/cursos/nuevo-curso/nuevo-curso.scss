@@ -105,3 +105,9 @@ mat-card-actions {
   .content { padding: 16px 12px; }
   .row { grid-template-columns: 1fr; }
 }
+
+// Separación entre el subtítulo de la tarjeta y el primer campo: la etiqueta
+// flotante del campo quedaba pegada a "Modifica los datos del curso".
+.form-card mat-card-content {
+  padding-top: 20px;
+}

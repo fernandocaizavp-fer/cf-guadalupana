@@ -12,9 +12,10 @@ import { CursoService } from '../../../services/curso';
 import { TareaService } from '../../../services/tarea';
 import { Title } from '@angular/platform-browser';
 
+import { BotonCalendario, lugarFechaHoy } from '../../../shared/lugar-fecha/lugar-fecha';
 @Component({
   selector: 'app-notas-curso',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule,
+  imports: [BotonCalendario, MatToolbarModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatFormFieldModule,
     MatInputModule, FormsModule],
   templateUrl: './notas-curso.html',
@@ -27,7 +28,7 @@ export class NotasCurso implements OnInit {
   loading = true;
   cursoId = 0;
   semestreSeleccionado = 1;
-  lugarFecha = '';
+  lugarFecha = lugarFechaHoy();
 
   constructor(
     private route: ActivatedRoute,

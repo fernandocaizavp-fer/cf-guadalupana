@@ -17,12 +17,13 @@ import { validarIdentificacion, motivoCedulaInvalida } from '../../../services/c
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 
+import { BotonCalendario, lugarFechaHoy } from '../../../shared/lugar-fecha/lugar-fecha';
 @Component({
   selector: 'app-nueva-matricula',
   imports: [
     FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule,
     MatIconModule, MatCardModule, MatSelectModule, MatDividerModule,
-    MatSnackBarModule, MatProgressSpinnerModule, MatToolbarModule
+    MatSnackBarModule, MatProgressSpinnerModule, MatToolbarModule, BotonCalendario
   ],
   templateUrl: './nueva-matricula.html',
   styleUrl: './nueva-matricula.scss'
@@ -50,7 +51,8 @@ export class NuevaMatricula implements OnInit {
     nombremama: '', profesionmama: '', ocupacionmama: '',
     nombrerepresentante: '', ocupacionrepresentante: '',
     domiciliorepresentante: '', telefonorepresentante: '',
-    lugarfechamatricula: '', especialidad: '', lugarfechacertificado: ''
+    // Lugar y fecha precargados con el día de hoy (siguen siendo editables).
+    lugarfechamatricula: lugarFechaHoy(), especialidad: '', lugarfechacertificado: lugarFechaHoy()
   };
 
   constructor(

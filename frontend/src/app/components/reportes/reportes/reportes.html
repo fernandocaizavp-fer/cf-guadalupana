@@ -133,6 +133,7 @@
         <mat-form-field appearance="outline" class="span-2">
           <mat-label>Lugar y Fecha</mat-label>
           <input matInput [(ngModel)]="lugarFecha" placeholder="Riobamba, 24 de abril del 2026">
+          <app-boton-calendario matSuffix [(valor)]="lugarFecha" />
         </mat-form-field>
         <div class="action-btn">
           @if (cursoSeleccionado) {
@@ -245,6 +246,7 @@
         <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
           <input matInput [(ngModel)]="lugarFechaCalificaciones" placeholder="Riobamba, 24 de abril del 2026">
+          <app-boton-calendario matSuffix [(valor)]="lugarFechaCalificaciones" />
         </mat-form-field>
         <div class="action-btn">
           @if (cursoCalificaciones) {
@@ -342,6 +344,7 @@
         <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
           <input matInput [(ngModel)]="lugarFechaAL15" placeholder="Riobamba, 24 de abril del 2026">
+          <app-boton-calendario matSuffix [(valor)]="lugarFechaAL15" />
         </mat-form-field>
         <div class="action-btn">
           @if (cursoAL15) {
@@ -395,6 +398,7 @@
         <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
           <input matInput [(ngModel)]="lugarFechaAL9" placeholder="Riobamba, 24 de abril del 2026">
+          <app-boton-calendario matSuffix [(valor)]="lugarFechaAL9" />
         </mat-form-field>
         <div class="action-btn">
           @if (cursoAL9) {
@@ -441,6 +445,7 @@
         <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
           <input matInput [(ngModel)]="lugarFechaAL23" placeholder="Riobamba, 24 de abril del 2026">
+          <app-boton-calendario matSuffix [(valor)]="lugarFechaAL23" />
         </mat-form-field>
         <div class="action-btn">
           @if (cursoAL23) {
@@ -524,6 +529,7 @@
         <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
           <input matInput [(ngModel)]="lugarFechaAL19" placeholder="Riobamba, 24 de abril del 2026">
+          <app-boton-calendario matSuffix [(valor)]="lugarFechaAL19" />
         </mat-form-field>
         <div class="action-btn">
           @if (cursoAL19) {
@@ -570,6 +576,7 @@
         <mat-form-field appearance="outline" class="span-2">
           <mat-label>Lugar y Fecha</mat-label>
           <input matInput [(ngModel)]="lugarFechaAL16" placeholder="Riobamba, 24 de abril del 2026">
+          <app-boton-calendario matSuffix [(valor)]="lugarFechaAL16" />
         </mat-form-field>
       </div>
     </div>
@@ -663,6 +670,7 @@
         <mat-form-field appearance="outline">
           <mat-label>Lugar y Fecha</mat-label>
           <input matInput [(ngModel)]="lugarFechaAL22" placeholder="Riobamba, 24 de abril del 2026">
+          <app-boton-calendario matSuffix [(valor)]="lugarFechaAL22" />
         </mat-form-field>
         <div class="action-btn">
           @if (cursoAL22) {
