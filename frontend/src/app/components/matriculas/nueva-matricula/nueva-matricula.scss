@@ -278,3 +278,19 @@ mat-divider { margin: 22px 0 !important; border-color: #f1f1f1 !important; }
     .btn-submit { width: 100%; }
   }
 }
+
+// El campo de cédula no se estira a la altura de la fila (la grilla estira sus
+// celdas): sin pista conserva su alto normal; con pista, esta ocupa su propio
+// espacio debajo y empuja la fila siguiente.
+.campo-cedula {
+  align-self: start;
+}
+
+// Cada fila del formulario es un bloque aparte y no había margen entre bloques:
+// la etiqueta flotante de la fila siguiente (sobresale unos 6 px hacia arriba)
+// caía encima de cualquier pista de la fila anterior, como "Cédula válida".
+.row-grid-2, .row-grid-3, .row-grid-4 {
+  & + .row-grid-2, & + .row-grid-3, & + .row-grid-4 {
+    margin-top: 18px;
+  }
+}

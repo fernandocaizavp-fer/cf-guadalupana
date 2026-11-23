@@ -62,7 +62,7 @@ import { BotonCalendario } from '../../../shared/lugar-fecha/lugar-fecha';
           </div>
           <div class="row row-3">
             <!-- dynamic: la pista (válida/inválida) empuja la fila siguiente en vez de montarse sobre ella -->
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="campo-cedula">
               <mat-label>Cédula / Pasaporte</mat-label>
               <input matInput [(ngModel)]="datos.cedula" maxlength="10">
               @if (errorCedula(); as error) {
@@ -282,6 +282,9 @@ import { BotonCalendario } from '../../../shared/lugar-fecha/lugar-fecha';
     </div>
   `,
   styles: [`
+    /* El campo de cédula no se estira a la altura de la fila: sin pista conserva
+       su alto normal; con pista, esta ocupa su propio espacio debajo. */
+    .campo-cedula { align-self: start; }
     .hint-excede { color: #dc2626 !important; font-weight: 700; }
 
     .dialog-container {
@@ -319,7 +322,7 @@ import { BotonCalendario } from '../../../shared/lugar-fecha/lugar-fecha';
     .form-grid {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 14px; /* espacio para que las pistas no queden bajo la etiqueta de la fila siguiente */
     }
 
     .section-header {

@@ -68,7 +68,7 @@
         </div>
         <div class="row-grid-4">
           <!-- dynamic: la pista (válida/inválida) empuja la fila siguiente en vez de montarse sobre ella -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="campo-cedula">
             <mat-label>Cédula / Pasaporte</mat-label>
             <input matInput [(ngModel)]="datos.cedula" (ngModelChange)="onCedulaChange()"
               (keyup.enter)="buscarPorCedula()" maxlength="10">
