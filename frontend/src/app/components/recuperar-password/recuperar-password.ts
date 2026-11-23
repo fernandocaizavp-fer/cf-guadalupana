@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -26,7 +26,14 @@ export class RecuperarPassword {
   exito = '';
   loading = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  @ViewChild('inputCodigo') inputCodigo?: ElementRef<HTMLInputElement>;
+  @ViewChild('inputPassword') inputPassword?: ElementRef<HTMLInputElement>;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   // Validaciones visuales
   get tieneLongitud(): boolean { return this.passwordNueva.length >= 8; }
@@ -52,15 +59,27 @@ export class RecuperarPassword {
     this.loading = true;
     this.authService.solicitarRecuperacion(this.correo).subscribe({
       next: (res) => {
-        this.exito = res.message || 'Si el correo está registrado, recibirá un código de recuperación';
+        this.exito = res?.message || 'Si el correo está registrado, recibirá un código de recuperación';
         this.loading = false;
         this.paso = 2;
+        // La pantalla se actualiza al instante: antes se quedaba en el paso 1
+        // hasta que el usuario hacía clic, aunque el correo ya había llegado.
+        this.cdr.detectChanges();
+        setTimeout(() => this.inputCodigo?.nativeElement?.focus(), 100);
       },
       error: (err) => {
         this.error = err.error?.error || 'No se pudo enviar el correo. Intente de nuevo';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  // Al completar los 6 dígitos del código, pasa solo al campo de la contraseña.
+  onCodigoChange() {
+    if (this.codigo && this.codigo.trim().length === 6) {
+      setTimeout(() => this.inputPassword?.nativeElement?.focus(), 50);
+    }
   }
 
   // PASO 2: validar código y cambiar la contraseña
@@ -79,15 +98,17 @@ export class RecuperarPassword {
     }
 
     this.loading = true;
-    this.authService.restablecerPassword(this.correo, this.codigo, this.passwordNueva).subscribe({
+    this.authService.restablecerPassword(this.correo, this.codigo.trim(), this.passwordNueva).subscribe({
       next: () => {
         this.exito = 'Contraseña restablecida. Ya puede iniciar sesión';
         this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => this.router.navigate(['/login']), 2000);
       },
       error: (err) => {
         this.error = err.error?.error || 'Código inválido o expirado';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

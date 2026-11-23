@@ -9,8 +9,10 @@ import { validarIdentificacion } from '../lib/cedula';
 export const login = async (req: Request, res: Response) => {
   const { correo, password } = req.body;
   try {
-    const usuario = await prisma.usuario.findUnique({
-      where: { correo },
+    // Sin distinguir mayúsculas ni espacios: un celular que pone la primera letra
+    // en mayúscula impedía entrar, aunque el correo se guarda en minúsculas.
+    const usuario = await prisma.usuario.findFirst({
+      where: { correo: { equals: String(correo ?? '').trim(), mode: 'insensitive' } },
       include: { matricula: { select: { activo: true } } }
     });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });

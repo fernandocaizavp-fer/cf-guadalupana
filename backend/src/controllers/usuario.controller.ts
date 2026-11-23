@@ -7,14 +7,22 @@ export const crearDocente = async (req: Request, res: Response) => {
   const { nombre, apellido, correo, cedula } = req.body;
   const errorCedula = validarIdentificacion(cedula);
   if (errorCedula) return res.status(400).json({ error: errorCedula });
+  const texto = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+  if (!texto(nombre) || !texto(apellido)) {
+    return res.status(400).json({ error: 'El nombre y el apellido son obligatorios' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(texto(correo))) {
+    return res.status(400).json({ error: 'El correo debe ser válido' });
+  }
   try {
-    const hash = await bcrypt.hash(cedula, 10);
+    const cedulaLimpia = String(cedula).trim();
+    const hash = await bcrypt.hash(cedulaLimpia, 10);
     const usuario = await prisma.usuario.create({
       data: {
-        nombre: nombre.toUpperCase(),
-        apellido: apellido.toUpperCase(),
-        correo: correo.toLowerCase(),
-        cedula,
+        nombre: texto(nombre).toUpperCase(),
+        apellido: texto(apellido).toUpperCase(),
+        correo: texto(correo).toLowerCase(),
+        cedula: cedulaLimpia,
         password: hash,
         rol: 'PROFESOR'
       }
@@ -46,27 +54,46 @@ export const listarDocentes = async (req: Request, res: Response) => {
 export const actualizarDocente = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { nombre, apellido, correo, cedula } = req.body;
+  const texto = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+  if ((nombre !== undefined && !texto(nombre)) || (apellido !== undefined && !texto(apellido))) {
+    return res.status(400).json({ error: 'El nombre y el apellido no pueden quedar vacíos' });
+  }
+  if (correo !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(texto(correo))) {
+    return res.status(400).json({ error: 'El correo debe ser válido' });
+  }
   try {
+    const actual = await prisma.usuario.findUnique({
+      where: { id: Number(id) },
+      select: { rol: true, cedula: true, debeCambiarPassword: true }
+    });
+    if (!actual || actual.rol !== 'PROFESOR') return res.status(404).json({ error: 'Docente no encontrado' });
+
     // La cédula es obligatoria: si cambia, debe ser válida (no se puede vaciar).
-    // Igual que en la matrícula, solo se valida al cambiar, para no bloquear la
-    // edición de otros campos en registros antiguos.
-    if (cedula !== undefined) {
-      const actual = await prisma.usuario.findUnique({ where: { id: Number(id) }, select: { cedula: true } });
-      if (actual && String(cedula).trim() !== actual.cedula) {
-        const errorCedula = validarIdentificacion(cedula);
-        if (errorCedula) return res.status(400).json({ error: errorCedula });
-      }
+    // Solo se valida al cambiar, para no bloquear la edición de otros campos en
+    // registros antiguos.
+    const cedulaRecibida = cedula !== undefined ? texto(String(cedula)) : undefined;
+    if (cedula !== undefined && !cedulaRecibida) {
+      return res.status(400).json({ error: 'La cédula es obligatoria' });
     }
+    const cedulaCambia = !!cedulaRecibida && cedulaRecibida !== actual.cedula;
+    if (cedulaCambia) {
+      const errorCedula = validarIdentificacion(cedulaRecibida);
+      if (errorCedula) return res.status(400).json({ error: errorCedula });
+    }
+
     const data: any = {
-      nombre: nombre?.toUpperCase(),
-      apellido: apellido?.toUpperCase(),
-      correo: correo?.toLowerCase(),
-      cedula
+      nombre: nombre !== undefined ? texto(nombre).toUpperCase() : undefined,
+      apellido: apellido !== undefined ? texto(apellido).toUpperCase() : undefined,
+      correo: correo !== undefined ? texto(correo).toLowerCase() : undefined,
+      cedula: cedulaRecibida
     };
-    // La contraseña NO se toca al editar: antes se re-hasheaba la cédula en cada
-    // guardado y el docente volvía a la contraseña por defecto, perdiendo la que
-    // él mismo había cambiado. La contraseña solo cambia desde cambiarPassword o
-    // la recuperación por correo.
+    // La contraseña inicial del docente es su cédula. Al editar NO se reinicia
+    // (antes cada guardado lo devolvía a la contraseña por defecto). Solo si la
+    // cédula se corrige y el docente todavía usa la contraseña inicial, esta pasa
+    // a ser la cédula corregida; si ya puso la suya, se respeta.
+    if (cedulaCambia && actual.debeCambiarPassword) {
+      data.password = await bcrypt.hash(cedulaRecibida!, 10);
+    }
     const usuario = await prisma.usuario.update({ where: { id: Number(id) }, data });
     // Nunca devolver el hash de la contraseña al cliente.
     const { password: _omitido, ...sinPassword } = usuario;

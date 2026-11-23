@@ -169,9 +169,11 @@ $white: #ffffff;
 }
 
 // Grids Responsivos
-.row-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.row-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.row-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+// Separación vertical mayor que la horizontal: la pista bajo un campo (por ejemplo
+// "Cédula válida") no debe montarse sobre la etiqueta del campo de la fila siguiente.
+.row-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+.row-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px 20px; }
+.row-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 20px; }
 .full-width { width: 100%; }
 
 mat-form-field {
@@ -265,7 +267,7 @@ mat-divider { margin: 22px 0 !important; border-color: #f1f1f1 !important; }
 
   .row-grid-2,
   .row-grid-3,
-  .row-grid-4 { gap: 0 12px; }
+  .row-grid-4 { gap: 10px 12px; }
 
   // Guardar arriba, cancelar abajo; ambos a todo el ancho.
   .form-actions {

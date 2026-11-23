@@ -300,44 +300,76 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
     especialidad, lugarfechacertificado
   } = req.body;
 
+  // Validación previa: un dato inválido terminaba en un 500 genérico
+  // ("Error al actualizar matrícula") sin decir qué estaba mal.
+  const texto = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+  if ((apellidos !== undefined && !texto(apellidos)) || (nombres !== undefined && !texto(nombres))) {
+    return res.status(400).json({ error: 'Los apellidos y los nombres no pueden quedar vacíos' });
+  }
+  // El correo del estudiante es también su usuario de acceso (Usuario.correo).
+  const correoNuevo = texto(correoestudiante).toLowerCase();
+  if (correoestudiante !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoNuevo)) {
+    return res.status(400).json({ error: 'El correo del estudiante es obligatorio y debe ser válido' });
+  }
+  if (fechaNacimiento && isNaN(new Date(fechaNacimiento).getTime())) {
+    return res.status(400).json({ error: 'La fecha de nacimiento no es válida' });
+  }
+  const correoPersonal = correo !== undefined ? texto(correo).toLowerCase() : (correoNuevo || undefined);
+  // undefined = el campo no vino y no se toca; '' = se vació a propósito.
+  const fechaNac = fechaNacimiento === undefined ? undefined : (fechaNacimiento ? new Date(fechaNacimiento) : null);
+
   try {
+    const actual = await prisma.matricula.findUnique({
+      where: { id: Number(id) },
+      select: { cedula: true, usuarioId: true, usuario: { select: { debeCambiarPassword: true } } }
+    });
+    if (!actual) return res.status(404).json({ error: 'Matrícula no encontrada' });
+
     // Solo se valida si la cédula cambia: registros antiguos con una cédula mal
     // ingresada deben poder editarse en sus otros campos sin quedar bloqueados.
-    let cedulaNueva: string | null = null;
-    let usuarioId: number | null = null;
-    if (cedula !== undefined) {
-      const actual = await prisma.matricula.findUnique({
-        where: { id: Number(id) },
-        select: { cedula: true, usuarioId: true }
-      });
-      if (actual && String(cedula).trim() !== actual.cedula) {
-        const errorCedula = validarIdentificacion(cedula);
-        if (errorCedula) return res.status(400).json({ error: errorCedula });
-        cedulaNueva = String(cedula).trim();
-        usuarioId = actual.usuarioId;
-      }
+    const cedulaRecibida = cedula !== undefined ? texto(String(cedula)) : undefined;
+    const cedulaCambia = !!cedulaRecibida && cedulaRecibida !== actual.cedula;
+    if (cedula !== undefined && !cedulaRecibida) {
+      return res.status(400).json({ error: 'La cédula es obligatoria' });
+    }
+    if (cedulaCambia) {
+      const errorCedula = validarIdentificacion(cedulaRecibida);
+      if (errorCedula) return res.status(400).json({ error: errorCedula });
     }
 
+    // Matrícula y cuenta de acceso se actualizan juntas: antes solo cambiaba la
+    // ficha y el estudiante seguía entrando con el correo y el nombre antiguos.
     const matricula = await prisma.$transaction(async (tx) => {
-    // Si la cédula cambia, también se actualiza en la cuenta del estudiante
-    // (Usuario.cedula es obligatoria y debe coincidir con la de la matrícula).
-    if (cedulaNueva && usuarioId) {
-      await tx.usuario.update({ where: { id: usuarioId }, data: { cedula: cedulaNueva } });
+    const datosUsuario: any = {};
+    if (nombres !== undefined) datosUsuario.nombre = texto(nombres).toUpperCase();
+    if (apellidos !== undefined) datosUsuario.apellido = texto(apellidos).toUpperCase();
+    if (correoestudiante !== undefined) datosUsuario.correo = correoNuevo;
+    if (cedulaCambia) {
+      datosUsuario.cedula = cedulaRecibida;
+      // La contraseña inicial es la cédula: si se corrige la cédula y el estudiante
+      // aún no cambió su contraseña, la inicial pasa a ser la cédula corregida.
+      // Si ya puso la suya, se respeta.
+      if (actual.usuario.debeCambiarPassword) {
+        datosUsuario.password = await bcrypt.hash(cedulaRecibida!, 10);
+      }
+    }
+    if (Object.keys(datosUsuario).length > 0) {
+      await tx.usuario.update({ where: { id: actual.usuarioId }, data: datosUsuario });
     }
 
     return tx.matricula.update({
       where: { id: Number(id) },
       data: {
         tomo, pagina,
-        apellidos: apellidos?.toUpperCase(),
-        nombres: nombres?.toUpperCase(),
-        cedula, sexo, nivelEstudio,
+        apellidos: apellidos !== undefined ? texto(apellidos).toUpperCase() : undefined,
+        nombres: nombres !== undefined ? texto(nombres).toUpperCase() : undefined,
+        cedula: cedulaRecibida, sexo, nivelEstudio,
         lugarfechamatricula: lugarfechamatricula?.toUpperCase(),
 
         datosPersonales: {
           upsert: {
             create: {
-              fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+              fechaNacimiento: fechaNac,
               anioNacimiento, mesNacimiento, diaNacimiento,
               pais: pais?.toUpperCase(),
               provincia: provincia?.toUpperCase(),
@@ -347,10 +379,10 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
               nacionalidad: nacionalidad?.toUpperCase(),
               calle: calle?.toUpperCase(),
               num, transversal, telefono,
-              correo: correo?.toLowerCase()
+              correo: correoPersonal
             },
             update: {
-              fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+              fechaNacimiento: fechaNac,
               anioNacimiento, mesNacimiento, diaNacimiento,
               pais: pais?.toUpperCase(),
               provincia: provincia?.toUpperCase(),
@@ -360,7 +392,7 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
               nacionalidad: nacionalidad?.toUpperCase(),
               calle: calle?.toUpperCase(),
               num, transversal, telefono,
-              correo: correo?.toLowerCase()
+              correo: correoPersonal
             }
           }
         },
@@ -378,7 +410,7 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
               ocupacionrepresentante: ocupacionrepresentante?.toUpperCase(),
               domiciliorepresentante: domiciliorepresentante?.toUpperCase(),
               telefonorepresentante,
-              correoestudiante: correoestudiante?.toLowerCase()
+              correoestudiante: correoestudiante !== undefined ? correoNuevo : undefined
             },
             update: {
               nombrepapa: nombrepapa?.toUpperCase(),
@@ -391,7 +423,7 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
               ocupacionrepresentante: ocupacionrepresentante?.toUpperCase(),
               domiciliorepresentante: domiciliorepresentante?.toUpperCase(),
               telefonorepresentante,
-              correoestudiante: correoestudiante?.toLowerCase()
+              correoestudiante: correoestudiante !== undefined ? correoNuevo : undefined
             }
           }
         },
@@ -432,7 +464,15 @@ export const actualizarMatricula = async (req: Request, res: Response) => {
     res.json({ message: 'Matrícula actualizada', matricula });
   } catch (error: any) {
     if (error?.code === 'P2002') {
+      const target = error.meta?.target;
+      const campos = Array.isArray(target) ? target.join(',') : String(target ?? '');
+      if (campos.includes('correo')) {
+        return res.status(400).json({ error: 'Ya existe otra cuenta con ese correo' });
+      }
       return res.status(400).json({ error: 'Ya existe otra cuenta o matrícula con esa cédula' });
+    }
+    if (error?.code === 'P2025') {
+      return res.status(404).json({ error: 'Matrícula no encontrada' });
     }
     const campoLargo = mensajeCampoLargo(error);
     if (campoLargo) return res.status(400).json({ error: campoLargo });
@@ -495,7 +535,9 @@ export const obtenerMatricula = async (req: Request, res: Response) => {
         curso: { include: { materias: true } },
         datosPersonales: true,
         datosFamiliares: true,
-        datosAcademicos: true
+        datosAcademicos: true,
+        // Correo de acceso, para que el formulario de edición muestre el real.
+        usuario: { select: { correo: true } }
       }
     });
     if (!matricula) return res.status(404).json({ error: 'Matrícula no encontrada' });
