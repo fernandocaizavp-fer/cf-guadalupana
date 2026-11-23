@@ -8,6 +8,11 @@ import { validarIdentificacion } from '../lib/cedula';
 
 export const login = async (req: Request, res: Response) => {
   const { correo, password } = req.body;
+  // Sin correo o sin contraseña no se busca ninguna cuenta: con un correo vacío
+  // la búsqueda podía coincidir con una cuenta antigua sin correo.
+  if (!String(correo ?? '').trim() || !password) {
+    return res.status(400).json({ error: 'Ingrese su correo y su contraseña' });
+  }
   try {
     // Sin distinguir mayúsculas ni espacios: un celular que pone la primera letra
     // en mayúscula impedía entrar, aunque el correo se guarda en minúsculas.
